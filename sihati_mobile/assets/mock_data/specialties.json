@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "nameAr": "طب عام",
+    "nameFr": "Médecine Générale",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 2,
+    "nameAr": "طب الأطفال",
+    "nameFr": "Pédiatrie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 3,
+    "nameAr": "طب الأسنان",
+    "nameFr": "Dentiste",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 4,
+    "nameAr": "أمراض القلب",
+    "nameFr": "Cardiologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 5,
+    "nameAr": "أمراض الجلد",
+    "nameFr": "Dermatologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 6,
+    "nameAr": "طب العيون",
+    "nameFr": "Ophtalmologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 7,
+    "nameAr": "أمراض النساء",
+    "nameFr": "Gynécologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 8,
+    "nameAr": "جراحة عامة",
+    "nameFr": "Chirurgie Générale",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 9,
+    "nameAr": "أنف أذن حنجرة",
+    "nameFr": "ORL (Oto-Rhino-Laryngologie)",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 10,
+    "nameAr": "الطب النفسي",
+    "nameFr": "Psychiatrie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 11,
+    "nameAr": "طب الأعصاب",
+    "nameFr": "Neurologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 12,
+    "nameAr": "جراحة العظام",
+    "nameFr": "Orthopédie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 13,
+    "nameAr": "المسالك البولية",
+    "nameFr": "Urologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 14,
+    "nameAr": "أمراض الجهاز الهضمي",
+    "nameFr": "Gastro-entérologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 15,
+    "nameAr": "أمراض الرئة",
+    "nameFr": "Pneumologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 16,
+    "nameAr": "أمراض الروماتيزم",
+    "nameFr": "Rhumatologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 17,
+    "nameAr": "الأشعة",
+    "nameFr": "Radiologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 18,
+    "nameAr": "طب الأذن والأنف والحنجرة",
+    "nameFr": "Endocrinologie",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+]

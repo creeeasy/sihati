@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "name": "Doliprane 500mg",
+    "genericName": "Paracétamol",
+    "category": "Analgésique",
+    "description": "Traitement de la douleur et de la fièvre",
+    "requiresPrescription": false
+  },
+  {
+    "id": 2,
+    "name": "Aspégic 100mg",
+    "genericName": "Aspirine",
+    "category": "Antiagrégant plaquettaire",
+    "description": "Prévention des maladies cardiovasculaires",
+    "requiresPrescription": false
+  },
+  {
+    "id": 3,
+    "name": "Amoxicilline 500mg",
+    "genericName": "Amoxicilline",
+    "category": "Antibiotique",
+    "description": "Traitement des infections bactériennes",
+    "requiresPrescription": true
+  },
+  {
+    "id": 4,
+    "name": "Ventoline",
+    "genericName": "Salbutamol",
+    "category": "Bronchodilatateur",
+    "description": "Traitement de l'asthme et des bronchospasmes",
+    "requiresPrescription": true
+  },
+  {
+    "id": 5,
+    "name": "Spasfon",
+    "genericName": "Phloroglucinol",
+    "category": "Antispasmodique",
+    "description": "Traitement des douleurs abdominales et spasmes",
+    "requiresPrescription": false
+  },
+  {
+    "id": 6,
+    "name": "Imodium",
+    "genericName": "Lopéramide",
+    "category": "Antidiarrhéique",
+    "description": "Traitement de la diarrhée aiguë",
+    "requiresPrescription": false
+  },
+  {
+    "id": 7,
+    "name": "Smecta",
+    "genericName": "Diosmectite",
+    "category": "Antidiarrhéique",
+    "description": "Traitement de la diarrhée et des troubles digestifs",
+    "requiresPrescription": false
+  },
+  {
+    "id": 8,
+    "name": "Ibuprofène 400mg",
+    "genericName": "Ibuprofène",
+    "category": "Anti-inflammatoire",
+    "description": "Traitement de la douleur et de l'inflammation",
+    "requiresPrescription": false
+  },
+  {
+    "id": 9,
+    "name": "Augmentin 1g",
+    "genericName": "Amoxicilline + Acide clavulanique",
+    "category": "Antibiotique",
+    "description": "Traitement des infections bactériennes résistantes",
+    "requiresPrescription": true
+  },
+  {
+    "id": 10,
+    "name": "Efferalgan 1g",
+    "genericName": "Paracétamol",
+    "category": "Analgésique",
+    "description": "Traitement de la douleur et de la fièvre",
+    "requiresPrescription": false
+  },
+  {
+    "id": 11,
+    "name": "Gaviscon",
+    "genericName": "Alginate de sodium",
+    "category": "Antiacide",
+    "description": "Traitement du reflux gastro-oesophagien",
+    "requiresPrescription": false
+  },
+  {
+    "id": 12,
+    "name": "Flagyl 500mg",
+    "genericName": "Métronidazole",
+    "category": "Antibiotique",
+    "description": "Traitement des infections parasitaires et bactériennes",
+    "requiresPrescription": true
+  },
+  {
+    "id": 13,
+    "name": "Mopral 20mg",
+    "genericName": "Oméprazole",
+    "category": "Inhibiteur de la pompe à protons",
+    "description": "Traitement des ulcères et du reflux",
+    "requiresPrescription": true
+  },
+  {
+    "id": 14,
+    "name": "Celestene",
+    "genericName": "Bétaméthasone",
+    "category": "Corticoïde",
+    "description": "Traitement des inflammations et allergies",
+    "requiresPrescription": true
+  },
+  {
+    "id": 15,
+    "name": "Doliprane 1000mg",
+    "genericName": "Paracétamol",
+    "category": "Analgésique",
+    "description": "Traitement de la douleur intense et de la fièvre",
+    "requiresPrescription": false
+  },
+  {
+    "id": 16,
+    "name": "Tramadol 50mg",
+    "genericName": "Tramadol",
+    "category": "Analgésique opioïde",
+    "description": "Traitement de la douleur modérée à sévère",
+    "requiresPrescription": true
+  },
+  {
+    "id": 17,
+    "name": "Loratadine 10mg",
+    "genericName": "Loratadine",
+    "category": "Antihistaminique",
+    "description": "Traitement des allergies",
+    "requiresPrescription": false
+  },
+  {
+    "id": 18,
+    "name": "Ambroxol",
+    "genericName": "Ambroxol",
+    "category": "Mucolytique",
+    "description": "Traitement de la toux productive",
+    "requiresPrescription": false
+  },
+  {
+    "id": 19,
+    "name": "Atarax",
+    "genericName": "Hydroxyzine",
+    "category": "Anxiolytique",
+    "description": "Traitement de l'anxiété et des troubles du sommeil",
+    "requiresPrescription": true
+  },
+  {
+    "id": 20,
+    "name": "Voltarène 50mg",
+    "genericName": "Diclofénac",
+    "category": "Anti-inflammatoire",
+    "description": "Traitement de la douleur et de l'inflammation",
+    "requiresPrescription": true
+  }
+]

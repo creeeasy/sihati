@@ -1,0 +1,212 @@
+[
+  {
+    "id": 1,
+    "pharmacyName": "Pharmacy Al Amal",
+    "address": "15 Rue Larbi Ben M'hidi, Bab El Oued",
+    "wilaya": "Alger",
+    "commune": "Bab El Oued",
+    "latitude": 36.7879,
+    "longitude": 3.0482,
+    "phone": "0555789012",
+    "whatsappNumber": "0555789012",
+    "isOnDutyTonight": true,
+    "openingHours": {
+      "monday": {"open": "08:00", "close": "20:00"},
+      "tuesday": {"open": "08:00", "close": "20:00"},
+      "wednesday": {"open": "08:00", "close": "20:00"},
+      "thursday": {"open": "08:00", "close": "20:00"},
+      "friday": {"open": "08:00", "close": "12:00"},
+      "saturday": {"open": "08:00", "close": "20:00"},
+      "sunday": {"open": null, "close": null}
+    }
+  },
+  {
+    "id": 2,
+    "pharmacyName": "Pharmacy Centrale",
+    "address": "23 Boulevard Mohamed V, Centre Ville",
+    "wilaya": "Oran",
+    "commune": "Oran Centre",
+    "latitude": 35.6976,
+    "longitude": -0.6337,
+    "phone": "0556123456",
+    "whatsappNumber": "0556123456",
+    "isOnDutyTonight": false,
+    "openingHours": {
+      "monday": {"open": "08:30", "close": "19:30"},
+      "tuesday": {"open": "08:30", "close": "19:30"},
+      "wednesday": {"open": "08:30", "close": "19:30"},
+      "thursday": {"open": "08:30", "close": "19:30"},
+      "friday": {"open": "09:00", "close": "12:00"},
+      "saturday": {"open": "08:30", "close": "19:30"},
+      "sunday": {"open": null, "close": null}
+    }
+  },
+  {
+    "id": 3,
+    "pharmacyName": "Pharmacy Essalem",
+    "address": "45 Rue Didouche Mourad, Alger Centre",
+    "wilaya": "Alger",
+    "commune": "Alger Centre",
+    "latitude": 36.7538,
+    "longitude": 3.0588,
+    "phone": "0557234567",
+    "whatsappNumber": "0557234567",
+    "isOnDutyTonight": true,
+    "openingHours": {
+      "monday": {"open": "08:00", "close": "21:00"},
+      "tuesday": {"open": "08:00", "close": "21:00"},
+      "wednesday": {"open": "08:00", "close": "21:00"},
+      "thursday": {"open": "08:00", "close": "21:00"},
+      "friday": {"open": "08:00", "close": "13:00"},
+      "saturday": {"open": "08:00", "close": "21:00"},
+      "sunday": {"open": "09:00", "close": "13:00"}
+    }
+  },
+  {
+    "id": 4,
+    "pharmacyName": "Pharmacy Benali",
+    "address": "12 Avenue Pasteur, Kouba",
+    "wilaya": "Alger",
+    "commune": "Kouba",
+    "latitude": 36.7265,
+    "longitude": 3.0852,
+    "phone": "0558345678",
+    "whatsappNumber": null,
+    "isOnDutyTonight": false,
+    "openingHours": {
+      "monday": {"open": "08:00", "close": "20:00"},
+      "tuesday": {"open": "08:00", "close": "20:00"},
+      "wednesday": {"open": "08:00", "close": "20:00"},
+      "thursday": {"open": "08:00", "close": "20:00"},
+      "friday": {"open": "08:00", "close": "12:30"},
+      "saturday": {"open": "08:00", "close": "20:00"},
+      "sunday": {"open": null, "close": null}
+    }
+  },
+  {
+    "id": 5,
+    "pharmacyName": "Pharmacy Nouvelle",
+    "address": "78 Rue des Frères Bouadou, Bir Mourad Raïs",
+    "wilaya": "Alger",
+    "commune": "Bir Mourad Raïs",
+    "latitude": 36.7342,
+    "longitude": 3.0586,
+    "phone": "0559456789",
+    "whatsappNumber": "0559456789",
+    "isOnDutyTonight": true,
+    "openingHours": {
+      "monday": {"open": "08:30", "close": "20:30"},
+      "tuesday": {"open": "08:30", "close": "20:30"},
+      "wednesday": {"open": "08:30", "close": "20:30"},
+      "thursday": {"open": "08:30", "close": "20:30"},
+      "friday": {"open": "09:00", "close": "12:30"},
+      "saturday": {"open": "08:30", "close": "20:30"},
+      "sunday": {"open": null, "close": null}
+    }
+  },
+  {
+    "id": 6,
+    "pharmacyName": "Pharmacy El Hayat",
+    "address": "34 Rue Hassiba Ben Bouali, Constantine",
+    "wilaya": "Constantine",
+    "commune": "Constantine Centre",
+    "latitude": 36.3650,
+    "longitude": 6.6147,
+    "phone": "0560567890",
+    "whatsappNumber": "0560567890",
+    "isOnDutyTonight": false,
+    "openingHours": {
+      "monday": {"open": "08:00", "close": "19:00"},
+      "tuesday": {"open": "08:00", "close": "19:00"},
+      "wednesday": {"open": "08:00", "close": "19:00"},
+      "thursday": {"open": "08:00", "close": "19:00"},
+      "friday": {"open": "08:00", "close": "12:00"},
+      "saturday": {"open": "08:00", "close": "19:00"},
+      "sunday": {"open": null, "close": null}
+    }
+  },
+  {
+    "id": 7,
+    "pharmacyName": "Pharmacy Rahma",
+    "address": "56 Boulevard de la Liberté, Tlemcen",
+    "wilaya": "Tlemcen",
+    "commune": "Tlemcen Centre",
+    "latitude": 34.8781,
+    "longitude": -1.3153,
+    "phone": "0561678901",
+    "whatsappNumber": "0561678901",
+    "isOnDutyTonight": true,
+    "openingHours": {
+      "monday": {"open": "08:00", "close": "20:00"},
+      "tuesday": {"open": "08:00", "close": "20:00"},
+      "wednesday": {"open": "08:00", "close": "20:00"},
+      "thursday": {"open": "08:00", "close": "20:00"},
+      "friday": {"open": "08:00", "close": "13:00"},
+      "saturday": {"open": "08:00", "close": "20:00"},
+      "sunday": {"open": "09:00", "close": "13:00"}
+    }
+  },
+  {
+    "id": 8,
+    "pharmacyName": "Pharmacy Sidi Bel Abbès",
+    "address": "89 Avenue de la République, Sidi Bel Abbès",
+    "wilaya": "Sidi Bel Abbès",
+    "commune": "Sidi Bel Abbès Centre",
+    "latitude": 35.1907,
+    "longitude": -0.6388,
+    "phone": "0562789012",
+    "whatsappNumber": null,
+    "isOnDutyTonight": false,
+    "openingHours": {
+      "monday": {"open": "08:30", "close": "19:30"},
+      "tuesday": {"open": "08:30", "close": "19:30"},
+      "wednesday": {"open": "08:30", "close": "19:30"},
+      "thursday": {"open": "08:30", "close": "19:30"},
+      "friday": {"open": "09:00", "close": "12:30"},
+      "saturday": {"open": "08:30", "close": "19:30"},
+      "sunday": {"open": null, "close": null}
+    }
+  },
+  {
+    "id": 9,
+    "pharmacyName": "Pharmacy Ibn Sina",
+    "address": "123 Rue Emir Abdelkader, Annaba",
+    "wilaya": "Annaba",
+    "commune": "Annaba Centre",
+    "latitude": 36.9000,
+    "longitude": 7.7667,
+    "phone": "0563890123",
+    "whatsappNumber": "0563890123",
+    "isOnDutyTonight": true,
+    "openingHours": {
+      "monday": {"open": "08:00", "close": "20:00"},
+      "tuesday": {"open": "08:00", "close": "20:00"},
+      "wednesday": {"open": "08:00", "close": "20:00"},
+      "thursday": {"open": "08:00", "close": "20:00"},
+      "friday": {"open": "08:00", "close": "12:00"},
+      "saturday": {"open": "08:00", "close": "20:00"},
+      "sunday": {"open": null, "close": null}
+    }
+  },
+  {
+    "id": 10,
+    "pharmacyName": "Pharmacy Sétif",
+    "address": "67 Avenue du 1er Novembre, Sétif",
+    "wilaya": "Sétif",
+    "commune": "Sétif Centre",
+    "latitude": 36.1919,
+    "longitude": 5.4138,
+    "phone": "0564901234",
+    "whatsappNumber": "0564901234",
+    "isOnDutyTonight": false,
+    "openingHours": {
+      "monday": {"open": "08:00", "close": "19:30"},
+      "tuesday": {"open": "08:00", "close": "19:30"},
+      "wednesday": {"open": "08:00", "close": "19:30"},
+      "thursday": {"open": "08:00", "close": "19:30"},
+      "friday": {"open": "08:30", "close": "12:30"},
+      "saturday": {"open": "08:00", "close": "19:30"},
+      "sunday": {"open": null, "close": null}
+    }
+  }
+]

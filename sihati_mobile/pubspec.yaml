@@ -1,0 +1,66 @@
+name: sihati_mobile
+description: Healthcare platform connecting patients with pharmacies and doctors in Algeria
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management & Navigation
+  get: ^4.6.6
+
+  # Networking (for future backend integration)
+  dio: ^5.4.0
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+  get_storage: ^2.1.1
+
+  # Location & Maps
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+
+  # UI Components
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+  lottie: ^3.0.0
+
+  # Forms & Validation
+  email_validator: ^2.1.17
+
+  # Utilities
+  intl: ^0.19.0
+  url_launcher: ^6.2.3
+  permission_handler: ^11.2.0
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  google_generative_ai: ^0.4.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/mock_data/
+
+#  fonts:
+#    - family: Poppins
+#      fonts:
+#        - asset: assets/fonts/Poppins-Regular.ttf
+#        - asset: assets/fonts/Poppins-Medium.ttf
+#          weight: 500
+#        - asset: assets/fonts/Poppins-SemiBold.ttf
+#          weight: 600
+#        - asset: assets/fonts/Poppins-Bold.ttf
+#          weight: 700

@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "email": "patient@test.com",
+    "password": "password123",
+    "role": "patient",
+    "fullName": "Ahmed Benali",
+    "phoneNumber": "0555123456",
+    "isActive": true,
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "email": "amina@test.com",
+    "password": "password123",
+    "role": "patient",
+    "fullName": "Amina Khelifi",
+    "phoneNumber": "0556234567",
+    "isActive": true,
+    "createdAt": "2024-01-20T14:30:00Z",
+    "updatedAt": "2024-01-20T14:30:00Z"
+  },
+  {
+    "id": 3,
+    "email": "pharmacy@test.com",
+    "password": "password123",
+    "role": "pharmacy",
+    "fullName": "Pharmacy Al Amal",
+    "phoneNumber": "0555789012",
+    "isActive": true,
+    "createdAt": "2024-01-10T08:00:00Z",
+    "updatedAt": "2024-01-10T08:00:00Z"
+  },
+  {
+    "id": 4,
+    "email": "doctor@test.com",
+    "password": "password123",
+    "role": "doctor",
+    "fullName": "Dr. Fatima Zerrouki",
+    "phoneNumber": "0555345678",
+    "isActive": true,
+    "createdAt": "2024-01-05T09:00:00Z",
+    "updatedAt": "2024-01-05T09:00:00Z"
+  },
+  {
+    "id": 5,
+    "email": "admin@test.com",
+    "password": "admin123",
+    "role": "admin",
+    "fullName": "Admin Sihati",
+    "phoneNumber": "0555000000",
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 6,
+    "email": "karim@test.com",
+    "password": "password123",
+    "role": "patient",
+    "fullName": "Karim Mansouri",
+    "phoneNumber": "0557345678",
+    "isActive": true,
+    "createdAt": "2024-02-01T16:00:00Z",
+    "updatedAt": "2024-02-01T16:00:00Z"
+  }
+]
