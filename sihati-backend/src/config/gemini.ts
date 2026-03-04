@@ -17,8 +17,7 @@ Règles strictes à respecter :
 `.trim();
 
 const model = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
-  systemInstruction: SYSTEM_INSTRUCTION,
+ model: "gemini-2.5-flash",  systemInstruction: SYSTEM_INSTRUCTION,
 });
 
 export default model;

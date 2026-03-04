@@ -67,7 +67,7 @@ class HomeController extends GetxController {
   }
 
   void goToAIAssistant() {
-    Get.toNamed(AppRoutes.AI_ASSISTANT);
+    Get.toNamed(AppRoutes.AI_ASSISTANT, arguments: {'tag': 'home'});
   }
 
   void goToFavorites() {

@@ -1,6 +1,12 @@
 import 'package:get/get.dart';
 import 'package:sihati_mobile/modules/ai_assistant/bindings/ai_assistant_binding.dart';
 import 'package:sihati_mobile/modules/ai_assistant/views/ai_assistant_screen.dart';
+import 'package:sihati_mobile/modules/ai_assistant/views/history_binding.dart';
+import 'package:sihati_mobile/modules/ai_assistant/views/history_screen.dart';
+import 'package:sihati_mobile/modules/appointments/bindings/book_appointment_binding.dart';
+import 'package:sihati_mobile/modules/appointments/bindings/my_appointments_binding.dart';
+import 'package:sihati_mobile/modules/appointments/views/book_appointment_screen.dart';
+import 'package:sihati_mobile/modules/appointments/views/my_appointments_screen.dart';
 import 'package:sihati_mobile/modules/favorites/views/favorites_screen.dart';
 import 'app_routes.dart';
 
@@ -117,6 +123,25 @@ class AppPages {
       name: AppRoutes.AI_ASSISTANT,
       page: () => const AIAssistantScreen(),
       binding: AIAssistantBinding(),
+      preventDuplicates: false,
+    ),
+    GetPage(
+      name: AppRoutes.HISTORY,
+      page: () => const HistoryScreen(),
+      binding: HistoryBinding(),
+      preventDuplicates: false,
+    ),
+    // Appointments
+    GetPage(
+      name: AppRoutes.BOOK_APPOINTMENT,
+      page: () => const BookAppointmentScreen(),
+      binding: BookAppointmentBinding(),
+    ),
+
+    GetPage(
+      name: AppRoutes.APPOINTMENTS,
+      page: () => const MyAppointmentsScreen(),
+      binding: MyAppointmentsBinding(),
     ),
   ];
 }

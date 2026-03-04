@@ -1,11 +1,24 @@
 import Joi from 'joi';
 
+const historyItemSchema = Joi.object({
+  role: Joi.string().valid('user', 'model').required(),
+  parts: Joi.array()
+    .items(Joi.object({ text: Joi.string().required() }))
+    .min(1)
+    .required(),
+});
+
 export const validateChatMessage = Joi.object({
   message: Joi.string().min(1).max(1000).required().messages({
     'string.min': 'Le message ne peut pas être vide.',
     'string.max': 'Le message ne peut pas dépasser 1000 caractères.',
     'any.required': 'Le message est requis.',
   }),
+  history: Joi.array().items(historyItemSchema).max(20).optional(),
+  location: Joi.object({
+    lat: Joi.number().min(-90).max(90).required(),
+    lng: Joi.number().min(-180).max(180).required(),
+  }).optional(),
 });
 
 export const validateSymptoms = Joi.object({

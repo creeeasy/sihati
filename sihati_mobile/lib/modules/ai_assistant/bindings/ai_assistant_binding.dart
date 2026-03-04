@@ -8,23 +8,19 @@ import '../controllers/ai_assistant_controller.dart';
 class AIAssistantBinding extends Bindings {
   @override
   void dependencies() {
-    // Services
+    final tag = Get.arguments?['tag']?.toString() ?? 'home';
+
     Get.lazyPut<AIService>(() => AIService());
     Get.lazyPut<LocationService>(() => LocationService());
-
-    // Providers
     Get.lazyPut<MockMedicationProvider>(() => MockMedicationProvider());
-
-    // Repository
     Get.lazyPut<MedicationRepository>(() => MedicationRepository(
           medicationProvider: Get.find<MockMedicationProvider>(),
           locationService: Get.find<LocationService>(),
         ));
 
-    // Controller
-    Get.lazyPut<AIAssistantController>(() => AIAssistantController(
-          aiService: Get.find<AIService>(),
-          medicationRepository: Get.find<MedicationRepository>(),
-        ));
+    Get.put<AIAssistantController>(
+      AIAssistantController(aiService: Get.find<AIService>()),
+      tag: tag,
+    );
   }
 }

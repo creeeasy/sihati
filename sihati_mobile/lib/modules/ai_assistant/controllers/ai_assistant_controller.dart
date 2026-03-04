@@ -2,43 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/services/ai_service.dart';
 import '../../../../app/routes/app_routes.dart';
-import '../../../../data/repositories/medication_repository.dart';
 
-/// Message model for chat
 class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
-  final List<String>? medicationSuggestions;
+  final ChatResponse? aiResponse;
 
   ChatMessage({
     required this.text,
     required this.isUser,
     DateTime? timestamp,
-    this.medicationSuggestions,
+    this.aiResponse,
   }) : timestamp = timestamp ?? DateTime.now();
 }
 
-/// AI Assistant Controller
 class AIAssistantController extends GetxController {
   final AIService aiService;
-  final MedicationRepository? medicationRepository;
+  AIAssistantController({required this.aiService});
 
-  AIAssistantController({
-    required this.aiService,
-    this.medicationRepository,
-  });
-
-  // State
   final messages = <ChatMessage>[].obs;
   final isLoading = false.obs;
+  final _history = <HistoryItem>[];
   final textController = TextEditingController();
+
+  // ScrollController lives here — owned by the controller, not the widget
+  // so it survives widget rebuilds cleanly
   final scrollController = ScrollController();
 
   @override
   void onInit() {
     super.onInit();
-    _addWelcomeMessage();
+
+    final args = Get.arguments is Map
+        ? Map<String, dynamic>.from(Get.arguments as Map)
+        : null;
+
+    if (args != null && args.containsKey('conversationId')) {
+      _addWelcomeMessage();
+      _loadAndResume(args['conversationId'] as int);
+    } else {
+      _addWelcomeMessage();
+    }
   }
 
   @override
@@ -48,6 +53,115 @@ class AIAssistantController extends GetxController {
     super.onClose();
   }
 
+  // ─── Resume conversation by id ────────────────────────────
+
+  Future<void> _loadAndResume(int conversationId) async {
+    isLoading.value = true;
+
+    final conv = await aiService.getConversation(conversationId);
+    isLoading.value = false;
+
+    if (conv == null) {
+      messages.add(ChatMessage(
+        text: 'Impossible de charger cette conversation.',
+        isUser: false,
+      ));
+      return;
+    }
+
+    final userMsg =
+        conv['userMessage'] as String? ?? conv['user_message'] as String? ?? '';
+    final aiReply =
+        conv['aiResponse'] as String? ?? conv['ai_response'] as String? ?? '';
+
+    // Inject into Gemini history for context
+    _history.add(HistoryItem(role: 'user', text: userMsg));
+    if (aiReply.isNotEmpty) {
+      _history.add(HistoryItem(role: 'model', text: aiReply));
+    }
+
+    // Replace welcome message with the restored exchange
+    messages.clear();
+    messages.add(ChatMessage(text: userMsg, isUser: true));
+    if (aiReply.isNotEmpty) {
+      messages.add(ChatMessage(text: aiReply, isUser: false));
+    }
+    messages.add(ChatMessage(
+      text: '↩️ Conversation reprise. Posez votre question suivante.',
+      isUser: false,
+    ));
+
+    _scrollToBottom();
+  }
+
+  // ─── Send message ─────────────────────────────────────────
+
+  Future<void> sendMessage() async {
+    final text = textController.text.trim();
+    if (text.isEmpty || isLoading.value) return;
+
+    messages.add(ChatMessage(text: text, isUser: true));
+    textController.clear();
+    _scrollToBottom();
+
+    _history.add(HistoryItem(role: 'user', text: text));
+    isLoading.value = true;
+
+    try {
+      final response = await aiService.sendQuery(text, List.from(_history));
+      _history.add(HistoryItem(role: 'model', text: response.reply));
+      if (_history.length > 40) _history.removeRange(0, 2);
+      messages.add(ChatMessage(
+        text: response.reply,
+        isUser: false,
+        aiResponse: response,
+      ));
+    } catch (e) {
+      if (_history.isNotEmpty) _history.removeLast();
+      messages.add(ChatMessage(
+        text: 'Désolé, une erreur est survenue. Veuillez réessayer.',
+        isUser: false,
+      ));
+    } finally {
+      isLoading.value = false;
+      _scrollToBottom();
+    }
+  }
+
+  void sendQuickMessage(String text) {
+    textController.text = text;
+    sendMessage();
+  }
+
+  void searchMedication(String name) {
+    Get.toNamed(AppRoutes.MEDICATION_SEARCH, arguments: {'searchQuery': name});
+  }
+
+  void clearChat() {
+    Get.dialog(AlertDialog(
+      title: const Text('Effacer la conversation'),
+      content: const Text(
+          'Voulez-vous supprimer tout l\'historique de cette conversation ?'),
+      actions: [
+        TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () {
+            messages.clear();
+            _history.clear();
+            _addWelcomeMessage();
+            Get.back();
+            Get.snackbar('Effacé', 'Conversation supprimée',
+                snackPosition: SnackPosition.BOTTOM);
+          },
+          child: const Text('Effacer'),
+        ),
+      ],
+    ));
+  }
+
+  // ─── Private helpers ──────────────────────────────────────
+
   void _addWelcomeMessage() {
     messages.add(ChatMessage(
       text: '''Bonjour! 👋 Je suis votre assistant santé Sihati.
@@ -56,110 +170,13 @@ Je peux vous aider avec:
 • Conseils pour vos symptômes
 • Informations sur les médicaments
 • Suggestions de spécialistes à consulter
-• Vérification d'interactions médicamenteuses
+• Vérification d\'interactions médicamenteuses
 
-Comment puis-je vous aider aujourd'hui?
+Comment puis-je vous aider aujourd\'hui?
 
-⚠️ Rappel: Mes conseils ne remplacent pas l'avis d'un médecin.''',
+⚠️ Rappel: Mes conseils ne remplacent pas l\'avis d\'un médecin.''',
       isUser: false,
     ));
-  }
-
-  /// Send user message and get AI response
-  Future<void> sendMessage() async {
-    final text = textController.text.trim();
-    if (text.isEmpty) return;
-
-    // Add user message
-    messages.add(ChatMessage(text: text, isUser: true));
-    textController.clear();
-
-    // Scroll to bottom
-    _scrollToBottom();
-
-    // Show loading
-    isLoading.value = true;
-
-    try {
-      // Get AI response
-      final response = await aiService.sendQuery(text);
-
-      // Check if query is about symptoms - suggest medications
-      List<String>? suggestions;
-      if (_isSymptomQuery(text)) {
-        suggestions = await aiService.getMedicationSuggestions(text);
-      }
-
-      // Add AI response
-      messages.add(ChatMessage(
-        text: response,
-        isUser: false,
-        medicationSuggestions: suggestions,
-      ));
-
-      _scrollToBottom();
-    } catch (e) {
-      messages.add(ChatMessage(
-        text: 'Désolé, une erreur est survenue. Veuillez réessayer.',
-        isUser: false,
-      ));
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /// Quick action: Check drug interaction
-  Future<void> checkInteraction(String med1, String med2) async {
-    textController.text = 'Puis-je prendre $med1 avec $med2 ?';
-    await sendMessage();
-  }
-
-  /// Quick action: Get medication info
-  Future<void> getMedicationInfo(String medicationName) async {
-    textController.text = 'C\'est quoi $medicationName ?';
-    await sendMessage();
-  }
-
-  /// Navigate to medication search with AI suggestion
-  void searchMedication(String medicationName) {
-    Get.toNamed(
-      AppRoutes.MEDICATION_SEARCH,
-      arguments: {'searchQuery': medicationName},
-    );
-  }
-
-  /// Clear chat history
-  void clearChat() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Effacer la conversation'),
-        content: const Text(
-          'Voulez-vous supprimer tout l\'historique de cette conversation ?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Annuler'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () {
-              messages.clear();
-              _addWelcomeMessage();
-              Get.back();
-              Get.snackbar(
-                'Effacé',
-                'Conversation supprimée',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-            child: const Text('Effacer'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _scrollToBottom() {
@@ -174,31 +191,11 @@ Comment puis-je vous aider aujourd'hui?
     });
   }
 
-  bool _isSymptomQuery(String text) {
-    final symptomKeywords = [
-      'mal',
-      'douleur',
-      'fièvre',
-      'toux',
-      'rhume',
-      'grippe',
-      'maux',
-      'symptom',
-      'souffre',
-      'malade',
-      'fatigue',
-    ];
-
-    return symptomKeywords
-        .any((keyword) => text.toLowerCase().contains(keyword));
-  }
-
-  /// Quick symptom suggestions
-  final quickSymptoms = [
-    'J\'ai mal à la tête',
-    'J\'ai de la fièvre',
-    'J\'ai mal au ventre',
-    'J\'ai la grippe',
-    'J\'ai une toux',
+  final quickSymptoms = const [
+    "J'ai mal à la tête",
+    "J'ai de la fièvre",
+    "J'ai mal au ventre",
+    "J'ai la grippe",
+    "J'ai une toux",
   ];
 }

@@ -122,6 +122,72 @@ export interface MedicationSearchResult {
 }
 
 // ============================================================
+// AI types
+// ============================================================
+
+export interface ChatHistoryItem {
+  role: 'user' | 'model';
+  parts: { text: string }[];
+}
+
+export type UrgencyLevel = 'low' | 'medium' | 'high' | 'emergency';
+
+export interface PharmacyStock {
+  pharmacyId: number;
+  pharmacyName: string;
+  wilaya: string;
+  phone: string;
+  isOnDutyTonight: boolean;
+  inStock: boolean;
+  price: number | null;
+  distance?: number; // km, only if location provided
+}
+
+export interface AIMedicationResult {
+  name: string;
+  genericName: string | null;
+  category: string | null;
+  requiresPrescription: boolean;
+  basePrice: number | null;
+  foundInDb: boolean;
+  availableInPharmacies: PharmacyStock[];
+}
+
+export interface ChatResponse {
+  reply: string;
+  urgency: UrgencyLevel;
+  isSymptomRelated: boolean;
+  suggestedSpecialty: string | null;
+  medicationSuggestions: AIMedicationResult[];
+}
+
+export interface InteractionResponse {
+  safe: boolean;
+  severity: 'none' | 'mild' | 'moderate' | 'severe' | 'unknown';
+  reply: string;
+}
+
+export interface MedicationInfoResponse {
+  reply: string;
+  usage: string;
+  dosage: string;
+  warnings: string;
+  foundInDb: boolean;
+  dbData?: {
+    name: string;
+    genericName: string | null;
+    price: number | null;
+    requiresPrescription: boolean;
+  };
+}
+
+export interface SpecialtyResponse {
+  specialty: string;
+  reason: string;
+  urgency: UrgencyLevel;
+}
+
+// ============================================================
 // JWT Payload
 // ============================================================
 

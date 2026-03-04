@@ -29,8 +29,13 @@ class AppRoutes {
 
   // AI Assistant
   static const String AI_ASSISTANT = '/ai-assistant';
+  static const HISTORY = '/ai-history';
 
   // Settings
   static const String SETTINGS = '/settings';
   static const String ABOUT = '/about';
+
+  // Appointments
+  static const String BOOK_APPOINTMENT = '/book-appointment';
+  static const String APPOINTMENTS = '/appointments';
 }
