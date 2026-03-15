@@ -186,6 +186,8 @@ class MedicationSearchScreen extends GetView<MedicationSearchController> {
             child: MedicationResultCard(
               result: result,
               onPharmacyTap: controller.goToPharmacyDetail,
+              onDetailTap: () =>
+                  controller.goToMedicationDetail(result.medication.name),
             ),
           );
         },

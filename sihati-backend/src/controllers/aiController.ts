@@ -94,6 +94,36 @@ export const checkInteraction = async (
   }
 };
 
+// ─── POST /api/ai/ask-medication ──────────────────────────────
+// Body: { medicationName, question }
+export const askMedicationQuestion = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { medicationName, question } = req.body;
+
+    if (!medicationName || String(medicationName).trim().length < 2) {
+      ResponseHandler.badRequest(res, 'Veuillez fournir un nom de médicament.');
+      return;
+    }
+    if (!question || String(question).trim().length < 3) {
+      ResponseHandler.badRequest(res, 'Veuillez poser une question.');
+      return;
+    }
+
+    const result = await aiService.askMedicationQuestion(
+      String(medicationName).trim(),
+      String(question).trim()
+    );
+
+    ResponseHandler.success(res, result, 'Réponse générée.');
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ─── POST /api/ai/medication-info ─────────────────────────────
 // Body: { medication }
 export const getMedicationInfo = async (

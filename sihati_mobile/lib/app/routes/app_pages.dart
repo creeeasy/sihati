@@ -8,6 +8,8 @@ import 'package:sihati_mobile/modules/appointments/bindings/my_appointments_bind
 import 'package:sihati_mobile/modules/appointments/views/book_appointment_screen.dart';
 import 'package:sihati_mobile/modules/appointments/views/my_appointments_screen.dart';
 import 'package:sihati_mobile/modules/favorites/views/favorites_screen.dart';
+import 'package:sihati_mobile/modules/medications/bindings/medication_detail_binding.dart';
+import 'package:sihati_mobile/modules/medications/views/medication_detail_screen.dart';
 import 'app_routes.dart';
 
 // Splash
@@ -139,9 +141,14 @@ class AppPages {
     ),
 
     GetPage(
-      name: AppRoutes.APPOINTMENTS,
+      name: AppRoutes.MY_APPOINTMENTS,
       page: () => const MyAppointmentsScreen(),
       binding: MyAppointmentsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.MEDICATION_DETAIL,
+      page: () => const MedicationDetailScreen(),
+      binding: MedicationDetailBinding(),
     ),
   ];
 }

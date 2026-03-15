@@ -1,5 +1,5 @@
 import model from '../config/gemini';
-import { Medication, Pharmacy, PharmacyMedication } from '../models';
+import { Medication, Pharmacy } from '../models';
 import { Op } from 'sequelize';
 import {
   ChatHistoryItem,
@@ -77,14 +77,18 @@ Réponds UNIQUEMENT avec un JSON valide (sans markdown):
 `.trim();
 
 const MED_INFO_PROMPT = (name: string, dbContext: string) => `
-Donne des informations sur le médicament "${name}" disponible en Algérie.
+Tu es un pharmacien expert en Algérie. Donne des informations détaillées sur le médicament "${name}".
 ${dbContext ? `Données de notre base: ${dbContext}` : ''}
-Réponds UNIQUEMENT avec un JSON valide (sans markdown):
+Réponds UNIQUEMENT avec un JSON valide (sans markdown), tous les textes en français:
 {
-  "reply": "Résumé utile pour le patient en français",
-  "usage": "Utilisation principale",
-  "dosage": "Dosage habituel adulte",
-  "warnings": "Précautions et contre-indications importantes"
+  "reply": "Résumé court et utile pour le patient (2-3 phrases)",
+  "usage": "Pour quelles maladies ou symptômes ce médicament est utilisé",
+  "contraindications": "Qui ne doit pas prendre ce médicament",
+  "dosage": "Dosage adulte standard, fréquence et durée",
+  "sideEffects": "Effets secondaires courants et graves",
+  "pregnancy": "Sécurité pendant la grossesse et l'allaitement",
+  "interactions": "Médicaments à éviter avec celui-ci",
+  "warnings": "Précautions importantes, conservation, ordonnance requise oui/non"
 }
 `.trim();
 
@@ -158,10 +162,13 @@ class AIService {
         suggestedSpecialty: parsed.suggestedSpecialty ?? null,
         medicationSuggestions,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('AIService.sendQuery error:', error);
+      const is429 = error?.status === 429 || error?.message?.includes('429');
       return {
-        reply: "Désolé, je n'arrive pas à traiter votre demande. Veuillez réessayer.",
+        reply: is429
+          ? "Le service IA est temporairement surchargé. Veuillez réessayer dans quelques instants."
+          : "Désolé, je n'arrive pas à traiter votre demande. Veuillez réessayer.",
         urgency: 'low',
         isSymptomRelated: false,
         suggestedSpecialty: null,
@@ -306,28 +313,68 @@ class AIService {
       const parsed = safeParseJSON<any>(result.response.text(), null);
 
       return {
-        reply: parsed?.reply ?? result.response.text(),
-        usage: parsed?.usage ?? '',
-        dosage: parsed?.dosage ?? '',
-        warnings: parsed?.warnings ?? '',
-        foundInDb: !!dbMed,
+        reply:             parsed?.reply ?? result.response.text(),
+        usage:             parsed?.usage ?? '',
+        contraindications: parsed?.contraindications ?? '',
+        dosage:            parsed?.dosage ?? '',
+        sideEffects:       parsed?.sideEffects ?? '',
+        pregnancy:         parsed?.pregnancy ?? '',
+        interactions:      parsed?.interactions ?? '',
+        warnings:          parsed?.warnings ?? '',
+        foundInDb:         !!dbMed,
         dbData: dbMed
           ? {
-              name: dbMed.name,
-              genericName: dbMed.genericName ?? null,
-              price: dbMed.price ? Number(dbMed.price) : null,
+              name:                 dbMed.name,
+              genericName:          dbMed.genericName ?? null,
+              price:                dbMed.price ? Number(dbMed.price) : null,
               requiresPrescription: dbMed.requiresPrescription,
+              category:             dbMed.category ?? null,
+              dosageForm:           dbMed.dosageForm ?? null,
+              strength:             dbMed.strength ?? null,
             }
           : undefined,
       };
     } catch (error) {
       console.error('AIService.getMedicationInfo error:', error);
       return {
-        reply: 'Impossible de récupérer les informations.',
-        usage: '',
-        dosage: '',
-        warnings: '',
-        foundInDb: false,
+        reply:             'Impossible de récupérer les informations.',
+        usage:             '',
+        contraindications: '',
+        dosage:            '',
+        sideEffects:       '',
+        pregnancy:         '',
+        interactions:      '',
+        warnings:          '',
+        foundInDb:         false,
+      };
+    }
+  }
+
+  // ── Ask medication question ──────────────────────────────────
+
+  async askMedicationQuestion(medicationName: string, question: string): Promise<{ answer: string }> {
+    try {
+      const prompt = `
+Tu es un pharmacien expert en Algérie. Un patient te pose une question sur le médicament "${medicationName}".
+
+Question: "${question}"
+
+Réponds en français, de façon claire et concise (2-4 phrases max).
+Ne donne pas de diagnostic médical. Si la question dépasse tes compétences, recommande de consulter un médecin.
+Réponds UNIQUEMENT avec un JSON valide (sans markdown):
+{ "answer": "Ta réponse ici" }
+`.trim();
+
+      const result = await model.generateContent(prompt);
+      const parsed = safeParseJSON<any>(result.response.text(), null);
+
+      return {
+        answer: parsed?.answer ?? result.response.text(),
+      };
+    } catch (error) {
+      console.error('AIService.askMedicationQuestion error:', error);
+      return {
+        answer: 'Désolé, impossible de répondre à cette question. Consultez un pharmacien.',
       };
     }
   }

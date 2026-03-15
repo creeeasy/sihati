@@ -10,15 +10,13 @@ import '../../app/constants/storage_keys.dart';
 class StorageService extends GetxService {
   late SharedPreferences _prefs;
 
-  /// Initialize service - MUST be called at app startup
   Future<StorageService> init() async {
     _prefs = await SharedPreferences.getInstance();
     return this;
   }
 
-  // ==================== AUTH TOKEN ====================
+  // ─── Auth Token ───────────────────────────────────────────────
 
-  /// Save authentication token
   Future<void> saveToken(String token) async {
     try {
       await _prefs.setString(StorageKeys.TOKEN, token);
@@ -27,7 +25,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Get authentication token
   Future<String?> getToken() async {
     try {
       return _prefs.getString(StorageKeys.TOKEN);
@@ -37,7 +34,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Remove authentication token
   Future<void> removeToken() async {
     try {
       await _prefs.remove(StorageKeys.TOKEN);
@@ -46,33 +42,27 @@ class StorageService extends GetxService {
     }
   }
 
-  // ==================== USER DATA ====================
+  // ─── User Data ────────────────────────────────────────────────
 
-  /// Save user data
   Future<void> saveUser(UserModel user) async {
     try {
-      final userJson = json.encode(user.toJson());
-      await _prefs.setString(StorageKeys.USER_DATA, userJson);
+      await _prefs.setString(StorageKeys.USER_DATA, json.encode(user.toJson()));
     } catch (e) {
       print('Error saving user: $e');
     }
   }
 
-  /// Get user data
   Future<UserModel?> getUser() async {
     try {
       final userJson = _prefs.getString(StorageKeys.USER_DATA);
       if (userJson == null) return null;
-
-      final userMap = json.decode(userJson) as Map<String, dynamic>;
-      return UserModel.fromJson(userMap);
+      return UserModel.fromJson(json.decode(userJson) as Map<String, dynamic>);
     } catch (e) {
       print('Error getting user: $e');
       return null;
     }
   }
 
-  /// Remove user data
   Future<void> removeUser() async {
     try {
       await _prefs.remove(StorageKeys.USER_DATA);
@@ -81,43 +71,133 @@ class StorageService extends GetxService {
     }
   }
 
-  // ==================== AUTH STATUS ====================
-
-  /// Check if user is logged in (has valid token)
   Future<bool> isLoggedIn() async {
     try {
       final token = await getToken();
       return token != null && token.isNotEmpty;
     } catch (e) {
-      print('Error checking login status: $e');
       return false;
     }
   }
 
-  // ==================== CLEAR DATA ====================
-
-  /// Clear all authentication data (token + user)
   Future<void> clearAuth() async {
+    await removeToken();
+    await removeUser();
+  }
+
+  // ─── Medication History ───────────────────────────────────────
+
+  /// Save a viewed medication to local history (max 50 entries)
+  Future<void> addToMedicationHistory(Map<String, dynamic> entry) async {
     try {
-      await removeToken();
-      await removeUser();
+      final raw = _prefs.getString(StorageKeys.MEDICATION_HISTORY);
+      final List<dynamic> history = raw != null ? json.decode(raw) : [];
+
+      // Remove duplicate if same medication already in history
+      history.removeWhere((e) => e['name'] == entry['name']);
+
+      // Add to front
+      history.insert(0, entry);
+
+      // Keep only last 50
+      final trimmed = history.take(50).toList();
+
+      await _prefs.setString(
+          StorageKeys.MEDICATION_HISTORY, json.encode(trimmed));
     } catch (e) {
-      print('Error clearing auth: $e');
+      print('Error saving medication history: $e');
     }
   }
 
-  /// Clear all app data
-  Future<void> clearAll() async {
+  Future<List<Map<String, dynamic>>> getMedicationHistory() async {
     try {
-      await _prefs.clear();
+      final raw = _prefs.getString(StorageKeys.MEDICATION_HISTORY);
+      if (raw == null) return [];
+      final List<dynamic> list = json.decode(raw);
+      return list.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('Error clearing all data: $e');
+      print('Error getting medication history: $e');
+      return [];
     }
   }
 
-  // ==================== GENERIC METHODS ====================
+  Future<void> clearMedicationHistory() async {
+    try {
+      await _prefs.remove(StorageKeys.MEDICATION_HISTORY);
+    } catch (e) {
+      print('Error clearing medication history: $e');
+    }
+  }
 
-  /// Save string value
+  // ─── Favorite Medications ─────────────────────────────────────
+
+  /// Get list of favorite medication names
+  Future<List<String>> getFavoriteMedications() async {
+    try {
+      final raw = _prefs.getString(StorageKeys.FAVORITE_MEDICATIONS);
+      if (raw == null) return [];
+      final List<dynamic> list = json.decode(raw);
+      return list.cast<String>();
+    } catch (e) {
+      print('Error getting favorite medications: $e');
+      return [];
+    }
+  }
+
+  /// Add medication to favorites
+  Future<void> addFavoriteMedication(String medicationName) async {
+    try {
+      final favorites = await getFavoriteMedications();
+      if (!favorites.contains(medicationName)) {
+        favorites.add(medicationName);
+        await _prefs.setString(
+          StorageKeys.FAVORITE_MEDICATIONS,
+          json.encode(favorites),
+        );
+      }
+    } catch (e) {
+      print('Error adding favorite medication: $e');
+      throw Exception('Failed to add favorite medication');
+    }
+  }
+
+  /// Remove medication from favorites
+  Future<void> removeFavoriteMedication(String medicationName) async {
+    try {
+      final favorites = await getFavoriteMedications();
+      favorites.remove(medicationName);
+      await _prefs.setString(
+        StorageKeys.FAVORITE_MEDICATIONS,
+        json.encode(favorites),
+      );
+    } catch (e) {
+      print('Error removing favorite medication: $e');
+      throw Exception('Failed to remove favorite medication');
+    }
+  }
+
+  /// Check if medication is in favorites
+  Future<bool> isFavoriteMedication(String medicationName) async {
+    try {
+      final favorites = await getFavoriteMedications();
+      return favorites.contains(medicationName);
+    } catch (e) {
+      print('Error checking favorite medication: $e');
+      return false;
+    }
+  }
+
+  /// Clear all favorite medications
+  Future<void> clearFavoriteMedications() async {
+    try {
+      await _prefs.remove(StorageKeys.FAVORITE_MEDICATIONS);
+    } catch (e) {
+      print('Error clearing favorite medications: $e');
+    }
+  }
+
+  // ─── Generic ──────────────────────────────────────────────────
+
   Future<void> saveString(String key, String value) async {
     try {
       await _prefs.setString(key, value);
@@ -126,7 +206,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Get string value
   Future<String?> getString(String key) async {
     try {
       return _prefs.getString(key);
@@ -136,7 +215,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Save boolean value
   Future<void> saveBool(String key, bool value) async {
     try {
       await _prefs.setBool(key, value);
@@ -145,7 +223,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Get boolean value
   Future<bool?> getBool(String key) async {
     try {
       return _prefs.getBool(key);
@@ -155,7 +232,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Save integer value
   Future<void> saveInt(String key, int value) async {
     try {
       await _prefs.setInt(key, value);
@@ -164,7 +240,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Get integer value
   Future<int?> getInt(String key) async {
     try {
       return _prefs.getInt(key);
@@ -174,7 +249,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Save double value
   Future<void> saveDouble(String key, double value) async {
     try {
       await _prefs.setDouble(key, value);
@@ -183,7 +257,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Get double value
   Future<double?> getDouble(String key) async {
     try {
       return _prefs.getDouble(key);
@@ -193,7 +266,6 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Remove specific key
   Future<void> remove(String key) async {
     try {
       await _prefs.remove(key);
@@ -202,13 +274,19 @@ class StorageService extends GetxService {
     }
   }
 
-  /// Check if key exists
   bool hasKey(String key) {
     try {
       return _prefs.containsKey(key);
     } catch (e) {
-      print('Error checking key: $e');
       return false;
+    }
+  }
+
+  Future<void> clearAll() async {
+    try {
+      await _prefs.clear();
+    } catch (e) {
+      print('Error clearing all data: $e');
     }
   }
 }

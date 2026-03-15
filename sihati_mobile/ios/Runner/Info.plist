@@ -45,5 +45,21 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- ⬇️ MAPBOX CONFIGURATION - ADD THESE LINES ⬇️ -->
+	<key>MBXAccessToken</key>
+	<string>REMOVED</string>
+	
+	<!-- LOCATION PERMISSIONS -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Sihati utilise votre position pour trouver les médecins et pharmacies à proximité</string>
+	
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Sihati utilise votre position pour vous montrer les services de santé proches</string>
+	
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Sihati utilise votre position pour améliorer votre expérience</string>
+	<!-- ⬆️ END MAPBOX CONFIGURATION ⬆️ -->
+	
 </dict>
 </plist>

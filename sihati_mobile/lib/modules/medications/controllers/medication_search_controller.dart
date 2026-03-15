@@ -18,18 +18,25 @@ class MedicationSearchController extends GetxController {
   final hasSearched = false.obs;
 
   @override
+  void onInit() {
+    super.onInit();
+    // Auto-fill search from arguments (e.g. from AI chat or medication detail)
+    final args = Get.arguments;
+    if (args is Map && args['searchQuery'] != null) {
+      searchController.text = args['searchQuery'] as String;
+      searchMedication();
+    }
+  }
+
+  @override
   void onClose() {
     searchController.dispose();
     super.onClose();
   }
 
-  // Search medication
-  // In MedicationSearchController, update searchMedication method:
-
   Future<void> searchMedication() async {
     final query = searchController.text.trim();
 
-    // Validate search term (min 2 characters)
     if (query.length < 2) {
       Get.snackbar(
         'Erreur de recherche',
@@ -39,7 +46,6 @@ class MedicationSearchController extends GetxController {
       return;
     }
 
-    // Don't start another search if already loading
     if (isLoading.value) return;
 
     try {
@@ -68,19 +74,15 @@ class MedicationSearchController extends GetxController {
     }
   }
 
-  // Toggle location usage
   void toggleLocation() {
     useLocation.value = !useLocation.value;
-    // If we already have results, re-sort them based on location preference
     if (hasSearched.value && searchResults.isNotEmpty) {
       _reSortResults();
     }
   }
 
-  // Re-sort results based on location preference
   Future<void> _reSortResults() async {
     if (useLocation.value) {
-      // Get current location and re-sort
       try {
         isLoading.value = true;
         final sortedResults = await medicationRepository.sortResultsByDistance(
@@ -88,19 +90,28 @@ class MedicationSearchController extends GetxController {
         );
         searchResults.value = sortedResults;
       } catch (e) {
-        // Silently fail - keep original order
+        // Silently fail — keep original order
       } finally {
         isLoading.value = false;
       }
     }
   }
 
-  // Navigate to pharmacy detail
+  // ─── Navigation ───────────────────────────────────────────
+
   void goToPharmacyDetail(int pharmacyId) {
     Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
   }
 
-  // Clear search
+  void goToMedicationDetail(String medicationName) {
+    Get.toNamed(
+      AppRoutes.MEDICATION_DETAIL,
+      arguments: {'medicationName': medicationName},
+    );
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────
+
   void clearSearch() {
     searchController.clear();
     searchResults.clear();
@@ -108,7 +119,6 @@ class MedicationSearchController extends GetxController {
     errorMessage.value = '';
   }
 
-  // Get stock status message
   String getStockMessage(int count) {
     if (count == 0) return 'Non disponible';
     if (count == 1) return 'Disponible dans 1 pharmacie';

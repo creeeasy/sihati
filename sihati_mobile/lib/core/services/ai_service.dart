@@ -93,6 +93,7 @@ class InteractionResponse {
 }
 
 class MedicationInfoResponse {
+  // Original fields — unchanged
   final String reply;
   final String usage;
   final String dosage;
@@ -100,13 +101,23 @@ class MedicationInfoResponse {
   final bool foundInDb;
   final Map<String, dynamic>? dbData;
 
+  // Extended fields for detail screen — default to '' if backend doesn't send them
+  final String contraindications;
+  final String sideEffects;
+  final String pregnancy;
+  final String interactions;
+
   MedicationInfoResponse.fromJson(Map<String, dynamic> j)
       : reply = j['reply'] ?? '',
         usage = j['usage'] ?? '',
         dosage = j['dosage'] ?? '',
         warnings = j['warnings'] ?? '',
         foundInDb = j['foundInDb'] ?? false,
-        dbData = j['dbData'];
+        dbData = j['dbData'],
+        contraindications = j['contraindications'] ?? '',
+        sideEffects = j['sideEffects'] ?? '',
+        pregnancy = j['pregnancy'] ?? '',
+        interactions = j['interactions'] ?? '';
 }
 
 class SpecialtyResponse {
@@ -222,20 +233,58 @@ class AIService extends GetxService {
   }
 
   // ─── POST /api/ai/interaction ──────────────────────────────
-  Future<InteractionResponse> checkDrugInteraction(
-      String med1, String med2) async {
+  Future<String> checkDrugInteraction({
+    required String medication1,
+    required String medication2,
+  }) async {
     try {
-      final data =
-          await _post('/api/ai/interaction', {'med1': med1, 'med2': med2});
-      return InteractionResponse.fromJson(data);
+      final data = await _post(
+        '/api/ai/interaction',
+        {'med1': medication1, 'med2': medication2},
+      );
+      final response = InteractionResponse.fromJson(data);
+
+      if (response.safe) {
+        return '✅ Aucune interaction connue entre $medication1 et $medication2.\n\n'
+            'Consultez toujours votre médecin ou pharmacien avant de combiner des médicaments.';
+      }
+
+      final String emoji;
+      switch (response.severity) {
+        case 'high':
+          emoji = '🚫';
+          break;
+        case 'moderate':
+          emoji = '⚠️';
+          break;
+        default:
+          emoji = '⚡';
+      }
+
+      return '$emoji Interaction détectée (${response.severity})\n\n'
+          '${response.reply}\n\n'
+          '⚠️ Consultez votre médecin ou pharmacien.';
     } catch (e) {
       print('❌ checkDrugInteraction error: $e');
-      return InteractionResponse.fromJson({
-        'safe': true,
-        'severity': 'unknown',
-        'reply':
-            "Impossible de vérifier l'interaction. Consultez un pharmacien.",
+      return "Impossible de vérifier l'interaction. Consultez un pharmacien.";
+    }
+  }
+
+  // ─── POST /api/ai/ask-medication ────────────────────────────
+  Future<String> askMedicationQuestion({
+    required String medicationName,
+    required String question,
+  }) async {
+    try {
+      final data = await _post('/api/ai/ask-medication', {
+        'medicationName': medicationName,
+        'question': question,
       });
+      return data['answer'] as String? ??
+          'Désolé, je ne peux pas répondre à cette question.';
+    } catch (e) {
+      print('❌ askMedicationQuestion error: $e');
+      return 'Désolé, une erreur est survenue. Veuillez réessayer.';
     }
   }
 

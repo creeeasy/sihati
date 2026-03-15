@@ -5,7 +5,7 @@ import '../../../app/theme/app_text_styles.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/sihati_map.dart';
+import '../../../core/widgets/sihati_mapbox.dart';
 import '../controllers/pharmacy_detail_controller.dart';
 
 class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
@@ -14,9 +14,6 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Détails de la pharmacie'),
-      ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const LoadingIndicator();
@@ -36,268 +33,286 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           );
         }
 
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            pharmacy.pharmacyName,
-                            style: AppTextStyles.h4.copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                        ),
-                        if (pharmacy.isOnDutyTonight)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.nights_stay,
-                                  size: 16,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'DE GARDE',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Action Buttons
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Appeler',
-                        icon: Icons.phone,
-                        onPressed: controller.callPharmacy,
-                        height: 48,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    if (pharmacy.hasWhatsapp)
-                      Expanded(
-                        child: CustomButton(
-                          text: 'WhatsApp',
-                          icon: Icons.chat,
-                          backgroundColor: const Color(0xFF25D366),
-                          onPressed: controller.openWhatsApp,
-                          height: 48,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-
-              // Map Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.map,
-                            color: AppColors.primary, size: 24),
-                        const SizedBox(width: 12),
-                        Text("Localisation sur la carte",
-                            style: AppTextStyles.h6),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SihatiMap(
-                      latitude: pharmacy.latitude,
-                      longitude: pharmacy.longitude,
-                      markerTitle: pharmacy.pharmacyName,
-                      height: 220,
-                      zoom: 15,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Address Section
-              _buildSection(
-                title: 'Adresse',
-                icon: Icons.location_on,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      pharmacy.fullAddress,
-                      style: AppTextStyles.bodyMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    CustomButton(
-                      text: 'Itinéraire',
-                      icon: Icons.directions,
-                      isOutlined: true,
-                      onPressed: controller.getDirections,
-                      height: 40,
-                    ),
-                  ],
-                ),
-              ),
-
-              const Divider(height: 1),
-
-              // Contact Section
-              _buildSection(
-                title: 'Contact',
-                icon: Icons.phone,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInfoRow(
-                      'Téléphone',
-                      pharmacy.phone,
-                      Icons.phone,
-                    ),
-                    if (pharmacy.hasWhatsapp) ...[
-                      const SizedBox(height: 8),
-                      _buildInfoRow(
-                        'WhatsApp',
-                        pharmacy.whatsappNumber!,
-                        Icons.chat,
-                        color: const Color(0xFF25D366),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-              const Divider(height: 1),
-
-              // Opening Hours Section
-              if (controller.openingHoursList.isNotEmpty) ...[
-                _buildSection(
-                  title: 'Horaires d\'ouverture',
-                  icon: Icons.access_time,
-                  child: Column(
-                    children: controller.openingHoursList
-                        .map((entry) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    entry.key,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Text(
-                                    entry.value,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: entry.value == 'Fermé'
-                                          ? AppColors.error
-                                          : AppColors.success,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))
-                        .toList(),
+        return Stack(
+          children: [
+            Column(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: SihatiMapbox(
+                    latitude: pharmacy.latitude,
+                    longitude: pharmacy.longitude,
+                    markerTitle: pharmacy.pharmacyName,
+                    height: double.infinity,
+                    zoom: 15,
                   ),
                 ),
-                const Divider(height: 1),
+                Expanded(
+                  flex: 5,
+                  child: _buildDetailsSheet(pharmacy),
+                ),
               ],
-
-              // Distance info
-              if (pharmacy.distance != null)
-                _buildSection(
-                  title: 'Distance',
-                  icon: Icons.directions_walk,
-                  child: Text(
-                    'À ${pharmacy.formattedDistance} de votre position',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              left: 8,
+              child: _buildBackButton(),
+            ),
+            if (pharmacy.isOnDutyTonight)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 8,
+                child: _buildOnDutyBadge(),
+              ),
+          ],
         );
       }),
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.primary, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: AppTextStyles.h6,
-              ),
-            ],
+  Widget _buildBackButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 12),
-          child,
+        ],
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () => Get.back(),
+      ),
+    );
+  }
+
+  Widget _buildOnDutyBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.nights_stay,
+            size: 18,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'DE GARDE',
+            style: AppTextStyles.caption.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value, IconData icon,
-      {Color? color}) {
+  Widget _buildDetailsSheet(pharmacy) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              pharmacy.pharmacyName,
+              style: AppTextStyles.h4.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    pharmacy.fullAddress,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (pharmacy.distance != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.directions_walk,
+                      size: 16, color: AppColors.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    'À ${pharmacy.formattedDistance}',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: CustomButton(
+                    text: 'Appeler',
+                    icon: Icons.phone,
+                    onPressed: controller.callPharmacy,
+                    height: 50,
+                  ),
+                ),
+                if (pharmacy.hasWhatsapp) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: CustomButton(
+                      text: 'WhatsApp',
+                      icon: Icons.chat,
+                      backgroundColor: const Color(0xFF25D366),
+                      onPressed: controller.openWhatsApp,
+                      height: 50,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 20),
+            CustomButton(
+              text: 'Obtenir l\'itinéraire',
+              icon: Icons.directions,
+              isOutlined: true,
+              onPressed: controller.getDirections,
+              height: 50,
+            ),
+            if (controller.openingHoursList.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.access_time,
+                      color: AppColors.primary, size: 22),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Horaires d\'ouverture',
+                    style: AppTextStyles.h6,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ...controller.openingHoursList.map((entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          entry.key,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          entry.value,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: entry.value == 'Fermé'
+                                ? AppColors.error
+                                : AppColors.success,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+            ],
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Icon(Icons.phone, color: AppColors.primary, size: 22),
+                const SizedBox(width: 12),
+                Text(
+                  'Contact',
+                  style: AppTextStyles.h6,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildContactRow(
+              icon: Icons.phone,
+              label: 'Téléphone',
+              value: pharmacy.phone,
+            ),
+            if (pharmacy.hasWhatsapp) ...[
+              const SizedBox(height: 12),
+              _buildContactRow(
+                icon: Icons.chat,
+                label: 'WhatsApp',
+                value: pharmacy.whatsappNumber!,
+                color: const Color(0xFF25D366),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? color,
+  }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: color ?? AppColors.textSecondary),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: (color ?? AppColors.primary).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: color ?? AppColors.primary,
+          ),
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -306,12 +321,15 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               Text(
                 label,
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textHint,
+                  color: Colors.grey[600],
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
                 value,
-                style: AppTextStyles.bodyMedium,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

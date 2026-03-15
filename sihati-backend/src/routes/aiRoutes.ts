@@ -8,6 +8,7 @@ import {
   validateSymptoms,
   validateDrugInteraction,
   validateMedicationName,
+  validateAskMedication,
 } from '../validators/aiValidator';
 
 const router = Router();
@@ -28,6 +29,9 @@ router.post('/medication-info', validate(validateMedicationName), aiController.g
 
 // POST /api/ai/specialty
 router.post('/specialty', validate(validateSymptoms), aiController.suggestSpecialty);
+
+// POST /api/ai/ask-medication
+router.post('/ask-medication', validate(validateAskMedication), aiController.askMedicationQuestion);
 
 // GET /api/ai/history — requires auth
 router.get('/history', authenticateToken, aiController.getHistory);

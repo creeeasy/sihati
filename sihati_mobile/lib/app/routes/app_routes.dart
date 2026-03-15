@@ -19,7 +19,7 @@ class AppRoutes {
 
   // Medication routes
   static const String MEDICATION_SEARCH = '/medications/search';
-
+  static const MEDICATION_DETAIL = '/medication-detail';
   // Doctor routes
   static const String DOCTOR_LIST = '/doctors';
   static const String DOCTOR_DETAIL = '/doctor';
@@ -37,5 +37,5 @@ class AppRoutes {
 
   // Appointments
   static const String BOOK_APPOINTMENT = '/book-appointment';
-  static const String APPOINTMENTS = '/appointments';
+  static const String MY_APPOINTMENTS = '/my-appointments';
 }

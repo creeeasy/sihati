@@ -168,16 +168,23 @@ export interface InteractionResponse {
 }
 
 export interface MedicationInfoResponse {
-  reply: string;
-  usage: string;
-  dosage: string;
-  warnings: string;
-  foundInDb: boolean;
+  reply:             string;
+  usage:             string;
+  contraindications: string;
+  dosage:            string;
+  sideEffects:       string;
+  pregnancy:         string;
+  interactions:      string;
+  warnings:          string;
+  foundInDb:         boolean;
   dbData?: {
-    name: string;
-    genericName: string | null;
-    price: number | null;
+    name:                 string;
+    genericName:          string | null;
+    price:                number | null;
     requiresPrescription: boolean;
+    category:             string | null;
+    dosageForm:           string | null;
+    strength:             string | null;
   };
 }
 

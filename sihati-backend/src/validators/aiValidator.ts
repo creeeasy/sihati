@@ -46,3 +46,15 @@ export const validateMedicationName = Joi.object({
     'any.required': 'Le nom du médicament est requis.',
   }),
 });
+
+export const validateAskMedication = Joi.object({
+  medicationName: Joi.string().min(2).required().messages({
+    'string.min': 'Le nom du médicament est invalide.',
+    'any.required': 'Le nom du médicament est requis.',
+  }),
+  question: Joi.string().min(3).max(500).required().messages({
+    'string.min': 'La question est trop courte.',
+    'string.max': 'La question ne peut pas dépasser 500 caractères.',
+    'any.required': 'La question est requise.',
+  }),
+});

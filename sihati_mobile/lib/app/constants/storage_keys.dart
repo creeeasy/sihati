@@ -15,4 +15,6 @@ class StorageKeys {
   // Favorites
   static const String FAVORITE_PHARMACIES = 'favorite_pharmacies';
   static const String FAVORITE_DOCTORS = 'favorite_doctors';
+  static const String FAVORITE_MEDICATIONS = 'favorite_medications';
+  static const String MEDICATION_HISTORY = 'medication_history';
 }

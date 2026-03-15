@@ -7,6 +7,7 @@ import 'core/services/storage_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/favorites_service.dart';
 import 'core/services/ai_service.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,11 @@ Future<void> initServices() async {
 
     await Get.putAsync(() => AIService().init());
     print('✓ AI service');
+
+    // NotificationService is a singleton, not a GetxService
+    // initialize() sets up channels + requests permissions
+    await NotificationService().initialize();
+    print('✓ Notification service');
 
     print('✅ All services ready!');
   } catch (e) {

@@ -1,8 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- ⬇️ PERMISSIONS - ADD THESE ⬇️ -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- ⬆️ END PERMISSIONS ⬆️ -->
+    
     <application
         android:label="sihati_mobile"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        
+        <!-- ⬇️ MAPBOX TOKEN - ADD THIS ⬇️ -->
+        <meta-data
+            android:name="MAPBOX_ACCESS_TOKEN"
+            android:value="REMOVED" />
+        <!-- ⬆️ END MAPBOX TOKEN ⬆️ -->
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
