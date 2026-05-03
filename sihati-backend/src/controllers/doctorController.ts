@@ -84,7 +84,10 @@ export const getDoctorById = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id);
+    // Handle both string and string[] cases
+    const idParam = req.params.id;
+    const id = typeof idParam === 'string' ? parseInt(idParam) : parseInt(idParam[0]);
+    
     if (isNaN(id)) {
       ResponseHandler.badRequest(res, 'ID invalide.');
       return;
@@ -145,16 +148,21 @@ export const createDoctor = async (
       next(error);
     }
   }
+
+
+
 };
 
-// PUT /api/doctors/:id (protected)
+  // PUT /api/doctors/:id (protected)
 export const updateDoctor = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id);
+    const idParam = req.params.id;
+    const id = typeof idParam === 'string' ? parseInt(idParam) : parseInt(idParam[0]);
+    
     if (isNaN(id)) {
       ResponseHandler.badRequest(res, 'ID invalide.');
       return;

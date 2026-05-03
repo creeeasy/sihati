@@ -84,7 +84,7 @@ export const getPharmacyById = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string); // Type assertion
     if (isNaN(id)) {
       ResponseHandler.badRequest(res, 'ID invalide.');
       return;
@@ -149,7 +149,7 @@ export const updatePharmacy = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string); // Type assertion
     if (isNaN(id)) {
       ResponseHandler.badRequest(res, 'ID invalide.');
       return;
@@ -173,7 +173,7 @@ export const deletePharmacy = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string); // Type assertion
     if (isNaN(id)) {
       ResponseHandler.badRequest(res, 'ID invalide.');
       return;

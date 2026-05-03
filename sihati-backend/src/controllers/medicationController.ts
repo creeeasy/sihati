@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import medicationService from '../services/medicationService';
 import { NotFoundError } from '../services/pharmacyService';
 import ResponseHandler from '../utils/responseHandler';
+import { parseIdParam } from '../utils/paramParser';
 
 // POST /api/medications/search
 export const searchMedications = async (
@@ -30,6 +31,7 @@ export const searchMedications = async (
   }
 };
 
+
 // GET /api/medications/:id
 export const getMedicationById = async (
   req: Request,
@@ -37,8 +39,8 @@ export const getMedicationById = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const id = parseIdParam(req.params.id);
+    if (!id) {
       ResponseHandler.badRequest(res, 'ID invalide.');
       return;
     }
@@ -115,10 +117,10 @@ export const updateMedicationStock = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const medicationId = parseInt(req.params.id);
+    const medicationId = parseIdParam(req.params.id);
     const { pharmacyId, inStock, quantity } = req.body;
 
-    if (isNaN(medicationId) || !pharmacyId) {
+    if (!medicationId || !pharmacyId) {
       ResponseHandler.badRequest(
         res,
         'ID médicament et pharmacyId sont requis.'
@@ -142,3 +144,4 @@ export const updateMedicationStock = async (
     }
   }
 };
+
