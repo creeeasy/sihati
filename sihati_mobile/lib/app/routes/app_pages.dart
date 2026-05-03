@@ -8,6 +8,8 @@ import 'package:sihati_mobile/modules/appointments/bindings/my_appointments_bind
 import 'package:sihati_mobile/modules/appointments/views/book_appointment_screen.dart';
 import 'package:sihati_mobile/modules/appointments/views/my_appointments_screen.dart';
 import 'package:sihati_mobile/modules/favorites/views/favorites_screen.dart';
+import 'package:sihati_mobile/modules/medical_record/bindings/medical_record_binding.dart';
+import 'package:sihati_mobile/modules/medical_record/views/medical_record_screen.dart';
 import 'package:sihati_mobile/modules/medications/bindings/medication_detail_binding.dart';
 import 'package:sihati_mobile/modules/medications/views/medication_detail_screen.dart';
 import 'app_routes.dart';
@@ -111,7 +113,7 @@ class AppPages {
     // Profile
     GetPage(
       name: AppRoutes.PROFILE,
-      page: () => const ProfileScreen(),
+      page: () => ProfileScreen(),
       binding: ProfileBinding(),
     ),
 
@@ -150,5 +152,18 @@ class AppPages {
       page: () => const MedicationDetailScreen(),
       binding: MedicationDetailBinding(),
     ),
+
+    GetPage(
+      name: AppRoutes.MEDICAL_RECORD,
+      page: () => const MedicalRecordScreen(),
+      binding: MedicalRecordBinding(),
+    ),
+/*
+    GetPage(
+      name: AppRoutes.REMINDERS,
+      page: () => const RemindersScreen(),
+      binding: RemindersBinding(),
+    ),
+    */
   ];
 }

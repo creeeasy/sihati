@@ -149,8 +149,10 @@ class MedicationResultCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Pharmacies disponibles:',
-                style: AppTextStyles.subtitle2),
+            const Text(
+              'Pharmacies disponibles:',
+              //    style: AppTextStyles.subtitle2
+            ),
             const SizedBox(height: 8),
             ...result.pharmacies.take(3).map(
                   (pharmacyStock) => Padding(
@@ -225,8 +227,10 @@ class MedicationResultCard extends StatelessWidget {
               const SizedBox(height: 16),
               Text(result.medication.name, style: AppTextStyles.h3),
               const SizedBox(height: 8),
-              const Text('Toutes les pharmacies disponibles',
-                  style: AppTextStyles.subtitle2),
+              const Text(
+                'Toutes les pharmacies disponibles',
+                // style: AppTextStyles.subtitle2
+              ),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView.builder(

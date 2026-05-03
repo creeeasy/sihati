@@ -8,18 +8,16 @@ class PharmacyListController extends GetxController {
 
   PharmacyListController({required this.pharmacyRepository});
 
-  // State
   final pharmacies = <PharmacyModel>[].obs;
   final filteredPharmacies = <PharmacyModel>[].obs;
   final isLoading = false.obs;
   final errorMessage = ''.obs;
-
-  // Filters
   final selectedWilaya = Rxn<String>();
   final showNearbyOnly = false.obs;
+  final showActiveOnly = false.obs;
   final searchQuery = ''.obs;
+  final isSearchFocused = false.obs;
 
-  // Wilayas list (Algerian provinces)
   final List<String> wilayas = [
     'Tous',
     'Adrar',
@@ -69,8 +67,22 @@ class PharmacyListController extends GetxController {
     'Naâma',
     'Aïn Témouchent',
     'Ghardaïa',
-    'Relizane',
+    'Relizane'
   ];
+
+  int get activeFiltersCount {
+    int count = 0;
+    if (showActiveOnly.value) count++;
+    if (showNearbyOnly.value) count++;
+    if (selectedWilaya.value != null && selectedWilaya.value != 'Tous') count++;
+    if (searchQuery.value.isNotEmpty) count++;
+    return count;
+  }
+
+  String get activePharmaciesCount {
+    final openCount = pharmacies.where((p) => p.isOpenNow).length;
+    return '$openCount ouvertes sur ${pharmacies.length}';
+  }
 
   @override
   void onInit() {
@@ -78,7 +90,6 @@ class PharmacyListController extends GetxController {
     loadPharmacies();
   }
 
-  /// Load all pharmacies
   Future<void> loadPharmacies() async {
     try {
       isLoading.value = true;
@@ -91,68 +102,51 @@ class PharmacyListController extends GetxController {
         final result = await pharmacyRepository.getAllPharmacies(
           wilaya: (wilaya == null || wilaya == 'Tous') ? null : wilaya,
         );
-
         pharmacies.value = result;
-        _applyFilters();
       }
+
+      _applyFilters();
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
-      Get.snackbar(
-        'Erreur',
-        errorMessage.value,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Erreur', errorMessage.value,
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Load nearby pharmacies
   Future<void> loadNearbyPharmacies() async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
-
       final result = await pharmacyRepository.getNearbyPharmacies(radius: 10);
-
       pharmacies.value = result;
       _applyFilters();
-
       Get.snackbar(
-        'Succès',
-        '${result.length} pharmacie(s) trouvée(s) à proximité',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+          'Succès', '${result.length} pharmacie(s) trouvée(s) à proximité',
+          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
-
       if (errorMessage.value.contains('permission')) {
-        Get.snackbar(
-          'Permission requise',
-          'Activez la localisation pour voir les pharmacies proches',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 4),
-        );
+        Get.snackbar('Permission requise',
+            'Activez la localisation pour voir les pharmacies proches',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 4));
       } else {
-        Get.snackbar(
-          'Erreur',
-          errorMessage.value,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar('Erreur', errorMessage.value,
+            snackPosition: SnackPosition.BOTTOM);
       }
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Filter by wilaya
   void filterByWilaya(String? wilaya) {
     selectedWilaya.value = wilaya;
     showNearbyOnly.value = false;
     loadPharmacies();
   }
 
-  /// Toggle nearby filter
   void toggleNearbyFilter() {
     showNearbyOnly.value = !showNearbyOnly.value;
     if (showNearbyOnly.value) {
@@ -161,41 +155,59 @@ class PharmacyListController extends GetxController {
     loadPharmacies();
   }
 
-  /// Search pharmacies
+  void toggleActiveFilter() {
+    showActiveOnly.value = !showActiveOnly.value;
+    _applyFilters();
+  }
+
+  void showOnlyOpenPharmacies() {
+    if (showActiveOnly.value) {
+      clearFilters();
+    } else {
+      showActiveOnly.value = true;
+      showNearbyOnly.value = false;
+      selectedWilaya.value = null;
+      searchQuery.value = '';
+      _applyFilters();
+    }
+  }
+
   void searchPharmacies(String query) {
     searchQuery.value = query;
     _applyFilters();
   }
 
-  /// Apply search filter
   void _applyFilters() {
-    if (searchQuery.value.isEmpty) {
-      filteredPharmacies.value = pharmacies;
-      return;
+    var results = pharmacies.toList();
+
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      results = results.where((pharmacy) {
+        return pharmacy.pharmacyName.toLowerCase().contains(query) ||
+            pharmacy.address.toLowerCase().contains(query) ||
+            pharmacy.wilaya.toLowerCase().contains(query);
+      }).toList();
     }
 
-    final query = searchQuery.value.toLowerCase();
-    filteredPharmacies.value = pharmacies.where((pharmacy) {
-      return pharmacy.pharmacyName.toLowerCase().contains(query) ||
-          pharmacy.address.toLowerCase().contains(query) ||
-          pharmacy.wilaya.toLowerCase().contains(query);
-    }).toList();
+    if (showActiveOnly.value) {
+      results = results.where((pharmacy) => pharmacy.isOpenNow).toList();
+    }
+
+    filteredPharmacies.value = results;
   }
 
-  /// Clear all filters
   void clearFilters() {
     selectedWilaya.value = null;
     showNearbyOnly.value = false;
+    showActiveOnly.value = false;
     searchQuery.value = '';
     loadPharmacies();
   }
 
-  /// Navigate to pharmacy details
   void goToPharmacyDetail(int pharmacyId) {
     Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
   }
 
-  /// Refresh
   Future<void> refresh() async {
     await loadPharmacies();
   }

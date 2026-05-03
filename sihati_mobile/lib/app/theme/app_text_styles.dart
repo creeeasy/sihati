@@ -8,7 +8,7 @@ class AppTextStyles {
   // ═══════════════════════════════════════════════════════════════
 
   // Primary font: Inter (modern, clean, highly readable)
-  static String get _fontFamily => GoogleFonts.inter().fontFamily!;
+  static String get _fontFamily => GoogleFonts.poppins().fontFamily!;
 
   // Alternative: Poppins (friendlier, rounder)
   // static String get _fontFamily => GoogleFonts.poppins().fontFamily!;

@@ -21,6 +21,7 @@ class ProfileController extends GetxController {
   final isEditing = false.obs;
   final errorMessage = ''.obs;
   final successMessage = ''.obs;
+  final isUpdatingChifa = false.obs; // 🆕 Chifa update state
 
   // Form controllers
   final fullNameController = TextEditingController();
@@ -199,6 +200,127 @@ class ProfileController extends GetxController {
     return true;
   }
 
+  // ============================================================
+  // 🆕 CHIFA CARD METHODS
+  // ============================================================
+
+  /// Check if user has Chifa number
+  bool hasChifa() {
+    return user.value?.hasChifa ?? false;
+  }
+
+  /// Get formatted Chifa number for display
+  String? getFormattedChifa() {
+    return user.value?.formattedChifa;
+  }
+
+  /// Get raw Chifa number (without formatting)
+  String? getRawChifa() {
+    return user.value?.chifaNumber;
+  }
+
+  /// Validate Chifa number format
+  bool isValidChifaNumber(String chifaNumber) {
+    final cleaned = chifaNumber.replaceAll(' ', '');
+    if (cleaned.isEmpty) return false;
+    return cleaned.length >= 13 &&
+        cleaned.length <= 15 &&
+        RegExp(r'^\d+$').hasMatch(cleaned);
+  }
+
+  /// Update Chifa number
+  Future<void> updateChifaNumber(String chifaNumber) async {
+    try {
+      isUpdatingChifa.value = true;
+      errorMessage.value = '';
+
+      // Clean the chifa number (remove spaces)
+      String cleanedChifa = chifaNumber.replaceAll(' ', '');
+
+      // Validate format if provided
+      if (cleanedChifa.isNotEmpty) {
+        if (cleanedChifa.length < 13 || cleanedChifa.length > 15) {
+          throw Exception(
+              'Le numéro Carte Chifa doit contenir entre 13 et 15 chiffres');
+        }
+        if (!RegExp(r'^\d+$').hasMatch(cleanedChifa)) {
+          throw Exception(
+              'Le numéro Carte Chifa ne doit contenir que des chiffres');
+        }
+      }
+
+      // Call API to update
+      final updatedUser = await authRepository.updateChifaNumber(
+        cleanedChifa.isEmpty ? null : cleanedChifa,
+      );
+
+      // Update local user data
+      user.value = updatedUser;
+
+      // Show success message
+      Get.snackbar(
+        'Succès',
+        cleanedChifa.isEmpty
+            ? 'Numéro Carte Chifa supprimé'
+            : 'Numéro Carte Chifa mis à jour',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+    } catch (e) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar(
+        'Erreur',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      isUpdatingChifa.value = false;
+    }
+  }
+
+  /// Remove Chifa number
+  Future<void> removeChifaNumber() async {
+    try {
+      isUpdatingChifa.value = true;
+      errorMessage.value = '';
+
+      // Call API to remove
+      final updatedUser = await authRepository.updateChifaNumber(null);
+
+      // Update local user data
+      user.value = updatedUser;
+
+      Get.snackbar(
+        'Succès',
+        'Numéro Carte Chifa supprimé',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+    } catch (e) {
+      errorMessage.value = 'Impossible de supprimer le numéro Chifa';
+      Get.snackbar(
+        'Erreur',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isUpdatingChifa.value = false;
+    }
+  }
+
+  // ============================================================
+  // END OF CHIFA METHODS
+  // ============================================================
+
   // Toggle notifications
   Future<void> toggleNotifications(bool value) async {
     notificationsEnabled.value = value;
@@ -355,5 +477,35 @@ class ProfileController extends GetxController {
   // Refresh user data (for pull-to-refresh)
   Future<void> refreshUserData() async {
     await loadProfile();
+  }
+
+  /// Navigate to Medical Record screen
+  void goToMedicalRecord() {
+    Get.toNamed(AppRoutes.MEDICAL_RECORD);
+  }
+
+  /// Navigate to Favorites screen
+  void goToFavorites() {
+    Get.toNamed(AppRoutes.FAVORITES);
+  }
+
+  /// Navigate to Appointments screen
+  void goToAppointments() {
+    Get.toNamed(AppRoutes.MY_APPOINTMENTS);
+  }
+
+  /// Navigate to Reminders screen
+  void goToReminders() {
+    Get.toNamed(AppRoutes.REMINDERS);
+  }
+
+  /// Navigate to Settings screen (if needed)
+  void goToSettings() {
+    Get.toNamed(AppRoutes.SETTINGS);
+  }
+
+  /// Navigate to About screen (if needed)
+  void goToAbout() {
+    Get.toNamed(AppRoutes.ABOUT);
   }
 }

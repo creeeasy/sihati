@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/custom_button.dart';
@@ -14,6 +15,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
           return const LoadingIndicator();
@@ -37,6 +39,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           children: [
             Column(
               children: [
+                // Big Map
                 Expanded(
                   flex: 5,
                   child: SihatiMapbox(
@@ -47,17 +50,22 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                     zoom: 15,
                   ),
                 ),
+                // Details Sheet
                 Expanded(
                   flex: 5,
                   child: _buildDetailsSheet(pharmacy),
                 ),
               ],
             ),
+
+            // Back Button
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               left: 8,
               child: _buildBackButton(),
             ),
+
+            // De Garde Badge
             if (pharmacy.isOnDutyTonight)
               Positioned(
                 top: MediaQuery.of(context).padding.top + 8,
@@ -70,6 +78,10 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // BACK BUTTON
+  // ═══════════════════════════════════════════════════════════════
+
   Widget _buildBackButton() {
     return Container(
       decoration: BoxDecoration(
@@ -77,45 +89,53 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
         onPressed: () => Get.back(),
       ),
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // DE GARDE BADGE
+  // ═══════════════════════════════════════════════════════════════
+
   Widget _buildOnDutyBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm + 2,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: AppColors.primary.withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.nights_stay,
+          Icon(
+            Icons.nightlight_round,
             size: 18,
             color: Colors.white,
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           Text(
             'DE GARDE',
-            style: AppTextStyles.caption.copyWith(
+            style: TextStyle(
+              fontSize: 12,
               color: Colors.white,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
@@ -126,169 +146,382 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // DETAILS SHEET
+  // ═══════════════════════════════════════════════════════════════
+
   Widget _buildDetailsSheet(pharmacy) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Drag handle
             Center(
               child: Container(
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppColors.border,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              pharmacy.pharmacyName,
-              style: AppTextStyles.h4.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
+
+            SizedBox(height: AppSpacing.lg),
+
+            // Header with icon
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
+                Container(
+                  padding: EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: pharmacy.isOnDutyTonight
+                        ? AppColors.primary
+                        : AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.local_pharmacy_rounded,
+                    size: 28,
+                    color: pharmacy.isOnDutyTonight
+                        ? Colors.white
+                        : AppColors.primary,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: Text(
-                    pharmacy.fullAddress,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        pharmacy.pharmacyName,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      _buildInfoChip(
+                        icon: Icons.location_on_rounded,
+                        text: pharmacy.fullAddress,
+                        iconColor: AppColors.error,
+                        maxLines: 2,
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
+
+            // Distance badge
             if (pharmacy.distance != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.directions_walk,
-                      size: 16, color: AppColors.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    'À ${pharmacy.formattedDistance}',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
+              SizedBox(height: AppSpacing.md),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.3),
                   ),
-                ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.near_me_rounded,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'À ${pharmacy.formattedDistance}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
-            const SizedBox(height: 24),
+
+            SizedBox(height: AppSpacing.xl),
+
+            // Action Buttons
             Row(
               children: [
                 Expanded(
-                  child: CustomButton(
-                    text: 'Appeler',
-                    icon: Icons.phone,
+                  child: _buildActionButton(
+                    icon: Icons.phone_rounded,
+                    label: 'Appeler',
+                    color: AppColors.primary,
                     onPressed: controller.callPharmacy,
-                    height: 50,
                   ),
                 ),
                 if (pharmacy.hasWhatsapp) ...[
-                  const SizedBox(width: 12),
+                  SizedBox(width: AppSpacing.sm + 4),
                   Expanded(
-                    child: CustomButton(
-                      text: 'WhatsApp',
-                      icon: Icons.chat,
-                      backgroundColor: const Color(0xFF25D366),
+                    child: _buildActionButton(
+                      icon: Icons.chat_rounded,
+                      label: 'WhatsApp',
+                      color: Color(0xFF25D366),
                       onPressed: controller.openWhatsApp,
-                      height: 50,
                     ),
                   ),
                 ],
               ],
             ),
-            const SizedBox(height: 20),
-            CustomButton(
-              text: 'Obtenir l\'itinéraire',
-              icon: Icons.directions,
+
+            SizedBox(height: AppSpacing.sm + 4),
+
+            _buildActionButton(
+              icon: Icons.directions_rounded,
+              label: 'Obtenir l\'itinéraire',
+              color: AppColors.primary,
               isOutlined: true,
               onPressed: controller.getDirections,
-              height: 50,
             ),
+
+            // Opening Hours Section
             if (controller.openingHoursList.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 16),
-              Row(
+              SizedBox(height: AppSpacing.xl),
+              _buildSectionCard(
+                icon: Icons.access_time_rounded,
+                title: 'Horaires d\'ouverture',
+                iconColor: AppColors.primary,
+                child: Column(
+                  children: controller.openingHoursList.map((entry) {
+                    final isClosed = entry.value == 'Fermé';
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            entry.key,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isClosed
+                                  ? AppColors.errorLight
+                                  : AppColors.successLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              entry.value,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isClosed
+                                    ? AppColors.error
+                                    : AppColors.success,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+
+            // Contact Section
+            SizedBox(height: AppSpacing.md),
+            _buildSectionCard(
+              icon: Icons.phone_rounded,
+              title: 'Contact',
+              iconColor: AppColors.primary,
+              child: Column(
                 children: [
-                  const Icon(Icons.access_time,
-                      color: AppColors.primary, size: 22),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Horaires d\'ouverture',
-                    style: AppTextStyles.h6,
+                  _buildContactRow(
+                    icon: Icons.phone_rounded,
+                    label: 'Téléphone',
+                    value: pharmacy.phone,
+                    color: AppColors.primary,
                   ),
+                  if (pharmacy.hasWhatsapp) ...[
+                    SizedBox(height: AppSpacing.md),
+                    _buildContactRow(
+                      icon: Icons.chat_rounded,
+                      label: 'WhatsApp',
+                      value: pharmacy.whatsappNumber!,
+                      color: Color(0xFF25D366),
+                    ),
+                  ],
                 ],
               ),
-              const SizedBox(height: 16),
-              ...controller.openingHoursList.map((entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          entry.key,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          entry.value,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: entry.value == 'Fermé'
-                                ? AppColors.error
-                                : AppColors.success,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
-            ],
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Icon(Icons.phone, color: AppColors.primary, size: 22),
-                const SizedBox(width: 12),
-                Text(
-                  'Contact',
-                  style: AppTextStyles.h6,
-                ),
-              ],
             ),
-            const SizedBox(height: 16),
-            _buildContactRow(
-              icon: Icons.phone,
-              label: 'Téléphone',
-              value: pharmacy.phone,
-            ),
-            if (pharmacy.hasWhatsapp) ...[
-              const SizedBox(height: 12),
-              _buildContactRow(
-                icon: Icons.chat,
-                label: 'WhatsApp',
-                value: pharmacy.whatsappNumber!,
-                color: const Color(0xFF25D366),
-              ),
-            ],
+
+            SizedBox(height: AppSpacing.lg),
           ],
         ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HELPER WIDGETS
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String text,
+    required Color iconColor,
+    int maxLines = 1,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(icon, size: 14, color: iconColor),
+        ),
+        SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+            maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+    bool isOutlined = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: isOutlined ? Colors.white : color,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isOutlined ? color : Colors.transparent,
+              width: 2,
+            ),
+            boxShadow: isOutlined
+                ? null
+                : [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: isOutlined ? color : Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isOutlined ? color : Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required IconData icon,
+    required String title,
+    required Color iconColor,
+    required Widget child,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md + 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              SizedBox(width: AppSpacing.sm + 4),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: AppSpacing.md),
+          child,
+        ],
       ),
     );
   }
@@ -297,38 +530,37 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
     required IconData icon,
     required String label,
     required String value,
-    Color? color,
+    required Color color,
   }) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: (color ?? AppColors.primary).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: color ?? AppColors.primary,
-          ),
+          child: Icon(icon, size: 20, color: color),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: AppTextStyles.caption.copyWith(
-                  color: Colors.grey[600],
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2),
               Text(
                 value,
-                style: AppTextStyles.bodyMedium.copyWith(
+                style: TextStyle(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],

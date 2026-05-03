@@ -38,4 +38,8 @@ class AppRoutes {
   // Appointments
   static const String BOOK_APPOINTMENT = '/book-appointment';
   static const String MY_APPOINTMENTS = '/my-appointments';
+
+  // 🆕 Profile & Medical
+  static const String MEDICAL_RECORD = '/medical-record';
+  static const String REMINDERS = '/reminders';
 }

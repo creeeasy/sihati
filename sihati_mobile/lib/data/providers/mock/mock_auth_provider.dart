@@ -61,11 +61,13 @@ class MockAuthProvider {
   }
 
   /// Register new patient account
+  /// Register new patient account
   Future<AuthResponse> registerPatient({
     required String email,
     required String password,
     required String fullName,
     required String phoneNumber,
+    String? chifaNumber, // 🆕 Add optional chifaNumber parameter
   }) async {
     await _loadUsers();
 
@@ -81,18 +83,31 @@ class MockAuthProvider {
       throw Exception('Cet email est déjà utilisé');
     }
 
+    // Validate Chifa number if provided
+    if (chifaNumber != null && chifaNumber.isNotEmpty) {
+      if (chifaNumber.length < 13 || chifaNumber.length > 15) {
+        throw Exception(
+            'Le numéro Carte Chifa doit contenir entre 13 et 15 chiffres');
+      }
+      if (!RegExp(r'^\d+$').hasMatch(chifaNumber)) {
+        throw Exception(
+            'Le numéro Carte Chifa ne doit contenir que des chiffres');
+      }
+    }
+
     // Generate new user ID
     final newId = _users.isEmpty
         ? 1
         : _users.map((u) => u.id).reduce((a, b) => a > b ? a : b) + 1;
 
-    // Create new user
+    // Create new user with Chifa number
     final newUser = UserModel(
       id: newId,
       email: email,
       role: 'patient',
       fullName: fullName,
       phoneNumber: phoneNumber,
+      chifaNumber: chifaNumber, // 🆕 Include Chifa number
       isActive: true,
       createdAt: DateTime.now(),
     );
@@ -197,6 +212,47 @@ class MockAuthProvider {
       updatedAt: DateTime.now(),
     );
 
+    _users[userIndex] = updatedUser;
+
+    return updatedUser;
+  }
+
+  /// Update user's Chifa number
+  Future<UserModel> updateChifaNumber({
+    required int userId,
+    required String? chifaNumber,
+  }) async {
+    await _loadUsers();
+
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Find user
+    final userIndex = _users.indexWhere((u) => u.id == userId);
+
+    if (userIndex == -1) {
+      throw Exception('Utilisateur non trouvé');
+    }
+
+    // Validate Chifa number format if provided
+    if (chifaNumber != null && chifaNumber.isNotEmpty) {
+      if (chifaNumber.length < 13 || chifaNumber.length > 15) {
+        throw Exception(
+            'Le numéro Carte Chifa doit contenir entre 13 et 15 chiffres');
+      }
+      if (!RegExp(r'^\d+$').hasMatch(chifaNumber)) {
+        throw Exception(
+            'Le numéro Carte Chifa ne doit contenir que des chiffres');
+      }
+    }
+
+    // Update user's Chifa number
+    final updatedUser = _users[userIndex].copyWith(
+      chifaNumber: chifaNumber,
+      updatedAt: DateTime.now(),
+    );
+
+    // Update in list
     _users[userIndex] = updatedUser;
 
     return updatedUser;

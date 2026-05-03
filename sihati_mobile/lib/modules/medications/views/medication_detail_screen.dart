@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/ai_service.dart';
 import '../controllers/medication_detail_controller.dart';
 
@@ -9,7 +11,7 @@ class MedicationDetailScreen extends GetView<MedicationDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
           return _LoadingState(controller.medicationName);
@@ -27,6 +29,10 @@ class MedicationDetailScreen extends GetView<MedicationDetailController> {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// LOADING STATE
+// ═══════════════════════════════════════════════════════════════
+
 class _LoadingState extends StatelessWidget {
   final String name;
   const _LoadingState(this.name);
@@ -34,31 +40,46 @@ class _LoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
         elevation: 0,
-        leading: const BackButton(color: Color(0xFF1A73E8)),
-        title: Text(name,
-            style: const TextStyle(
-                color: Color(0xFF202124),
-                fontSize: 18,
-                fontWeight: FontWeight.w600)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
+        title: Text(
+          name,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Color(0xFF1A73E8)),
-            const SizedBox(height: 24),
-            Text('Chargement des informations...',
-                style: TextStyle(fontSize: 15, color: Colors.grey[600])),
+            CircularProgressIndicator(color: AppColors.primary),
+            SizedBox(height: 24),
+            Text(
+              'Chargement des informations...',
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// ERROR STATE
+// ═══════════════════════════════════════════════════════════════
 
 class _ErrorState extends StatelessWidget {
   final VoidCallback onRetry;
@@ -67,36 +88,65 @@ class _ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
         elevation: 0,
-        leading: const BackButton(color: Color(0xFF1A73E8)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline,
-                  size: 64, color: Colors.redAccent),
-              const SizedBox(height: 16),
-              const Text('Impossible de charger les informations',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 24),
+              Container(
+                padding: EdgeInsets.all(AppSpacing.xl),
+                decoration: BoxDecoration(
+                  color: AppColors.errorLight,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.error_outline_rounded,
+                  size: 64,
+                  color: AppColors.error,
+                ),
+              ),
+              SizedBox(height: AppSpacing.lg),
+              Text(
+                'Impossible de charger',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              SizedBox(height: AppSpacing.sm),
+              Text(
+                'Vérifiez votre connexion',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              SizedBox(height: AppSpacing.xl),
               ElevatedButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Réessayer'),
+                icon: Icon(Icons.refresh_rounded),
+                label: Text('Réessayer'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A73E8),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.md,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ],
@@ -106,6 +156,10 @@ class _ErrorState extends StatelessWidget {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN CONTENT
+// ═══════════════════════════════════════════════════════════════
 
 class _Content extends StatelessWidget {
   final String name;
@@ -121,69 +175,70 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         _AppBar(name: name, info: info, controller: controller),
         SliverPadding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(AppSpacing.md),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               if (info.reply.isNotEmpty) ...[
                 _SummaryCard(text: info.reply),
-                const SizedBox(height: 12),
+                SizedBox(height: AppSpacing.sm + 4),
               ],
               if (info.foundInDb && info.dbData != null) ...[
                 _DbBadge(data: info.dbData!),
-                const SizedBox(height: 12),
+                SizedBox(height: AppSpacing.sm + 4),
               ],
               _DrugInteractionChecker(controller: controller),
-              const SizedBox(height: 12),
+              SizedBox(height: AppSpacing.sm + 4),
               _Section(
-                icon: Icons.medication,
+                icon: Icons.medication_rounded,
                 title: 'Indications',
                 text: info.usage,
-                color: const Color(0xFF1A73E8),
+                color: AppColors.primary,
               ),
               _Section(
-                icon: Icons.block,
+                icon: Icons.block_rounded,
                 title: 'Contre-indications',
                 text: info.contraindications,
-                color: const Color(0xFFE53935),
+                color: AppColors.error,
               ),
               _Section(
-                icon: Icons.scale,
+                icon: Icons.scale_rounded,
                 title: 'Posologie',
                 text: info.dosage,
-                color: const Color(0xFF43A047),
+                color: AppColors.success,
               ),
               _Section(
                 icon: Icons.warning_amber_rounded,
                 title: 'Effets secondaires',
                 text: info.sideEffects,
-                color: const Color(0xFFFB8C00),
+                color: AppColors.warning,
               ),
               _Section(
-                icon: Icons.pregnant_woman,
+                icon: Icons.pregnant_woman_rounded,
                 title: 'Grossesse & Allaitement',
                 text: info.pregnancy,
-                color: const Color(0xFF8E24AA),
+                color: AppColors.accent,
               ),
               _Section(
-                icon: Icons.link,
-                title: 'Interactions médicamenteuses',
+                icon: Icons.link_rounded,
+                title: 'Interactions',
                 text: info.interactions,
-                color: const Color(0xFF00897B),
+                color: AppColors.secondary,
               ),
               if (info.warnings.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 _WarningCard(text: info.warnings),
               ],
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.md),
               _AskAiSection(controller: controller),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.md),
               _FindPharmaciesCTA(medicationName: name),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.md),
               const _Disclaimer(),
-              const SizedBox(height: 32),
+              SizedBox(height: AppSpacing.xxl),
             ]),
           ),
         ),
@@ -191,6 +246,10 @@ class _Content extends StatelessWidget {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// APP BAR
+// ═══════════════════════════════════════════════════════════════
 
 class _AppBar extends StatelessWidget {
   final String name;
@@ -206,111 +265,161 @@ class _AppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 150,
+      expandedHeight: 160,
       pinned: true,
-      backgroundColor: const Color(0xFF1A73E8),
+      elevation: 0,
+      backgroundColor: AppColors.primary,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
         onPressed: () => Get.back(),
       ),
       actions: [
-        Obx(() => IconButton(
-              icon: Icon(
-                controller.isFavorite.value
-                    ? Icons.bookmark
-                    : Icons.bookmark_border,
-                color: Colors.white,
+        Obx(() => Container(
+              margin: EdgeInsets.only(right: 4),
+              decoration: BoxDecoration(
+                color: controller.isFavorite.value
+                    ? Colors.white.withOpacity(0.25)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
               ),
-              onPressed: controller.toggleFavorite,
+              child: IconButton(
+                icon: Icon(
+                  controller.isFavorite.value
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_outline_rounded,
+                  color: Colors.white,
+                ),
+                onPressed: controller.toggleFavorite,
+              ),
             )),
-        IconButton(
-          icon: const Icon(Icons.alarm, color: Colors.white),
-          onPressed: controller.setReminder,
+        Container(
+          margin: EdgeInsets.only(right: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: Icon(Icons.alarm_rounded, color: Colors.white),
+            onPressed: controller.setReminder,
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.share, color: Colors.white),
-          onPressed: controller.shareMedication,
+        Container(
+          margin: EdgeInsets.only(right: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: Icon(Icons.share_rounded, color: Colors.white),
+            onPressed: controller.shareMedication,
+          ),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1A73E8), Color(0xFF0D47A1)],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 48, 20, 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.medication,
-                        color: Colors.white, size: 28),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(name,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold)),
-                        if (info.foundInDb &&
-                            info.dbData?['genericName'] != null)
-                          Text(info.dbData!['genericName'],
-                              style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: 13)),
-                      ],
-                    ),
-                  ),
-                ],
+        background: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.primaryGradient,
               ),
             ),
-          ),
+            Positioned(
+              bottom: -2,
+              left: 0,
+              right: 0,
+              child: CustomPaint(
+                size: Size(Get.width, 30),
+                painter: WavePainter(),
+              ),
+            ),
+            Positioned(
+              top: 60,
+              right: -20,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.1),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.medication_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            name,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (info.foundInDb &&
+                              info.dbData?['genericName'] != null)
+                            Text(
+                              info.dbData!['genericName'],
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.85),
+                                fontSize: 13,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        title: Text(name,
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600)),
-        titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
       ),
     );
   }
 }
 
+// Remaining helper widgets with updated styling...
+// (Due to length, I'll continue in the next part)
+
 class _DrugInteractionChecker extends StatelessWidget {
   final MedicationDetailController controller;
-
   const _DrugInteractionChecker({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,47 +427,50 @@ class _DrugInteractionChecker extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE53935).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.errorLight,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.warning_amber_rounded,
-                    color: Color(0xFFE53935), size: 20),
+                child: Icon(
+                  Icons.warning_amber_rounded,
+                  color: AppColors.error,
+                  size: 20,
+                ),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              SizedBox(width: AppSpacing.md),
+              Expanded(
                 child: Text(
                   'Vérifier les interactions',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
-                    color: Color(0xFFE53935),
+                    color: AppColors.error,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: AppSpacing.md),
           TextField(
             controller: controller.interactionController,
             decoration: InputDecoration(
-              hintText: 'Entrez un autre médicament...',
-              hintStyle: TextStyle(color: Colors.grey[400]),
+              hintText: 'Autre médicament...',
+              hintStyle: TextStyle(color: AppColors.textTertiary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderSide: BorderSide(color: AppColors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderSide: BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF1A73E8)),
+                borderSide: BorderSide(color: AppColors.primary),
               ),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.search, color: Color(0xFF1A73E8)),
+                icon: Icon(Icons.search_rounded, color: AppColors.primary),
                 onPressed: controller.checkInteraction,
               ),
             ),
@@ -366,38 +478,34 @@ class _DrugInteractionChecker extends StatelessWidget {
           ),
           Obx(() {
             if (controller.isCheckingInteraction.value) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
+              return Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
                 child: Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF1A73E8),
-                  ),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               );
             }
-
             if (controller.interactionResult.value.isNotEmpty) {
               return Container(
-                margin: const EdgeInsets.only(top: 12),
-                padding: const EdgeInsets.all(12),
+                margin: EdgeInsets.only(top: AppSpacing.sm + 4),
+                padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: controller.interactionResult.value.contains('⚠️')
-                      ? const Color(0xFFFFF8E1)
-                      : const Color(0xFFE8F5E9),
+                      ? AppColors.warningLight
+                      : AppColors.successLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: controller.interactionResult.value.contains('⚠️')
-                        ? const Color(0xFFFB8C00)
-                        : const Color(0xFF43A047),
+                        ? AppColors.warning.withOpacity(0.3)
+                        : AppColors.success.withOpacity(0.3),
                   ),
                 ),
                 child: Text(
                   controller.interactionResult.value,
-                  style: const TextStyle(fontSize: 13, height: 1.5),
+                  style: TextStyle(fontSize: 13, height: 1.5),
                 ),
               );
             }
-
             return const SizedBox.shrink();
           }),
         ],
@@ -408,7 +516,6 @@ class _DrugInteractionChecker extends StatelessWidget {
 
 class _AskAiSection extends StatelessWidget {
   final MedicationDetailController controller;
-
   const _AskAiSection({required this.controller});
 
   @override
@@ -417,49 +524,40 @@ class _AskAiSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF1A73E8).withOpacity(0.1),
-                  const Color(0xFF0D47A1).withOpacity(0.05),
-                ],
-              ),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A73E8).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.smart_toy,
-                      color: Color(0xFF1A73E8), size: 20),
+                  child: Icon(
+                    Icons.psychology_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
+                SizedBox(width: AppSpacing.md),
+                Expanded(
                   child: Text(
                     'Posez une question',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
-                      color: Color(0xFF1A73E8),
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
@@ -467,7 +565,7 @@ class _AskAiSection extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(AppSpacing.md),
             child: Column(
               children: [
                 TextField(
@@ -475,28 +573,29 @@ class _AskAiSection extends StatelessWidget {
                   maxLines: 2,
                   decoration: InputDecoration(
                     hintText: 'Ex: Puis-je prendre ce médicament avec du café?',
-                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+                    hintStyle:
+                        TextStyle(color: AppColors.textTertiary, fontSize: 13),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: AppColors.border),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: AppColors.border),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF1A73E8)),
+                      borderSide: BorderSide(color: AppColors.primary),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: AppSpacing.sm + 4),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: controller.askAiQuestion,
                     icon: Obx(() => controller.isAskingAi.value
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
@@ -504,13 +603,13 @@ class _AskAiSection extends StatelessWidget {
                               color: Colors.white,
                             ),
                           )
-                        : const Icon(Icons.send, size: 18)),
+                        : Icon(Icons.send_rounded, size: 18)),
                     label: Obx(() => Text(
                         controller.isAskingAi.value ? 'Envoi...' : 'Envoyer')),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A73E8),
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -520,40 +619,39 @@ class _AskAiSection extends StatelessWidget {
                 Obx(() {
                   if (controller.aiAnswer.value.isNotEmpty) {
                     return Container(
-                      margin: const EdgeInsets.only(top: 16),
-                      padding: const EdgeInsets.all(14),
+                      margin: EdgeInsets.only(top: AppSpacing.md),
+                      padding: EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE8F0FE),
+                        color: AppColors.primarySoft,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF1A73E8).withOpacity(0.3),
-                        ),
+                            color: AppColors.primary.withOpacity(0.3)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(Icons.smart_toy,
-                                  color: Color(0xFF1A73E8), size: 16),
+                              Icon(Icons.psychology_rounded,
+                                  color: AppColors.primary, size: 16),
                               SizedBox(width: 8),
                               Text(
                                 'Réponse de l\'IA',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A73E8),
+                                  color: AppColors.primary,
                                   fontSize: 13,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             controller.aiAnswer.value,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               height: 1.5,
-                              color: Color(0xFF1A237E),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -578,21 +676,23 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F0FE),
+        color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1A73E8).withOpacity(0.3)),
+        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, color: Color(0xFF1A73E8), size: 20),
-          const SizedBox(width: 12),
+          Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 20),
+          SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Text(text,
-                style: const TextStyle(
-                    fontSize: 14, color: Color(0xFF1A237E), height: 1.5)),
+            child: Text(
+              text,
+              style: TextStyle(
+                  fontSize: 14, color: AppColors.textPrimary, height: 1.5),
+            ),
           ),
         ],
       ),
@@ -607,32 +707,41 @@ class _DbBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF43A047).withOpacity(0.4)),
+        color: AppColors.successLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.success.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.verified, color: Color(0xFF43A047), size: 18),
-          const SizedBox(width: 8),
-          const Text('Disponible dans notre base',
+          Icon(Icons.verified_rounded, color: AppColors.success, size: 20),
+          SizedBox(width: AppSpacing.sm + 4),
+          Expanded(
+            child: Text(
+              'Disponible dans notre base',
               style: TextStyle(
-                  color: Color(0xFF2E7D32), fontWeight: FontWeight.w600)),
-          const Spacer(),
+                color: AppColors.successDark,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
           if (data['price'] != null)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF43A047),
+                color: AppColors.success,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text('${data['price']} DA',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold)),
+              child: Text(
+                '${data['price']} DA',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
         ],
       ),
@@ -658,45 +767,47 @@ class _Section extends StatelessWidget {
     if (text.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
                 Icon(icon, color: color, size: 20),
-                const SizedBox(width: 10),
-                Text(title,
-                    style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15)),
+                SizedBox(width: AppSpacing.sm + 4),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(text,
-                style: const TextStyle(
-                    fontSize: 14, color: Color(0xFF202124), height: 1.6)),
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textPrimary,
+                height: 1.6,
+              ),
+            ),
           ),
         ],
       ),
@@ -711,32 +822,39 @@ class _WarningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E1),
+        color: AppColors.warningLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFB8C00).withOpacity(0.4)),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: Color(0xFFFB8C00), size: 22),
-          const SizedBox(width: 12),
+          Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 22),
+          SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Précautions importantes',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFE65100),
-                        fontSize: 13)),
-                const SizedBox(height: 6),
-                Text(text,
-                    style: const TextStyle(
-                        fontSize: 13, color: Color(0xFF5D4037), height: 1.5)),
+                Text(
+                  'Précautions importantes',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.warningDark,
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textPrimary,
+                    height: 1.5,
+                  ),
+                ),
               ],
             ),
           ),
@@ -754,10 +872,15 @@ class _FindPharmaciesCTA extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A73E8), Color(0xFF0D47A1)],
-        ),
+        gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -768,37 +891,50 @@ class _FindPharmaciesCTA extends StatelessWidget {
             Get.toNamed('/medication-search', arguments: medicationName);
           },
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(AppSpacing.lg),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.local_pharmacy,
-                      color: Colors.white, size: 26),
+                  child: Icon(
+                    Icons.local_pharmacy_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
+                SizedBox(width: AppSpacing.md),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Trouver en pharmacie',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16)),
+                      Text(
+                        'Trouver en pharmacie',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       SizedBox(height: 2),
-                      Text('Voir les pharmacies qui ont ce médicament',
-                          style:
-                              TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(
+                        'Voir les pharmacies qui ont ce médicament',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios,
-                    color: Colors.white70, size: 16),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white.withOpacity(0.8),
+                  size: 16,
+                ),
               ],
             ),
           ),
@@ -814,26 +950,65 @@ class _Disclaimer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-          const SizedBox(width: 10),
+          Icon(
+            Icons.info_outline_rounded,
+            size: 16,
+            color: AppColors.textSecondary,
+          ),
+          SizedBox(width: AppSpacing.sm + 4),
           Expanded(
             child: Text(
               'Ces informations sont à titre éducatif uniquement et ne remplacent pas l\'avis d\'un médecin ou pharmacien.',
-              style:
-                  TextStyle(fontSize: 11, color: Colors.grey[600], height: 1.5),
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class WavePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color(0xFFF9FAFB)
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height * 0.5)
+      ..quadraticBezierTo(
+        size.width * 0.25,
+        size.height * 0.2,
+        size.width * 0.5,
+        size.height * 0.5,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.75,
+        size.height * 0.8,
+        size.width,
+        size.height * 0.5,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

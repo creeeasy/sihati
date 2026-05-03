@@ -150,7 +150,7 @@ class HistoryItem {
 
 class AIService extends GetxService {
   // ⚠️ Change based on your environment
-  static const String BASE_URL = 'http://192.168.1.103:3000';
+  static const String BASE_URL = 'http://192.168.1.105:3000';
   // Android emulator: 'http://10.0.2.2:3000'
   // iOS simulator:    'http://localhost:3000'
   // Production:       'https://your-backend.onrender.com'

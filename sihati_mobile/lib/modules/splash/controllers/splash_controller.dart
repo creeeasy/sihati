@@ -8,6 +8,7 @@ class SplashController extends GetxController {
   final AuthRepository authRepository;
 
   SplashController({required this.authRepository});
+
   @override
   void onInit() {
     print("hello world");
@@ -24,19 +25,32 @@ class SplashController extends GetxController {
     await Future.delayed(const Duration(seconds: 2));
 
     try {
-      final isLoggedIn = await authRepository.isLoggedIn();
-      log(isLoggedIn.toString());
-      if (isLoggedIn) {
+      // First check auth status using the repository method
+      await authRepository.checkAuthStatus();
+
+      // Now check if user is authenticated OR in guest mode
+      final isAuthenticated = authRepository.isAuthenticated.value;
+      final isGuest = authRepository.isGuestMode.value;
+
+      log('isAuthenticated: $isAuthenticated, isGuest: $isGuest');
+
+      if (isAuthenticated) {
+        // User is logged in, verify token is still valid
         final user = await authRepository.verifyToken();
         if (user != null) {
           Get.offAllNamed(AppRoutes.HOME);
         } else {
           Get.offAllNamed(AppRoutes.LOGIN);
         }
+      } else if (isGuest) {
+        // User is in guest mode, go directly to home
+        Get.offAllNamed(AppRoutes.HOME);
       } else {
+        // No authentication and not in guest mode, show login
         Get.offAllNamed(AppRoutes.LOGIN);
       }
     } catch (e) {
+      log('Auth check error: $e');
       Get.offAllNamed(AppRoutes.LOGIN);
     }
   }

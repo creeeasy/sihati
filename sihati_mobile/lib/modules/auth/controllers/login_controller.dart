@@ -29,10 +29,14 @@ class LoginController extends GetxController {
       errorMessage.value = '';
       if (emailController.text.isEmpty) {
         errorMessage.value = 'Email requis';
+        Get.snackbar('Erreur', 'Email requis',
+            backgroundColor: Colors.red, colorText: Colors.white);
         return;
       }
       if (passwordController.text.isEmpty) {
         errorMessage.value = 'Mot de passe requis';
+        Get.snackbar('Erreur', 'Mot de passe requis',
+            backgroundColor: Colors.red, colorText: Colors.white);
         return;
       }
 
@@ -49,6 +53,34 @@ class LoginController extends GetxController {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
       Get.snackbar('Erreur', errorMessage.value,
           backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 🆕 Continue as guest
+  Future<void> continueAsGuest() async {
+    try {
+      isLoading.value = true;
+
+      // Call guest login method in auth repository
+      await authRepository.loginAsGuest();
+
+      Get.offAllNamed(AppRoutes.HOME);
+      Get.snackbar(
+        'Mode Invité',
+        'Explorez Sihati! Connectez-vous pour plus de fonctionnalités.',
+        backgroundColor: Colors.blue,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible d\'entrer en mode invité',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }

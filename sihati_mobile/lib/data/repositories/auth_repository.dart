@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sihati_mobile/core/models/auth_response.dart';
 import 'package:sihati_mobile/core/models/user_model.dart';
@@ -16,6 +17,10 @@ class AuthRepository {
     required StorageService storageService,
   })  : _authProvider = authProvider,
         _storageService = storageService;
+
+  // Observable states
+  final isGuestMode = false.obs;
+  final isAuthenticated = false.obs;
 
   /// Login with email and password
   /// Saves token and user to storage on success
@@ -36,6 +41,13 @@ class AuthRepository {
       await _storageService.saveToken(response.token);
       await _storageService.saveUser(response.user);
 
+      // Update observable states
+      isAuthenticated.value = true;
+      isGuestMode.value = false;
+
+      // Clear guest mode if it was active
+      await _storageService.saveBool('guest_mode', false);
+
       return response;
     } catch (e) {
       // Rethrow to be handled by controller
@@ -43,14 +55,35 @@ class AuthRepository {
     }
   }
 
+  /// 🆕 Login as guest
+  /// Allows users to explore the app without creating an account
+  Future<void> loginAsGuest() async {
+    try {
+      // Clear any existing auth data
+      await _storageService.clearAuth();
+
+      // Save guest mode status
+      await _storageService.saveBool('guest_mode', true);
+
+      // Update observable states
+      isGuestMode.value = true;
+      isAuthenticated.value = false;
+
+      print('Guest mode activated successfully');
+    } catch (e) {
+      print('Error entering guest mode: $e');
+      throw Exception('Impossible d\'entrer en mode invité');
+    }
+  }
+
   /// Register new patient account
   /// Validates inputs and saves credentials on success
-  Future<AuthResponse> registerPatient({
-    required String email,
-    required String password,
-    required String fullName,
-    required String phoneNumber,
-  }) async {
+  Future<AuthResponse> registerPatient(
+      {required String email,
+      required String password,
+      required String fullName,
+      required String phoneNumber,
+      String? chifaNumber}) async {
     try {
       // Validate inputs
       if (email.isEmpty) {
@@ -90,6 +123,13 @@ class AuthRepository {
       await _storageService.saveToken(response.token);
       await _storageService.saveUser(response.user);
 
+      // Update observable states
+      isAuthenticated.value = true;
+      isGuestMode.value = false;
+
+      // Clear guest mode if it was active
+      await _storageService.saveBool('guest_mode', false);
+
       return response;
     } catch (e) {
       rethrow;
@@ -101,9 +141,44 @@ class AuthRepository {
   Future<void> logout() async {
     try {
       await _storageService.clearAuth();
+      await _storageService.remove('guest_mode');
+
+      // Update observable states
+      isAuthenticated.value = false;
+      isGuestMode.value = false;
     } catch (e) {
       // Even if storage fails, don't throw - user wants to logout
       print('Logout error: $e');
+    }
+  }
+
+  /// 🆕 Check authentication status on app start
+  /// Determines if user is logged in, in guest mode, or needs to login
+  Future<void> checkAuthStatus() async {
+    try {
+      // First check if user has valid token (logged in)
+      final token = await _storageService.getToken();
+      if (token != null && token.isNotEmpty) {
+        isAuthenticated.value = true;
+        isGuestMode.value = false;
+        return;
+      }
+
+      // Then check if in guest mode
+      final isGuest = await _storageService.getBool('guest_mode') ?? false;
+      if (isGuest) {
+        isGuestMode.value = true;
+        isAuthenticated.value = false;
+        return;
+      }
+
+      // Neither authenticated nor guest
+      isAuthenticated.value = false;
+      isGuestMode.value = false;
+    } catch (e) {
+      print('Auth check error: $e');
+      isAuthenticated.value = false;
+      isGuestMode.value = false;
     }
   }
 
@@ -124,6 +199,17 @@ class AuthRepository {
       return await _storageService.isLoggedIn();
     } catch (e) {
       print('Is logged in error: $e');
+      return false;
+    }
+  }
+
+  /// 🆕 Check if user is in guest mode
+  Future<bool> isGuest() async {
+    try {
+      final isGuest = await _storageService.getBool('guest_mode') ?? false;
+      return isGuest;
+    } catch (e) {
+      print('Is guest error: $e');
       return false;
     }
   }
@@ -193,6 +279,67 @@ class AuthRepository {
     }
   }
 
+  /// 🆕 Prompt login for restricted actions (when in guest mode)
+  /// Shows a dialog asking user to login or sign up
+  void promptLoginForFeature(String featureName) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.lock_outline, color: Colors.blue, size: 28),
+            const SizedBox(width: 12),
+            Text(
+              'Connexion requise',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Pour $featureName, vous devez créer un compte ou vous connecter.',
+          style: const TextStyle(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text(
+              'Continuer en invité',
+              style: TextStyle(
+                color: Colors.grey,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              Get.toNamed('/login');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text(
+              'Se connecter',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Validate email format
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -203,5 +350,40 @@ class AuthRepository {
   bool _isValidAlgerianPhone(String phone) {
     final phoneRegex = RegExp(r'^0[5-7][0-9]{8}$');
     return phoneRegex.hasMatch(phone);
+  }
+
+  /// Update user's Chifa number
+  Future<UserModel> updateChifaNumber(String? chifaNumber) async {
+    try {
+      final user = await getCurrentUser();
+      if (user == null) {
+        throw Exception('Utilisateur non connecté');
+      }
+
+      // Validate Chifa number if provided
+      if (chifaNumber != null && chifaNumber.isNotEmpty) {
+        if (chifaNumber.length < 13 || chifaNumber.length > 15) {
+          throw Exception(
+              'Le numéro Carte Chifa doit contenir entre 13 et 15 chiffres');
+        }
+        if (!RegExp(r'^\d+$').hasMatch(chifaNumber)) {
+          throw Exception(
+              'Le numéro Carte Chifa ne doit contenir que des chiffres');
+        }
+      }
+
+      // Update via provider
+      final updatedUser = await _authProvider.updateChifaNumber(
+        userId: user.id,
+        chifaNumber: chifaNumber,
+      );
+
+      // Save updated user to storage
+      await _storageService.saveUser(updatedUser);
+
+      return updatedUser;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

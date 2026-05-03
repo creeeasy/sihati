@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+
 class PharmacyModel {
   final int id;
   final String pharmacyName;
@@ -12,8 +15,6 @@ class PharmacyModel {
   final bool isOnDutyTonight;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-
-  // Optional: distance from user (calculated, not from DB)
   final double? distance;
 
   PharmacyModel({
@@ -33,7 +34,6 @@ class PharmacyModel {
     this.distance,
   });
 
-  // Create PharmacyModel from JSON
   factory PharmacyModel.fromJson(Map<String, dynamic> json) {
     return PharmacyModel(
       id: json['id'] as int,
@@ -64,7 +64,6 @@ class PharmacyModel {
     );
   }
 
-  // Convert PharmacyModel to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -84,7 +83,6 @@ class PharmacyModel {
     };
   }
 
-  // Helper: Get full address
   String get fullAddress {
     if (commune != null && commune!.isNotEmpty) {
       return '$address, $commune, $wilaya';
@@ -92,7 +90,6 @@ class PharmacyModel {
     return '$address, $wilaya';
   }
 
-  // Helper: Get formatted distance
   String get formattedDistance {
     if (distance == null) return '';
     if (distance! < 1) {
@@ -101,13 +98,10 @@ class PharmacyModel {
     return '${distance!.toStringAsFixed(1)} km';
   }
 
-  // Helper: Check if has WhatsApp
   bool get hasWhatsapp => whatsappNumber != null && whatsappNumber!.isNotEmpty;
 
-  // Helper: Get opening hours for a specific day
   Map<String, String>? getHoursForDay(String day) {
     if (openingHours == null) return null;
-
     final dayLower = day.toLowerCase();
     if (openingHours!.containsKey(dayLower)) {
       final hours = openingHours![dayLower];
@@ -121,7 +115,6 @@ class PharmacyModel {
     return null;
   }
 
-  // Helper: Check if open on a specific day
   bool isOpenOnDay(String day) {
     final hours = getHoursForDay(day);
     if (hours == null) return false;
@@ -130,12 +123,74 @@ class PharmacyModel {
         hours['open'] != 'null';
   }
 
-  // Helper: Get status badge text
-  String get statusBadge {
-    return isOnDutyTonight ? 'OPEN NOW' : 'CLOSED';
+  bool get isOpenNow {
+    if (openingHours == null || openingHours!.isEmpty) {
+      return isOnDutyTonight;
+    }
+    final now = DateTime.now();
+    final currentDay = _getDayOfWeek(now.weekday);
+    final currentTime = _timeToMinutes(now.hour, now.minute);
+    final hours = getHoursForDay(currentDay);
+    if (hours == null) return isOnDutyTonight;
+    final openTime = _timeStringToMinutes(hours['open']);
+    final closeTime = _timeStringToMinutes(hours['close']);
+    if (openTime == null || closeTime == null) return isOnDutyTonight;
+    if (closeTime < openTime) {
+      return currentTime >= openTime || currentTime <= closeTime;
+    } else {
+      return currentTime >= openTime && currentTime <= closeTime;
+    }
   }
 
-  // CopyWith method
+  String get statusText {
+    return isOpenNow ? 'Ouverte' : 'Fermée';
+  }
+
+  Color get statusColor {
+    return isOpenNow ? AppColors.success : AppColors.error;
+  }
+
+  IconData get statusIcon {
+    return isOpenNow ? Icons.check_circle_rounded : Icons.cancel_rounded;
+  }
+
+  String _getDayOfWeek(int weekday) {
+    const days = {
+      1: 'monday',
+      2: 'tuesday',
+      3: 'wednesday',
+      4: 'thursday',
+      5: 'friday',
+      6: 'saturday',
+      7: 'sunday',
+    };
+    return days[weekday] ?? 'monday';
+  }
+
+  int? _timeStringToMinutes(String? timeString) {
+    if (timeString == null || timeString.isEmpty) return null;
+    final parts = timeString.split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    return hour * 60 + minute;
+  }
+
+  int _timeToMinutes(int hour, int minute) {
+    return hour * 60 + minute;
+  }
+
+  String get todayHours {
+    if (openingHours == null) return 'Horaires non disponibles';
+    final currentDay = _getDayOfWeek(DateTime.now().weekday);
+    final hours = getHoursForDay(currentDay);
+    if (hours == null) return 'Fermé aujourd\'hui';
+    final open = hours['open'] ?? '--:--';
+    final close = hours['close'] ?? '--:--';
+    return '$open - $close';
+  }
+
   PharmacyModel copyWith({
     int? id,
     String? pharmacyName,

@@ -6,6 +6,7 @@
     "role": "patient",
     "fullName": "Ahmed Benali",
     "phoneNumber": "0555123456",
+    "chifaNumber": "1234567890123",
     "isActive": true,
     "createdAt": "2024-01-15T10:00:00Z",
     "updatedAt": "2024-01-15T10:00:00Z"
@@ -17,6 +18,7 @@
     "role": "patient",
     "fullName": "Amina Khelifi",
     "phoneNumber": "0556234567",
+    "chifaNumber": "23456789012345",
     "isActive": true,
     "createdAt": "2024-01-20T14:30:00Z",
     "updatedAt": "2024-01-20T14:30:00Z"
@@ -28,6 +30,7 @@
     "role": "pharmacy",
     "fullName": "Pharmacy Al Amal",
     "phoneNumber": "0555789012",
+    "chifaNumber": null,
     "isActive": true,
     "createdAt": "2024-01-10T08:00:00Z",
     "updatedAt": "2024-01-10T08:00:00Z"
@@ -39,6 +42,7 @@
     "role": "doctor",
     "fullName": "Dr. Fatima Zerrouki",
     "phoneNumber": "0555345678",
+    "chifaNumber": null,
     "isActive": true,
     "createdAt": "2024-01-05T09:00:00Z",
     "updatedAt": "2024-01-05T09:00:00Z"
@@ -50,6 +54,7 @@
     "role": "admin",
     "fullName": "Admin Sihati",
     "phoneNumber": "0555000000",
+    "chifaNumber": null,
     "isActive": true,
     "createdAt": "2024-01-01T00:00:00Z",
     "updatedAt": "2024-01-01T00:00:00Z"
@@ -61,6 +66,7 @@
     "role": "patient",
     "fullName": "Karim Mansouri",
     "phoneNumber": "0557345678",
+    "chifaNumber": "3456789012345",
     "isActive": true,
     "createdAt": "2024-02-01T16:00:00Z",
     "updatedAt": "2024-02-01T16:00:00Z"

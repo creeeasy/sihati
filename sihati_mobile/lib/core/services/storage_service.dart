@@ -289,4 +289,24 @@ class StorageService extends GetxService {
       print('Error clearing all data: $e');
     }
   }
+  // Add these methods to your StorageService class
+
+  /// 🆕 Save guest mode status
+  Future<void> saveGuestModeStatus(bool isGuest) async {
+    try {
+      await _prefs.setBool('guest_mode', isGuest);
+    } catch (e) {
+      print('Error saving guest mode status: $e');
+    }
+  }
+
+  /// 🆕 Get guest mode status
+  Future<bool> getGuestModeStatus() async {
+    try {
+      return _prefs.getBool('guest_mode') ?? false;
+    } catch (e) {
+      print('Error getting guest mode status: $e');
+      return false;
+    }
+  }
 }

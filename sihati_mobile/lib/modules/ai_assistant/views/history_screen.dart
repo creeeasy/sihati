@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../controllers/history_controller.dart';
-import '../controllers/ai_assistant_controller.dart';
 import '../../../core/services/ai_service.dart';
 import '../../../../app/routes/app_routes.dart';
 
@@ -13,29 +13,30 @@ class HistoryScreen extends GetView<HistoryController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Row(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: Row(
           children: [
-            Icon(Icons.history, size: 22),
-            SizedBox(width: 10),
-            Text('Historique '),
+            Icon(Icons.history, size: 22, color: AppColors.primary),
+            SizedBox(width: AppSpacing.sm + 2),
+            Text('Historique', style: AppTextStyles.h5),
           ],
         ),
         actions: [
-          // Clear filters button — only shows when filters active
           Obx(() {
             final hasFilter = controller.searchQuery.value.isNotEmpty ||
                 controller.filterUrgency.value != null;
             if (!hasFilter) return const SizedBox.shrink();
             return IconButton(
-              icon: const Icon(Icons.filter_alt_off),
+              icon: Icon(Icons.filter_alt_off, color: AppColors.textSecondary),
               tooltip: 'Effacer les filtres',
               onPressed: controller.clearFilters,
             );
           }),
-          // Refresh
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: AppColors.textSecondary),
             tooltip: 'Actualiser',
             onPressed: controller.loadHistory,
           ),
@@ -63,19 +64,34 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      color: Colors.white,
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm + 4,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
+      color: AppColors.surface,
       child: TextField(
         onChanged: controller.setSearch,
+        style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
           hintText: 'Rechercher dans vos conversations...',
-          prefixIcon: const Icon(Icons.search, size: 20),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: const BorderSide(color: AppColors.border),
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textTertiary,
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          prefixIcon: Icon(
+            Icons.search,
+            size: AppSizing.iconSm,
+            color: AppColors.textTertiary,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: AppSizing.borderRadiusFull,
+            borderSide: BorderSide(color: AppColors.border),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm + 2,
+          ),
         ),
       ),
     );
@@ -93,21 +109,21 @@ class _UrgencyFilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filters = [
-      (null, 'Tous', Colors.grey),
-      (UrgencyLevel.low, 'Léger', Colors.green),
-      (UrgencyLevel.medium, 'Modéré', Colors.orange),
-      (UrgencyLevel.high, 'Sérieux', Colors.deepOrange),
-      (UrgencyLevel.emergency, 'Urgence', Colors.red),
+      (null, 'Tous', AppColors.textSecondary),
+      (UrgencyLevel.low, 'Léger', AppColors.success),
+      (UrgencyLevel.medium, 'Modéré', AppColors.warning),
+      (UrgencyLevel.high, 'Sérieux', AppColors.error),
+      (UrgencyLevel.emergency, 'Urgence', AppColors.errorDark),
     ];
 
     return Container(
       height: 44,
-      color: Colors.white,
+      color: AppColors.surface,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: AppSpacing.paddingHorizontalMd,
         itemCount: filters.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, i) {
           final (level, label, color) = filters[i];
           return Obx(() {
@@ -118,15 +134,14 @@ class _UrgencyFilterRow extends StatelessWidget {
               onSelected: (_) => controller.setUrgencyFilter(level),
               selectedColor: color.withOpacity(0.15),
               checkmarkColor: color,
-              labelStyle: TextStyle(
+              labelStyle: AppTextStyles.caption.copyWith(
                 color: selected ? color : AppColors.textSecondary,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                fontSize: 12,
               ),
               side: BorderSide(
                 color: selected ? color : AppColors.border,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
             );
           });
         },
@@ -147,7 +162,9 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        );
       }
 
       if (controller.errorMessage.value != null) {
@@ -169,10 +186,11 @@ class _Body extends StatelessWidget {
 
       return RefreshIndicator(
         onRefresh: controller.loadHistory,
+        color: AppColors.primary,
         child: ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.paddingMd,
           itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm + 2),
           itemBuilder: (context, i) => _ConversationCard(item: items[i]),
         ),
       );
@@ -195,77 +213,78 @@ class _ConversationCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.surface,
+          borderRadius: AppSizing.borderRadiusMd,
           border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppColors.shadowSm,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top row: urgency badge + date
             Row(
               children: [
                 _UrgencyBadge(urgency: item.urgency),
                 const Spacer(),
                 Text(
                   _formatDate(item.createdAt),
-                  style:
-                      AppTextStyles.caption.copyWith(color: AppColors.textHint),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: AppSpacing.sm + 2),
 
             // User question
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: AppSizing.avatarXs,
+                  height: AppSizing.avatarXs,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.15),
+                    color: AppColors.primarySoft,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.person,
-                      size: 14, color: AppColors.primary),
+                  child: Icon(
+                    Icons.person,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     item.userMessage,
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(fontWeight: FontWeight.w600),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.sm),
 
             // AI reply preview
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: AppSizing.avatarXs,
+                  height: AppSizing.avatarXs,
                   decoration: const BoxDecoration(
                     gradient: AppColors.primaryGradient,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.psychology,
-                      size: 14, color: Colors.white),
+                  child: Icon(
+                    Icons.psychology,
+                    size: 14,
+                    color: AppColors.white,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     item.aiResponse,
@@ -280,10 +299,9 @@ class _ConversationCard extends StatelessWidget {
               ],
             ),
 
-            // Tags row
             if (item.suggestedSpecialty != null ||
                 item.medicationCount > 0) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: AppSpacing.sm + 2),
               Wrap(
                 spacing: 6,
                 children: [
@@ -298,7 +316,7 @@ class _ConversationCard extends StatelessWidget {
                       icon: Icons.medication,
                       label:
                           '${item.medicationCount} médicament${item.medicationCount > 1 ? 's' : ''}',
-                      color: Colors.teal,
+                      color: AppColors.secondary,
                     ),
                 ],
               ),
@@ -348,33 +366,32 @@ class _DetailSheet extends StatelessWidget {
       maxChildSize: 0.92,
       minChildSize: 0.4,
       builder: (_, scrollController) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSizing.radiusXl),
+          ),
         ),
         child: Column(
           children: [
-            // Handle bar
             Container(
-              margin: const EdgeInsets.only(top: 12),
+              margin: EdgeInsets.only(top: AppSpacing.sm + 4),
               width: 40,
               height: 4,
               decoration: BoxDecoration(
                 color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: AppSizing.borderRadiusXs,
               ),
             ),
-            // Header
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.paddingMd,
               child: Row(
                 children: [
                   _UrgencyBadge(urgency: item.urgency),
                   const Spacer(),
-                  // "Continuer cette conversation" button
                   TextButton.icon(
                     onPressed: () {
-                      Get.back(); // close bottom sheet
+                      Get.back();
                       Get.offNamed(
                         AppRoutes.AI_ASSISTANT,
                         arguments: {
@@ -383,36 +400,27 @@ class _DetailSheet extends StatelessWidget {
                         },
                       );
                     },
-                    icon: const Icon(Icons.chat_bubble_outline, size: 16),
-                    label: const Text('Continuer'),
+                    icon:
+                        Icon(Icons.chat_bubble_outline, size: AppSizing.iconSm),
+                    label: Text('Continuer', style: AppTextStyles.button),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1),
-            // Content
+            Divider(height: 1, color: AppColors.divider),
             Expanded(
               child: ListView(
                 controller: scrollController,
-                padding: const EdgeInsets.all(16),
+                padding: AppSpacing.paddingMd,
                 children: [
-                  // User question
-                  _DetailBubble(
-                    text: item.userMessage,
-                    isUser: true,
-                  ),
-                  const SizedBox(height: 12),
-                  // AI response
-                  _DetailBubble(
-                    text: item.aiResponse,
-                    isUser: false,
-                  ),
-                  // Metadata
+                  _DetailBubble(text: item.userMessage, isUser: true),
+                  SizedBox(height: AppSpacing.sm + 4),
+                  _DetailBubble(text: item.aiResponse, isUser: false),
                   if (item.suggestedSpecialty != null ||
                       item.medicationCount > 0) ...[
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppSpacing.md),
+                    Divider(color: AppColors.divider),
+                    SizedBox(height: AppSpacing.sm),
                     if (item.suggestedSpecialty != null)
                       _MetaRow(
                         icon: Icons.medical_services_outlined,
@@ -452,24 +460,22 @@ class _DetailBubble extends StatelessWidget {
           height: 28,
           decoration: BoxDecoration(
             gradient: isUser ? null : AppColors.primaryGradient,
-            color: isUser ? AppColors.primary.withOpacity(0.15) : null,
+            color: isUser ? AppColors.primarySoft : null,
             shape: BoxShape.circle,
           ),
           child: Icon(
             isUser ? Icons.person : Icons.psychology,
             size: 15,
-            color: isUser ? AppColors.primary : Colors.white,
+            color: isUser ? AppColors.primary : AppColors.white,
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: AppSpacing.sm + 2),
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: AppSpacing.paddingSm,
             decoration: BoxDecoration(
-              color: isUser
-                  ? AppColors.primary.withOpacity(0.07)
-                  : AppColors.background,
-              borderRadius: BorderRadius.circular(12),
+              color: isUser ? AppColors.primarySoft : AppColors.background,
+              borderRadius: AppSizing.borderRadiusMd,
               border: Border.all(color: AppColors.border),
             ),
             child: SelectableText(
@@ -493,16 +499,24 @@ class _MetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.textHint),
-          const SizedBox(width: 8),
-          Text('$label: ',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textHint)),
-          Text(value,
-              style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          Icon(icon, size: AppSizing.iconSm, color: AppColors.textTertiary),
+          SizedBox(width: AppSpacing.sm),
+          Text(
+            '$label: ',
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textTertiary,
+            ),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.caption.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
         ],
       ),
     );
@@ -520,17 +534,21 @@ class _UrgencyBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color, icon) = switch (urgency) {
-      UrgencyLevel.emergency => ('Urgence', Colors.red, Icons.emergency),
-      UrgencyLevel.high => ('Sérieux', Colors.deepOrange, Icons.warning_amber),
-      UrgencyLevel.medium => ('Modéré', Colors.orange, Icons.info_outline),
-      UrgencyLevel.low => ('Léger', Colors.green, Icons.check_circle_outline),
+      UrgencyLevel.emergency => ('Urgence', AppColors.error, Icons.emergency),
+      UrgencyLevel.high => ('Sérieux', AppColors.error, Icons.warning_amber),
+      UrgencyLevel.medium => ('Modéré', AppColors.warning, Icons.info_outline),
+      UrgencyLevel.low => (
+          'Léger',
+          AppColors.success,
+          Icons.check_circle_outline
+        ),
     };
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppSizing.borderRadiusFull,
         border: Border.all(color: color.withOpacity(0.4)),
       ),
       child: Row(
@@ -538,9 +556,14 @@ class _UrgencyBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 12, color: color),
           const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: AppTextStyles.overline.copyWith(
+              fontSize: 11,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -559,16 +582,21 @@ class _Tag extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppSizing.borderRadiusSm,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 11, color: color),
           const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11, color: color, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: AppTextStyles.overline.copyWith(
+              fontSize: 11,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -588,16 +616,26 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.chat_bubble_outline,
-              size: 64, color: AppColors.textHint.withOpacity(0.5)),
-          const SizedBox(height: 16),
-          Text('Aucune conversation',
-              style:
-                  AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint)),
-          const SizedBox(height: 8),
-          Text('Vos conversations avec l\'assistant apparaîtront ici.',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
-              textAlign: TextAlign.center),
+          Icon(
+            Icons.chat_bubble_outline,
+            size: AppSizing.iconXxl,
+            color: AppColors.textDisabled,
+          ),
+          SizedBox(height: AppSpacing.md),
+          Text(
+            'Aucune conversation',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SizedBox(height: AppSpacing.sm),
+          Text(
+            'Vos conversations avec l\'assistant apparaîtront ici.',
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textTertiary,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -613,11 +651,18 @@ class _NoResultsState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.search_off, size: 48, color: AppColors.textHint),
-          const SizedBox(height: 12),
-          Text('Aucun résultat',
-              style:
-                  AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint)),
+          Icon(
+            Icons.search_off,
+            size: AppSizing.iconXl,
+            color: AppColors.textTertiary,
+          ),
+          SizedBox(height: AppSpacing.sm + 4),
+          Text(
+            'Aucun résultat',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -635,16 +680,23 @@ class _ErrorState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 12),
-          Text(message,
-              style:
-                  AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint)),
-          const SizedBox(height: 16),
+          Icon(Icons.error_outline,
+              size: AppSizing.iconXl, color: AppColors.error),
+          SizedBox(height: AppSpacing.sm + 4),
+          Text(
+            message,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
           ElevatedButton.icon(
             onPressed: onRetry,
-            icon: const Icon(Icons.refresh, size: 16),
-            label: const Text('Réessayer'),
+            icon: Icon(Icons.refresh, size: AppSizing.iconSm),
+            label: Text('Réessayer', style: AppTextStyles.button),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
           ),
         ],
       ),

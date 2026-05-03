@@ -156,7 +156,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       children: [
         const Text(
           '🕐 Créneaux disponibles',
-          style: AppTextStyles.subtitle2,
+          //     style: AppTextStyles.subtitle2,
         ),
         const SizedBox(height: 12),
         Obx(() {
@@ -219,7 +219,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       children: [
         const Text(
           '📝 Motif (optionnel)',
-          style: AppTextStyles.subtitle2,
+          //   style: AppTextStyles.subtitle2,
         ),
         const SizedBox(height: 8),
         TextField(

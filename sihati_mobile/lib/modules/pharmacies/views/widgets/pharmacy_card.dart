@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sihati_mobile/core/models/pharmacy_model.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/widgets/favorite_button.dart';
 
 class PharmacyCard extends StatelessWidget {
@@ -16,161 +16,238 @@ class PharmacyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    final isOpenNow = pharmacy.isOpenNow;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isOpenNow
+              ? AppColors.success
+              : (pharmacy.isOnDutyTonight
+                  ? AppColors.primary
+                  : AppColors.border),
+          width: (isOpenNow || pharmacy.isOnDutyTonight) ? 2 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isOpenNow
+                ? AppColors.success.withOpacity(0.15)
+                : (pharmacy.isOnDutyTonight
+                    ? AppColors.primary.withOpacity(0.15)
+                    : Colors.black.withOpacity(0.04)),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with name and duty badge
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      pharmacy.pharmacyName,
-                      style: AppTextStyles.h6,
-                    ),
-                  ),
-                  if (pharmacy.isOnDutyTonight)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.onDutyBadge,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.nights_stay,
-                            size: 14,
-                            color: AppColors.white,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'DE GARDE',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  PharmacyFavoriteButton(pharmacy: pharmacy, size: 20),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Address
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      pharmacy.fullAddress,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              // Phone
-              Row(
-                children: [
-                  const Icon(
-                    Icons.phone,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    pharmacy.phone,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-
-                  // WhatsApp badge
-                  if (pharmacy.hasWhatsapp) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF25D366),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.chat,
-                            size: 10,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'WhatsApp',
-                            style: AppTextStyles.caption.copyWith(
-                              color: Colors.white,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-
-              // Distance (if available)
-              if (pharmacy.distance != null) ...[
-                const SizedBox(height: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.directions_walk,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      pharmacy.formattedDistance,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isOpenNow
+                            ? AppColors.success
+                            : (pharmacy.isOnDutyTonight
+                                ? AppColors.primary
+                                : AppColors.primarySoft),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.local_pharmacy_rounded,
+                        size: 22,
+                        color: (isOpenNow || pharmacy.isOnDutyTonight)
+                            ? Colors.white
+                            : AppColors.primary,
                       ),
                     ),
+                    SizedBox(width: AppSpacing.sm + 4),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            pharmacy.pharmacyName,
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary),
+                          ),
+                          SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: pharmacy.statusColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: pharmacy.statusColor
+                                          .withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(pharmacy.statusIcon,
+                                        size: 12, color: pharmacy.statusColor),
+                                    SizedBox(width: 4),
+                                    Text(pharmacy.statusText,
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: pharmacy.statusColor)),
+                                  ],
+                                ),
+                              ),
+                              if (pharmacy.isOnDutyTonight && !isOpenNow) ...[
+                                SizedBox(width: 6),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                      gradient: AppColors.primaryGradient,
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.nightlight_round,
+                                          size: 10, color: Colors.white),
+                                      SizedBox(width: 4),
+                                      Text('GARDE',
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    PharmacyFavoriteButton(pharmacy: pharmacy, size: 20),
                   ],
                 ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 14, color: AppColors.textTertiary),
+                    SizedBox(width: 4),
+                    Expanded(
+                        child: Text(pharmacy.todayHours,
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.textSecondary))),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Icon(Icons.location_on_rounded,
+                            size: 14, color: AppColors.error)),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                        child: Text(pharmacy.fullAddress,
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.textSecondary),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                              padding: EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                  color: AppColors.secondary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: Icon(Icons.phone_rounded,
+                                  size: 14, color: AppColors.secondary)),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                              child: Text(pharmacy.phone,
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary))),
+                        ],
+                      ),
+                    ),
+                    if (pharmacy.hasWhatsapp)
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: Color(0xFF25D366),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.chat_rounded,
+                                size: 12, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text('WhatsApp',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                if (pharmacy.distance != null) ...[
+                  SizedBox(height: AppSpacing.sm),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm + 4,
+                        vertical: AppSpacing.sm - 2),
+                    decoration: BoxDecoration(
+                        color: AppColors.primarySoft,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: AppColors.primary.withOpacity(0.2))),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.near_me_rounded,
+                            size: 14, color: AppColors.primary),
+                        SizedBox(width: 6),
+                        Text(pharmacy.formattedDistance,
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary)),
+                      ],
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

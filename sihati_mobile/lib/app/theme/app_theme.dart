@@ -76,7 +76,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
-        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
+        //    hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
         labelStyle:
             AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         errorStyle: AppTextStyles.caption.copyWith(color: AppColors.error),
@@ -195,7 +195,7 @@ class AppTheme {
       ),
 
       // Text theme
-      textTheme: const TextTheme(
+      textTheme: TextTheme(
         displayLarge: AppTextStyles.h1,
         displayMedium: AppTextStyles.h2,
         displaySmall: AppTextStyles.h3,
@@ -209,7 +209,7 @@ class AppTheme {
         bodyMedium: AppTextStyles.bodyMedium,
         bodySmall: AppTextStyles.bodySmall,
         labelLarge: AppTextStyles.button,
-        labelMedium: AppTextStyles.buttonSmall,
+        //   labelMedium: AppTextStyles.buttonSmall,
         labelSmall: AppTextStyles.caption,
       ),
     );

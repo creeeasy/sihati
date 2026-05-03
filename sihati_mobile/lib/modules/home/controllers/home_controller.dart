@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../core/services/storage_service.dart';
@@ -16,6 +18,7 @@ class HomeController extends GetxController {
   final userName = ''.obs;
   final userRole = ''.obs;
   final isLoading = false.obs;
+  final isGuestMode = false.obs;
 
   // Quick stats
   final upcomingAppointments = 0.obs;
@@ -27,24 +30,43 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    checkGuestMode();
     loadUserData();
     loadQuickStats();
     loadRecentActivities();
   }
 
+  void checkGuestMode() {
+    isGuestMode.value = authRepository.isGuestMode.value;
+
+    if (isGuestMode.value) {
+      userName.value = 'Invité';
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════
-  // Greeting based on time of day
+  // Friendly greeting for guests
   // ═══════════════════════════════════════════════════════════════
 
   String get greeting {
     final hour = DateTime.now().hour;
 
-    if (hour < 12) {
-      return 'Comment allez-vous ce matin ?';
-    } else if (hour < 18) {
-      return 'Bon après-midi !';
+    if (isGuestMode.value) {
+      if (hour < 12) {
+        return 'Explorez Sihati librement ☀️';
+      } else if (hour < 18) {
+        return 'Découvrez nos services 🌟';
+      } else {
+        return 'Bienvenue sur Sihati 🌙';
+      }
     } else {
-      return 'Bonsoir !';
+      if (hour < 12) {
+        return 'Comment allez-vous ce matin ?';
+      } else if (hour < 18) {
+        return 'Bon après-midi !';
+      } else {
+        return 'Bonsoir !';
+      }
     }
   }
 
@@ -55,6 +77,12 @@ class HomeController extends GetxController {
   Future<void> loadUserData() async {
     try {
       isLoading.value = true;
+
+      if (isGuestMode.value) {
+        userName.value = 'Invité';
+        userRole.value = 'guest';
+        return;
+      }
 
       final user = await authRepository.getCurrentUser();
 
@@ -75,12 +103,14 @@ class HomeController extends GetxController {
 
   Future<void> loadQuickStats() async {
     try {
-      // TODO: Replace with real data from repositories
+      if (isGuestMode.value) {
+        upcomingAppointments.value = 0;
+        favoritesCount.value = 0;
+        return;
+      }
 
-      // Mock upcoming appointments count
       upcomingAppointments.value = 2;
 
-      // Load favorites count
       if (storageService != null) {
         final favMeds = await storageService!.getFavoriteMedications();
         favoritesCount.value = favMeds.length;
@@ -96,6 +126,11 @@ class HomeController extends GetxController {
 
   Future<void> loadRecentActivities() async {
     try {
+      if (isGuestMode.value) {
+        recentActivities.value = [];
+        return;
+      }
+
       if (storageService != null) {
         final history = await storageService!.getMedicationHistory();
 
@@ -135,7 +170,7 @@ class HomeController extends GetxController {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // Navigation Methods
+  // Navigation Methods - ONLY Rendez-vous checks for guest mode!
   // ═══════════════════════════════════════════════════════════════
 
   void goToMedicationSearch() {
@@ -155,6 +190,12 @@ class HomeController extends GetxController {
   }
 
   void goToProfile() {
+    // Profile requires login for both guests and logged-in users?
+    // If guests can't access profile, keep this check
+    if (isGuestMode.value) {
+      authRepository.promptLoginForFeature('accéder à votre profil');
+      return;
+    }
     Get.toNamed(AppRoutes.PROFILE);
   }
 
@@ -163,11 +204,12 @@ class HomeController extends GetxController {
   }
 
   void goToFavorites() {
+    // ✅ NO guest check - guests can use favorites
     Get.toNamed(AppRoutes.FAVORITES);
   }
 
   void goToMyMedications() {
-    // TODO: Navigate to my medications screen
+    // ✅ NO guest check - guests can use medications
     Get.snackbar(
       'Mes médicaments',
       'Fonctionnalité à venir',
@@ -176,11 +218,16 @@ class HomeController extends GetxController {
   }
 
   void goToMyAppointments() {
+    // ✅ ONLY THIS ONE requires login (rendez-vous)
+    if (isGuestMode.value) {
+      authRepository.promptLoginForFeature('prendre ou voir vos rendez-vous');
+      return;
+    }
     Get.toNamed(AppRoutes.MY_APPOINTMENTS);
   }
 
   void goToHistory() {
-    // TODO: Navigate to history screen
+    // ✅ NO guest check - guests can use history
     Get.snackbar(
       'Historique',
       'Fonctionnalité à venir',
@@ -188,18 +235,44 @@ class HomeController extends GetxController {
     );
   }
 
-  void goToAllServices() {
-    // TODO: Navigate to all services screen
-    Get.snackbar(
-      'Tous les services',
-      'Fonctionnalité à venir',
-      snackPosition: SnackPosition.BOTTOM,
+  void logoutGuest() {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text('Quitter le mode invité'),
+        content: const Text(
+          'Créez un compte pour sauvegarder vos données ou continuez sans sauvegarde.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+              authRepository.logout();
+            },
+            child: const Text(
+              'Quitter',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              Get.toNamed(AppRoutes.REGISTER);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Créer un compte'),
+          ),
+        ],
+      ),
     );
   }
-
-  // ═══════════════════════════════════════════════════════════════
-  // Refresh
-  // ═══════════════════════════════════════════════════════════════
 
   Future<void> refresh() async {
     await Future.wait([
