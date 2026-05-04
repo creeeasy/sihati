@@ -1,18 +1,17 @@
+// lib/core/models/appointment_model.dart
 import 'doctor_model.dart';
 
 class AppointmentModel {
-  final int id;
-  final int patientId;
-  final int doctorId;
+  final String id; // ✅ Changed from int to String (UUID)
+  final String patientId; // ✅ Changed from int to String (UUID)
+  final String doctorId; // ✅ Changed from int to String (UUID)
   final DateTime appointmentDate;
-  final String appointmentTime; // "10:00", "14:30"
+  final String appointmentTime;
   final AppointmentStatus status;
   final String? reason;
   final String? notes;
   final DateTime createdAt;
   final DateTime? updatedAt;
-
-  // Optional: populated when fetching appointment details
   final DoctorModel? doctor;
 
   AppointmentModel({
@@ -31,9 +30,9 @@ class AppointmentModel {
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
     return AppointmentModel(
-      id: json['id'] as int,
-      patientId: json['patientId'] ?? json['patient_id'] ?? 0,
-      doctorId: json['doctorId'] ?? json['doctor_id'] ?? 0,
+      id: json['id'].toString(), // ✅ Convert to String
+      patientId: (json['patientId'] ?? json['patient_id'] ?? '').toString(),
+      doctorId: (json['doctorId'] ?? json['doctor_id'] ?? '').toString(),
       appointmentDate:
           DateTime.parse(json['appointmentDate'] ?? json['appointment_date']),
       appointmentTime:
@@ -72,7 +71,6 @@ class AppointmentModel {
     };
   }
 
-  // Helper: Get formatted date
   String get formattedDate {
     final months = [
       'Janvier',
@@ -91,17 +89,9 @@ class AppointmentModel {
     return '${appointmentDate.day} ${months[appointmentDate.month - 1]} ${appointmentDate.year}';
   }
 
-  // Helper: Get formatted time
-  String get formattedTime {
-    return appointmentTime;
-  }
+  String get formattedTime => appointmentTime;
+  String get formattedDateTime => '$formattedDate à $appointmentTime';
 
-  // Helper: Get formatted date and time
-  String get formattedDateTime {
-    return '$formattedDate à $appointmentTime';
-  }
-
-  // Helper: Check if upcoming
   bool get isUpcoming {
     final now = DateTime.now();
     final appointmentDateTime = DateTime(
@@ -116,7 +106,6 @@ class AppointmentModel {
             status == AppointmentStatus.confirmed);
   }
 
-  // Helper: Check if past
   bool get isPast {
     final now = DateTime.now();
     final appointmentDateTime = DateTime(
@@ -130,7 +119,6 @@ class AppointmentModel {
         status == AppointmentStatus.completed;
   }
 
-  // Helper: Check if today
   bool get isToday {
     final now = DateTime.now();
     return appointmentDate.year == now.year &&
@@ -138,7 +126,6 @@ class AppointmentModel {
         appointmentDate.day == now.day;
   }
 
-  // Helper: Check if tomorrow
   bool get isTomorrow {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     return appointmentDate.year == tomorrow.year &&
@@ -146,49 +133,18 @@ class AppointmentModel {
         appointmentDate.day == tomorrow.day;
   }
 
-  // Helper: Get relative date text
   String get relativeDateText {
     if (isToday) return 'Aujourd\'hui';
     if (isTomorrow) return 'Demain';
     return formattedDate;
   }
 
-  // Helper: Get status color
-  static int getStatusColor(AppointmentStatus status) {
-    switch (status) {
-      case AppointmentStatus.pending:
-        return 0xFFFFA726; // Orange
-      case AppointmentStatus.confirmed:
-        return 0xFF66BB6A; // Green
-      case AppointmentStatus.cancelled:
-        return 0xFFEF5350; // Red
-      case AppointmentStatus.completed:
-        return 0xFF42A5F5; // Blue
-    }
-  }
-
-  // Helper: Get status text
-  static String getStatusText(AppointmentStatus status) {
-    switch (status) {
-      case AppointmentStatus.pending:
-        return 'En attente';
-      case AppointmentStatus.confirmed:
-        return 'Confirmé';
-      case AppointmentStatus.cancelled:
-        return 'Annulé';
-      case AppointmentStatus.completed:
-        return 'Terminé';
-    }
-  }
-
-  // Helper: Can cancel
   bool get canCancel {
     return (status == AppointmentStatus.pending ||
             status == AppointmentStatus.confirmed) &&
         isUpcoming;
   }
 
-  // Helper: Can reschedule
   bool get canReschedule {
     return (status == AppointmentStatus.pending ||
             status == AppointmentStatus.confirmed) &&
@@ -210,9 +166,9 @@ class AppointmentModel {
   }
 
   AppointmentModel copyWith({
-    int? id,
-    int? patientId,
-    int? doctorId,
+    String? id,
+    String? patientId,
+    String? doctorId,
     DateTime? appointmentDate,
     String? appointmentTime,
     AppointmentStatus? status,
@@ -235,6 +191,32 @@ class AppointmentModel {
       updatedAt: updatedAt ?? this.updatedAt,
       doctor: doctor ?? this.doctor,
     );
+  }
+
+  static int getStatusColor(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.pending:
+        return 0xFFFFA726; // Orange
+      case AppointmentStatus.confirmed:
+        return 0xFF66BB6A; // Green
+      case AppointmentStatus.cancelled:
+        return 0xFFEF5350; // Red
+      case AppointmentStatus.completed:
+        return 0xFF42A5F5; // Blue
+    }
+  }
+
+  static String getStatusText(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.pending:
+        return 'En attente';
+      case AppointmentStatus.confirmed:
+        return 'Confirmé';
+      case AppointmentStatus.cancelled:
+        return 'Annulé';
+      case AppointmentStatus.completed:
+        return 'Terminé';
+    }
   }
 
   @override

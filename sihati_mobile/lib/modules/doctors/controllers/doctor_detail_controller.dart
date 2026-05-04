@@ -19,7 +19,8 @@ class DoctorDetailController extends GetxController {
   final isFavorite = false.obs;
   final nextAvailableSlot = Rxn<String>();
 
-  int get doctorId => int.tryParse(Get.parameters['id'] ?? '0') ?? 0;
+  // ✅ CORRIGÉ: String ID
+  String get doctorId => Get.parameters['id'] ?? ''; // ✅ String
 
   @override
   void onInit() {
@@ -28,7 +29,8 @@ class DoctorDetailController extends GetxController {
   }
 
   Future<void> loadDoctorDetails() async {
-    if (doctorId == 0) {
+    // ✅ CORRIGÉ: Vérifier si ID est vide
+    if (doctorId.isEmpty) {
       errorMessage.value = 'ID de médecin invalide';
       return;
     }
@@ -37,6 +39,7 @@ class DoctorDetailController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
+      // ✅ CORRIGÉ: Passage String ID
       final doctorData = await doctorRepository.getDoctorDetails(doctorId);
       doctor.value = doctorData;
 
@@ -52,6 +55,7 @@ class DoctorDetailController extends GetxController {
     if (appointmentRepository == null || doctor.value == null) return;
 
     try {
+      // ✅ CORRIGÉ: doctor.value!.id est déjà String
       final slot =
           await appointmentRepository!.getNextAvailableSlot(doctor.value!.id);
       nextAvailableSlot.value = slot;
@@ -175,7 +179,7 @@ class DoctorDetailController extends GetxController {
 🏥 ${doctor.value!.specialty.nameFr}
 📞 ${doctor.value!.phone}
 📍 ${doctor.value!.clinicAddress}, ${doctor.value!.wilaya}
-💰 ${formattedFee}
+💰 $formattedFee
     '''
         .trim();
 
@@ -276,5 +280,10 @@ class DoctorDetailController extends GetxController {
     }
     parts.add(doctor.value!.wilaya);
     return parts.join(', ');
+  }
+
+  // ✅ AJOUT: Méthode pour rafraîchir
+  Future<void> refreshDoctor() async {
+    await loadDoctorDetails();
   }
 }

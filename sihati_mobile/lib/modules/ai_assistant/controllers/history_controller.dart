@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import '../../../../core/services/ai_service.dart';
 
 class ConversationHistoryItem {
-  final int id;
+  final String id; // ✅ Changé en String
   final String userMessage;
   final String aiResponse;
   final DateTime createdAt;
@@ -12,7 +12,7 @@ class ConversationHistoryItem {
   final int medicationCount;
 
   ConversationHistoryItem.fromJson(Map<String, dynamic> j)
-      : id = j['id'],
+      : id = j['id'].toString(), // ✅ Converti en String
         userMessage = j['userMessage'] ?? j['user_message'] ?? '',
         aiResponse = j['aiResponse'] ?? j['ai_response'] ?? '',
         createdAt = DateTime.parse(j['createdAt'] ?? j['created_at']),

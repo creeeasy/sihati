@@ -1,7 +1,7 @@
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+// lib/core/services/ai_service.dart
 import 'package:get/get.dart';
-import 'package:sihati_mobile/app/constants/api_constants.dart';
+import '../../app/constants/api_constants.dart';
+import 'api_service.dart';
 
 // ─── Models ───────────────────────────────────────────────────
 
@@ -20,25 +20,21 @@ UrgencyLevel urgencyFromString(String? s) {
   }
 }
 
-class PharmacyStock {
-  final int pharmacyId;
-  final String pharmacyName;
-  final String wilaya;
-  final String phone;
-  final bool isOnDutyTonight;
-  final bool inStock;
-  final double? price;
-  final double? distance;
+class ChatResponse {
+  final String reply;
+  final UrgencyLevel urgency;
+  final bool isSymptomRelated;
+  final String? suggestedSpecialty;
+  final List<AIMedicationResult> medicationSuggestions;
 
-  PharmacyStock.fromJson(Map<String, dynamic> j)
-      : pharmacyId = j['pharmacyId'],
-        pharmacyName = j['pharmacyName'],
-        wilaya = j['wilaya'],
-        phone = j['phone'],
-        isOnDutyTonight = j['isOnDutyTonight'] ?? false,
-        inStock = j['inStock'] ?? false,
-        price = (j['price'] as num?)?.toDouble(),
-        distance = (j['distance'] as num?)?.toDouble();
+  ChatResponse.fromJson(Map<String, dynamic> j)
+      : reply = j['reply'] ?? '',
+        urgency = urgencyFromString(j['urgency']),
+        isSymptomRelated = j['isSymptomRelated'] ?? false,
+        suggestedSpecialty = j['suggestedSpecialty'],
+        medicationSuggestions = (j['medicationSuggestions'] as List? ?? [])
+            .map((m) => AIMedicationResult.fromJson(m))
+            .toList();
 }
 
 class AIMedicationResult {
@@ -51,7 +47,7 @@ class AIMedicationResult {
   final List<PharmacyStock> availableInPharmacies;
 
   AIMedicationResult.fromJson(Map<String, dynamic> j)
-      : name = j['name'],
+      : name = j['name'] ?? '',
         genericName = j['genericName'],
         category = j['category'],
         requiresPrescription = j['requiresPrescription'] ?? false,
@@ -65,76 +61,29 @@ class AIMedicationResult {
   int get stockCount => availableInPharmacies.where((p) => p.inStock).length;
 }
 
-class ChatResponse {
-  final String reply;
-  final UrgencyLevel urgency;
-  final bool isSymptomRelated;
-  final String? suggestedSpecialty;
-  final List<AIMedicationResult> medicationSuggestions;
+class PharmacyStock {
+  final int pharmacyId;
+  final String pharmacyName;
+  final String wilaya;
+  final String phone;
+  final bool isOnDutyTonight;
+  final bool inStock;
+  final double? price;
+  final double? distance;
 
-  ChatResponse.fromJson(Map<String, dynamic> j)
-      : reply = j['reply'],
-        urgency = urgencyFromString(j['urgency']),
-        isSymptomRelated = j['isSymptomRelated'] ?? false,
-        suggestedSpecialty = j['suggestedSpecialty'],
-        medicationSuggestions = (j['medicationSuggestions'] as List? ?? [])
-            .map((m) => AIMedicationResult.fromJson(m))
-            .toList();
+  PharmacyStock.fromJson(Map<String, dynamic> j)
+      : pharmacyId = j['pharmacyId'] ?? 0,
+        pharmacyName = j['pharmacyName'] ?? '',
+        wilaya = j['wilaya'] ?? '',
+        phone = j['phone'] ?? '',
+        isOnDutyTonight = j['isOnDutyTonight'] ?? false,
+        inStock = j['inStock'] ?? false,
+        price = (j['price'] as num?)?.toDouble(),
+        distance = (j['distance'] as num?)?.toDouble();
 }
 
-class InteractionResponse {
-  final bool safe;
-  final String severity;
-  final String reply;
-
-  InteractionResponse.fromJson(Map<String, dynamic> j)
-      : safe = j['safe'] ?? true,
-        severity = j['severity'] ?? 'unknown',
-        reply = j['reply'] ?? '';
-}
-
-class MedicationInfoResponse {
-  // Original fields — unchanged
-  final String reply;
-  final String usage;
-  final String dosage;
-  final String warnings;
-  final bool foundInDb;
-  final Map<String, dynamic>? dbData;
-
-  // Extended fields for detail screen — default to '' if backend doesn't send them
-  final String contraindications;
-  final String sideEffects;
-  final String pregnancy;
-  final String interactions;
-
-  MedicationInfoResponse.fromJson(Map<String, dynamic> j)
-      : reply = j['reply'] ?? '',
-        usage = j['usage'] ?? '',
-        dosage = j['dosage'] ?? '',
-        warnings = j['warnings'] ?? '',
-        foundInDb = j['foundInDb'] ?? false,
-        dbData = j['dbData'],
-        contraindications = j['contraindications'] ?? '',
-        sideEffects = j['sideEffects'] ?? '',
-        pregnancy = j['pregnancy'] ?? '',
-        interactions = j['interactions'] ?? '';
-}
-
-class SpecialtyResponse {
-  final String specialty;
-  final String reason;
-  final UrgencyLevel urgency;
-
-  SpecialtyResponse.fromJson(Map<String, dynamic> j)
-      : specialty = j['specialty'] ?? 'Médecine Générale',
-        reason = j['reason'] ?? '',
-        urgency = urgencyFromString(j['urgency']);
-}
-
-// Conversation history item — mirrors backend ChatHistoryItem
 class HistoryItem {
-  final String role; // 'user' | 'model'
+  final String role;
   final String text;
 
   HistoryItem({required this.role, required this.text});
@@ -150,63 +99,14 @@ class HistoryItem {
 // ─── AI Service ───────────────────────────────────────────────
 
 class AIService extends GetxService {
-  // Android emulator: 'http://10.0.2.2:3000'
-  // iOS simulator:    'http://localhost:3000'
-  // Production:       'https://your-backend.onrender.com'
-
-  String? _authToken;
+  final ApiService _apiService = Get.find<ApiService>();
 
   Future<AIService> init() async {
     print('🤖 AI Service initialized — ${ApiConstants.BASE_URL}');
-    final ok = await _testConnection();
-    print(ok
-        ? '✅ Backend reachable'
-        : '⚠️ Backend not reachable at ${ApiConstants.BASE_URL}');
     return this;
   }
 
-  void setAuthToken(String? token) {
-    _authToken = token;
-    print('🔑 Auth token ${token != null ? "set" : "cleared"}');
-  }
-
-  // ─── Shared helpers ────────────────────────────────────────
-
-  Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        if (_authToken != null) 'Authorization': 'Bearer $_authToken',
-      };
-
-  Future<Map<String, dynamic>> _post(
-    String path,
-    Map<String, dynamic> body,
-  ) async {
-    final response = await http
-        .post(
-          Uri.parse('${ApiConstants.BASE_URL}$path'),
-          headers: _headers,
-          body: json.encode(body),
-        )
-        .timeout(
-          const Duration(seconds: 30),
-          onTimeout: () => throw Exception('Timeout'),
-        );
-
-    final data = json.decode(response.body) as Map<String, dynamic>;
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return data['data'] as Map<String, dynamic>;
-    }
-
-    if (response.statusCode == 429) {
-      throw Exception("Limite d'utilisation atteinte. Veuillez patienter.");
-    }
-
-    throw Exception(data['message'] ?? 'Erreur serveur');
-  }
-
-  // ─── POST /api/ai/chat ─────────────────────────────────────
-  // Sends message + history + optional GPS location
+  // ─── POST /ai/chat ─────────────────────────────────────
   Future<ChatResponse> sendQuery(
     String message,
     List<HistoryItem> history, {
@@ -219,7 +119,8 @@ class AIService extends GetxService {
         'history': history.map((h) => h.toJson()).toList(),
         if (lat != null && lng != null) 'location': {'lat': lat, 'lng': lng},
       };
-      final data = await _post('/api/ai/chat', body);
+      final response = await _apiService.post('/ai/chat', data: body);
+      final data = response.data['data'] ?? response.data;
       return ChatResponse.fromJson(data);
     } catch (e) {
       print('❌ sendQuery error: $e');
@@ -233,25 +134,28 @@ class AIService extends GetxService {
     }
   }
 
-  // ─── POST /api/ai/interaction ──────────────────────────────
+  // ─── POST /ai/interaction ──────────────────────────────
   Future<String> checkDrugInteraction({
     required String medication1,
     required String medication2,
   }) async {
     try {
-      final data = await _post(
-        '/api/ai/interaction',
-        {'med1': medication1, 'med2': medication2},
+      final response = await _apiService.post(
+        '/ai/interaction',
+        data: {'med1': medication1, 'med2': medication2},
       );
-      final response = InteractionResponse.fromJson(data);
+      final data = response.data['data'] ?? response.data;
+      final safe = data['safe'] ?? true;
+      final severity = data['severity'] ?? 'unknown';
+      final reply = data['reply'] ?? '';
 
-      if (response.safe) {
+      if (safe) {
         return '✅ Aucune interaction connue entre $medication1 et $medication2.\n\n'
             'Consultez toujours votre médecin ou pharmacien avant de combiner des médicaments.';
       }
 
       final String emoji;
-      switch (response.severity) {
+      switch (severity) {
         case 'high':
           emoji = '🚫';
           break;
@@ -262,8 +166,8 @@ class AIService extends GetxService {
           emoji = '⚡';
       }
 
-      return '$emoji Interaction détectée (${response.severity})\n\n'
-          '${response.reply}\n\n'
+      return '$emoji Interaction détectée ($severity)\n\n'
+          '$reply\n\n'
           '⚠️ Consultez votre médecin ou pharmacien.';
     } catch (e) {
       print('❌ checkDrugInteraction error: $e');
@@ -271,16 +175,20 @@ class AIService extends GetxService {
     }
   }
 
-  // ─── POST /api/ai/ask-medication ────────────────────────────
+  // ─── POST /ai/ask-medication ────────────────────────────
   Future<String> askMedicationQuestion({
     required String medicationName,
     required String question,
   }) async {
     try {
-      final data = await _post('/api/ai/ask-medication', {
-        'medicationName': medicationName,
-        'question': question,
-      });
+      final response = await _apiService.post(
+        '/ai/ask-medication',
+        data: {
+          'medicationName': medicationName,
+          'question': question,
+        },
+      );
+      final data = response.data['data'] ?? response.data;
       return data['answer'] as String? ??
           'Désolé, je ne peux pas répondre à cette question.';
     } catch (e) {
@@ -289,87 +197,85 @@ class AIService extends GetxService {
     }
   }
 
-  // ─── POST /api/ai/medication-info ──────────────────────────
-  Future<MedicationInfoResponse> getMedicationInfo(String name) async {
+  // ─── POST /ai/medication-info ──────────────────────────
+  Future<Map<String, dynamic>> getMedicationInfo(String name) async {
     try {
-      final data = await _post('/api/ai/medication-info', {'medication': name});
-      return MedicationInfoResponse.fromJson(data);
+      final response = await _apiService.post(
+        '/ai/medication-info',
+        data: {'medication': name},
+      );
+      final data = response.data['data'] ?? response.data;
+      return {
+        'reply': data['reply'] ?? '',
+        'usage': data['usage'] ?? '',
+        'dosage': data['dosage'] ?? '',
+        'warnings': data['warnings'] ?? '',
+        'foundInDb': data['foundInDb'] ?? false,
+        'contraindications': data['contraindications'] ?? '',
+        'sideEffects': data['sideEffects'] ?? '',
+        'pregnancy': data['pregnancy'] ?? '',
+        'interactions': data['interactions'] ?? '',
+      };
     } catch (e) {
       print('❌ getMedicationInfo error: $e');
-      return MedicationInfoResponse.fromJson({
+      return {
         'reply': 'Impossible de récupérer les informations.',
         'usage': '',
         'dosage': '',
         'warnings': '',
         'foundInDb': false,
-      });
+        'contraindications': '',
+        'sideEffects': '',
+        'pregnancy': '',
+        'interactions': '',
+      };
     }
   }
 
-  // ─── POST /api/ai/specialty ────────────────────────────────
-  Future<SpecialtyResponse> suggestSpecialty(String symptoms) async {
+  // ─── POST /ai/specialty ────────────────────────────────
+  Future<Map<String, dynamic>> suggestSpecialty(String symptoms) async {
     try {
-      final data = await _post('/api/ai/specialty', {'symptoms': symptoms});
-      return SpecialtyResponse.fromJson(data);
+      final response = await _apiService.post(
+        '/ai/specialty',
+        data: {'symptoms': symptoms},
+      );
+      final data = response.data['data'] ?? response.data;
+      return {
+        'specialty': data['specialty'] ?? 'Médecine Générale',
+        'reason': data['reason'] ?? '',
+        'urgency': data['urgency'] ?? 'low',
+      };
     } catch (e) {
       print('❌ suggestSpecialty error: $e');
-      return SpecialtyResponse.fromJson({
+      return {
         'specialty': 'Médecine Générale',
         'reason': 'Consultez un médecin généraliste.',
         'urgency': 'low',
-      });
+      };
     }
   }
 
-  // ─── GET /api/ai/conversation/:id ────────────────────────
+  // ─── GET /ai/conversation/:id ────────────────────────
   Future<Map<String, dynamic>?> getConversation(int id) async {
     try {
-      final response = await http
-          .get(Uri.parse('${ApiConstants.BASE_URL}/api/ai/conversation/$id'),
-              headers: _headers)
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data']['conversation'] as Map<String, dynamic>;
-      }
-      return null;
+      final response = await _apiService.get('/ai/conversation/$id');
+      final data = response.data['data'] ?? response.data;
+      return data['conversation'] as Map<String, dynamic>;
     } catch (e) {
       print('❌ getConversation error: $e');
       return null;
     }
   }
 
-  // ─── GET /api/ai/history ───────────────────────────────────
+  // ─── GET /ai/history ───────────────────────────────────
   Future<List<Map<String, dynamic>>> getHistory() async {
     try {
-      final response = await http
-          .get(Uri.parse('${ApiConstants.BASE_URL}/api/ai/history'),
-              headers: _headers)
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(
-            data['data']['conversations'] ?? []);
-      }
-      return [];
+      final response = await _apiService.get('/ai/history');
+      final data = response.data['data'] ?? response.data;
+      return List<Map<String, dynamic>>.from(data['conversations'] ?? []);
     } catch (e) {
       print('❌ getHistory error: $e');
       return [];
-    }
-  }
-
-  // ─── Connection test ───────────────────────────────────────
-
-  Future<bool> _testConnection() async {
-    try {
-      final response = await http
-          .get(Uri.parse('${ApiConstants.BASE_URL}/health'))
-          .timeout(const Duration(seconds: 5));
-      return response.statusCode == 200;
-    } catch (_) {
-      return false;
     }
   }
 
@@ -377,7 +283,7 @@ class AIService extends GetxService {
     final msg = e.toString();
     if (msg.contains('Failed host lookup') ||
         msg.contains('Network is unreachable')) {
-      return '⚠️ Impossible de contacter le serveur.\nVérifiez que le backend tourne sur:\n${ApiConstants.BASE_URL}';
+      return '⚠️ Impossible de contacter le serveur.\nVérifiez votre connexion.';
     } else if (msg.contains('Connection refused')) {
       return '⚠️ Connexion refusée — vérifiez l\'URL: ${ApiConstants.BASE_URL}';
     } else if (msg.contains('Timeout')) {

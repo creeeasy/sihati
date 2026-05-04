@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/empty_state.dart';

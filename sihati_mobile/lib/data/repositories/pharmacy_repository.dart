@@ -1,17 +1,17 @@
-import 'package:get/get.dart';
-import 'package:sihati_mobile/core/models/pharmacy_model.dart';
+// lib/data/repositories/pharmacy_repository.dart
+import '../providers/pharmacy_provider.dart';
 import '../../core/services/location_service.dart';
-import '../providers/mock/mock_pharmacy_provider.dart';
+import '../../core/models/pharmacy_model.dart';
 
 /// Pharmacy repository
 /// Handles pharmacy data operations and location-based queries
 /// Coordinates between PharmacyProvider and LocationService
 class PharmacyRepository {
-  final MockPharmacyProvider _pharmacyProvider;
+  final PharmacyProvider _pharmacyProvider;
   final LocationService _locationService;
 
   PharmacyRepository({
-    required MockPharmacyProvider pharmacyProvider,
+    required PharmacyProvider pharmacyProvider,
     required LocationService locationService,
   })  : _pharmacyProvider = pharmacyProvider,
         _locationService = locationService;
@@ -26,12 +26,11 @@ class PharmacyRepository {
   }
 
   /// Get nearby pharmacies using current location
-  /// Throws exception if location permission is denied
   Future<List<PharmacyModel>> getNearbyPharmacies({
     double radius = 5,
+    String? wilaya,
   }) async {
     try {
-      // Get current location
       final position = await _locationService.getCurrentLocation();
 
       if (position == null) {
@@ -41,30 +40,30 @@ class PharmacyRepository {
         );
       }
 
-      // Get pharmacies within radius
-      final pharmacies = await _pharmacyProvider.getNearbyPharmacies(
+      return await _pharmacyProvider.getNearbyPharmacies(
         position.latitude,
         position.longitude,
         radius: radius,
+        wilaya: wilaya,
       );
-
-      return pharmacies;
     } catch (e) {
       rethrow;
     }
   }
 
-  /// Get nearby pharmacies with custom location (for search by address)
+  /// Get nearby pharmacies with custom location
   Future<List<PharmacyModel>> getNearbyPharmaciesAt({
     required double latitude,
     required double longitude,
     double radius = 5,
+    String? wilaya,
   }) async {
     try {
       return await _pharmacyProvider.getNearbyPharmacies(
         latitude,
         longitude,
         radius: radius,
+        wilaya: wilaya,
       );
     } catch (e) {
       rethrow;
@@ -72,7 +71,7 @@ class PharmacyRepository {
   }
 
   /// Get pharmacy details by ID
-  Future<PharmacyModel> getPharmacyDetails(int id) async {
+  Future<PharmacyModel> getPharmacyDetails(String id) async {
     try {
       return await _pharmacyProvider.getPharmacyById(id);
     } catch (e) {
@@ -81,9 +80,33 @@ class PharmacyRepository {
   }
 
   /// Get pharmacies on duty tonight
-  Future<List<PharmacyModel>> getDutyPharmacies({String? wilaya}) async {
+  Future<List<PharmacyModel>> getDutyPharmacies({
+    String? wilaya,
+    bool useLocation = true,
+    double radius = 10,
+  }) async {
     try {
-      return await _pharmacyProvider.getDutyPharmacies(wilaya: wilaya);
+      double? latitude;
+      double? longitude;
+
+      if (useLocation) {
+        try {
+          final position = await _locationService.getCurrentLocation();
+          if (position != null) {
+            latitude = position.latitude;
+            longitude = position.longitude;
+          }
+        } catch (e) {
+          print('Failed to get location: $e');
+        }
+      }
+
+      return await _pharmacyProvider.getDutyPharmacies(
+        wilaya: wilaya,
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
     } catch (e) {
       rethrow;
     }
@@ -105,7 +128,6 @@ class PharmacyRepository {
   Future<List<PharmacyModel>> searchPharmacies(String query) async {
     try {
       if (query.isEmpty) {
-        // Return all if query is empty
         return await _pharmacyProvider.getAllPharmacies();
       }
 
@@ -160,12 +182,8 @@ class PharmacyRepository {
   ) async {
     try {
       final position = await _locationService.getCurrentLocation();
-      if (position == null) {
-        // Can't sort without location, return as is
-        return pharmacies;
-      }
+      if (position == null) return pharmacies;
 
-      // Calculate distance for each pharmacy
       final pharmaciesWithDistance = pharmacies.map((pharmacy) {
         final distance = _locationService.calculateDistance(
           position.latitude,
@@ -176,7 +194,6 @@ class PharmacyRepository {
         return pharmacy.copyWith(distance: distance);
       }).toList();
 
-      // Sort by distance
       pharmaciesWithDistance.sort((a, b) {
         if (a.distance == null && b.distance == null) return 0;
         if (a.distance == null) return 1;
@@ -186,7 +203,6 @@ class PharmacyRepository {
 
       return pharmaciesWithDistance;
     } catch (e) {
-      // Error getting location, return unsorted
       return pharmacies;
     }
   }

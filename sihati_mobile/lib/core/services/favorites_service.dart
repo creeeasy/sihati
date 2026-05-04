@@ -53,7 +53,8 @@ class FavoritesService extends GetxService {
 
   // ─── Pharmacies ───────────────────────────────────────────────
 
-  bool isPharmacyFavorite(int pharmacyId) =>
+  /// ✅ CORRIGÉ: String ID
+  bool isPharmacyFavorite(String pharmacyId) =>
       favoritePharmacies.any((p) => p.id == pharmacyId);
 
   Future<void> togglePharmacyFavorite(PharmacyModel pharmacy) async {
@@ -82,7 +83,8 @@ class FavoritesService extends GetxService {
     }
   }
 
-  Future<void> removePharmacyFavorite(int pharmacyId) async {
+  /// ✅ CORRIGÉ: String ID
+  Future<void> removePharmacyFavorite(String pharmacyId) async {
     favoritePharmacies.removeWhere((p) => p.id == pharmacyId);
     await _savePharmacies();
   }
@@ -99,7 +101,8 @@ class FavoritesService extends GetxService {
 
   // ─── Doctors ──────────────────────────────────────────────────
 
-  bool isDoctorFavorite(int doctorId) =>
+  /// ✅ CORRIGÉ: String ID
+  bool isDoctorFavorite(String doctorId) =>
       favoriteDoctors.any((d) => d.id == doctorId);
 
   Future<void> toggleDoctorFavorite(DoctorModel doctor) async {
@@ -128,7 +131,8 @@ class FavoritesService extends GetxService {
     }
   }
 
-  Future<void> removeDoctorFavorite(int doctorId) async {
+  /// ✅ CORRIGÉ: String ID
+  Future<void> removeDoctorFavorite(String doctorId) async {
     favoriteDoctors.removeWhere((d) => d.id == doctorId);
     await _saveDoctors();
   }

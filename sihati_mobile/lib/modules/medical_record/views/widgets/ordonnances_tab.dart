@@ -1,108 +1,131 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../controllers/medical_record_controller.dart';
+import '../../../../core/models/prescription_model.dart';
 
 // ========================================
 // TAB 2: ORDONNANCES
 // ========================================
 
-class OrdonnancesTabContent extends StatelessWidget {
-  final List<Ordonnance> ordonnances = [
-    Ordonnance(
-      id: '1',
-      date: DateTime(2026, 3, 15),
-      doctor: 'Dr. Sarah Mansouri',
-      specialty: 'Médecin Général',
-      medications: [
-        'Doliprane 1000mg - 3x/jour - 7 jours',
-        'Amoxicilline 500mg - 2x/jour - 10 jours',
-      ],
-      notes: 'Grippe saisonnière. Repos recommandé.',
-      hasFile: true,
-    ),
-    Ordonnance(
-      id: '2',
-      date: DateTime(2026, 2, 28),
-      doctor: 'Dr. Karim Benali',
-      specialty: 'Dermatologue',
-      medications: [
-        'Crème Hydratante - Application 2x/jour',
-      ],
-      notes: 'Traitement eczéma.',
-      hasFile: true,
-    ),
-    Ordonnance(
-      id: '3',
-      date: DateTime(2026, 1, 10),
-      doctor: 'Dr. Amina Zeroual',
-      specialty: 'Cardiologue',
-      medications: [
-        'Aspirine 100mg - 1x/jour - Traitement continu',
-        'Lisinopril 10mg - 1x/matin',
-      ],
-      notes: 'Suivi tension artérielle.',
-      hasFile: false,
-    ),
-  ];
+class OrdonnancesTabContent extends GetView<MedicalRecordController> {
+  const OrdonnancesTabContent({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Filter/Sort bar
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              bottom: BorderSide(
-                color: AppColors.border,
-                width: 1,
-              ),
-            ),
+    return Obx(() {
+      if (controller.isLoading.value && controller.prescriptions.isEmpty) {
+        return const Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
           ),
-          child: Row(
+        );
+      }
+
+      if (controller.prescriptions.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: Text(
-                  '${ordonnances.length} ordonnances',
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+              Icon(
+                Icons.description_outlined,
+                size: 80,
+                color: AppColors.primary.withOpacity(0.3),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const Text(
+                'Aucune ordonnance',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              TextButton.icon(
-                icon: const Icon(Icons.filter_list, size: 18),
-                label: const Text('Filtrer'),
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primary,
+              const SizedBox(height: AppSpacing.sm),
+              const Text(
+                'Vos ordonnances apparaîtront ici',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  color: AppColors.textTertiary,
                 ),
               ),
             ],
           ),
-        ),
+        );
+      }
+      return RefreshIndicator(
+        onRefresh: () async => controller.refreshData(),
+        color: AppColors.primary,
+        child: Column(
+          children: [
+            // Filter/Sort bar
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppColors.border,
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${controller.prescriptions.length} ordonnances',
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  // TODO: Implement filter functionality
+                  TextButton.icon(
+                    icon: const Icon(Icons.filter_list, size: 18),
+                    label: const Text('Filtrer'),
+                    onPressed: () {
+                      Get.snackbar(
+                        'Info',
+                        'Fonctionnalité à venir',
+                        snackPosition: SnackPosition.BOTTOM,
+                        duration: const Duration(seconds: 2),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-        // List
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            itemCount: ordonnances.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(height: AppSpacing.md),
-            itemBuilder: (context, index) {
-              return _buildOrdonnanceCard(ordonnances[index]);
-            },
-          ),
+            // List
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                itemCount: controller.prescriptions.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: AppSpacing.md),
+                itemBuilder: (context, index) {
+                  final prescription = controller.prescriptions[index];
+                  return _buildOrdonnanceCard(prescription);
+                },
+              ),
+            ),
+          ],
         ),
-      ],
-    );
+      );
+    });
   }
 
-  Widget _buildOrdonnanceCard(Ordonnance ordonnance) {
+  Widget _buildOrdonnanceCard(Prescription prescription) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -145,7 +168,7 @@ class OrdonnancesTabContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _formatDate(ordonnance.date),
+                        _formatDate(prescription.date),
                         style: const TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 16,
@@ -155,7 +178,7 @@ class OrdonnancesTabContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        ordonnance.doctor,
+                        prescription.doctor?.doctorName ?? 'Médecin',
                         style: const TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 13,
@@ -165,7 +188,7 @@ class OrdonnancesTabContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (ordonnance.hasFile)
+                if (prescription.fileUrl != null)
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -198,7 +221,8 @@ class OrdonnancesTabContent extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      ordonnance.specialty,
+                      prescription.doctor?.specialty.nameFr ??
+                          'Spécialité non spécifiée',
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 13,
@@ -224,7 +248,7 @@ class OrdonnancesTabContent extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                ...ordonnance.medications
+                ...prescription.medications
                     .map((med) => Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: Row(
@@ -241,14 +265,39 @@ class OrdonnancesTabContent extends StatelessWidget {
                               ),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: Text(
-                                  med,
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 13,
-                                    color: AppColors.textPrimary,
-                                    height: 1.4,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      med.medicationName,
+                                      style: const TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    if (med.dosage != null ||
+                                        med.frequency != null)
+                                      Text(
+                                        _formatMedicationDetails(med),
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    if (med.durationDays != null)
+                                      Text(
+                                        'Durée: ${med.durationDays} jours',
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 12,
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -256,7 +305,39 @@ class OrdonnancesTabContent extends StatelessWidget {
                         ))
                     .toList(),
 
-                if (ordonnance.notes != null) ...[
+                // Expiry warning
+                if (prescription.isExpired && !prescription.isRenewable)
+                  Container(
+                    margin: const EdgeInsets.only(top: AppSpacing.md),
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: AppColors.errorLight,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          size: 16,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Ordonnance expirée depuis le ${_formatDate(prescription.expiryDate)}',
+                            style: const TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 12,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Notes
+                if (prescription.notes != null) ...[
                   const SizedBox(height: AppSpacing.md),
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.md),
@@ -279,7 +360,7 @@ class OrdonnancesTabContent extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            ordonnance.notes!,
+                            prescription.notes!,
                             style: const TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 12,
@@ -301,19 +382,20 @@ class OrdonnancesTabContent extends StatelessWidget {
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.visibility, size: 18),
                         label: const Text('Voir détails'),
-                        onPressed: () {},
+                        onPressed: () => _viewPrescriptionDetails(prescription),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
                           side: const BorderSide(color: AppColors.primary),
                         ),
                       ),
                     ),
-                    if (ordonnance.hasFile) ...[
+                    if (prescription.fileUrl != null) ...[
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.download, size: 18),
                         label: const Text('PDF'),
-                        onPressed: () {},
+                        onPressed: () =>
+                            _downloadPrescriptionPDF(prescription.id),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -328,6 +410,17 @@ class OrdonnancesTabContent extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatMedicationDetails(PrescriptionMedication med) {
+    final details = <String>[];
+    if (med.dosage != null && med.dosage!.isNotEmpty) {
+      details.add(med.dosage!);
+    }
+    if (med.frequency != null && med.frequency!.isNotEmpty) {
+      details.add(med.frequency!);
+    }
+    return details.join(' - ');
   }
 
   String _formatDate(DateTime date) {
@@ -347,25 +440,28 @@ class OrdonnancesTabContent extends StatelessWidget {
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
-}
 
-// Model
-class Ordonnance {
-  final String id;
-  final DateTime date;
-  final String doctor;
-  final String specialty;
-  final List<String> medications;
-  final String? notes;
-  final bool hasFile;
+  void _viewPrescriptionDetails(Prescription prescription) {
+    // TODO: Navigate to prescription detail screen
+    Get.snackbar(
+      'Ordonnance',
+      'Détails de l\'ordonnance du ${_formatDate(prescription.date)}',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+    );
+  }
 
-  Ordonnance({
-    required this.id,
-    required this.date,
-    required this.doctor,
-    required this.specialty,
-    required this.medications,
-    this.notes,
-    required this.hasFile,
-  });
+  Future<void> _downloadPrescriptionPDF(String prescriptionId) async {
+    try {
+      await controller.downloadPrescriptionPDF(prescriptionId);
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible de télécharger l\'ordonnance',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
 }

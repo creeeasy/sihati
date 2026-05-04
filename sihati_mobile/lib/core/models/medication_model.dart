@@ -1,5 +1,6 @@
+// lib/core/models/medication_model.dart
 class MedicationModel {
-  final int id;
+  final String id; // ✅ Changed from int to String (UUID)
   final String name;
   final String? genericName;
   final String? category;
@@ -17,10 +18,9 @@ class MedicationModel {
     this.createdAt,
   });
 
-  // Create MedicationModel from JSON
   factory MedicationModel.fromJson(Map<String, dynamic> json) {
     return MedicationModel(
-      id: json['id'] as int,
+      id: json['id'].toString(), // ✅ Convert to String
       name: json['name'] as String,
       genericName: json['genericName'] ?? json['generic_name'],
       category: json['category'] as String?,
@@ -36,7 +36,6 @@ class MedicationModel {
     );
   }
 
-  // Convert MedicationModel to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -49,7 +48,6 @@ class MedicationModel {
     };
   }
 
-  // Helper: Get display name (with generic name if available)
   String get displayName {
     if (genericName != null && genericName!.isNotEmpty) {
       return '$name ($genericName)';
@@ -57,21 +55,18 @@ class MedicationModel {
     return name;
   }
 
-  // Helper: Get prescription badge text
   String get prescriptionBadge {
     return requiresPrescription ? 'Ordonnance requise' : 'Sans ordonnance';
   }
 
-  // Helper: Check if medication matches search query
   bool matchesSearch(String query) {
     final lowerQuery = query.toLowerCase();
     return name.toLowerCase().contains(lowerQuery) ||
         (genericName?.toLowerCase().contains(lowerQuery) ?? false);
   }
 
-  // CopyWith method
   MedicationModel copyWith({
-    int? id,
+    String? id,
     String? name,
     String? genericName,
     String? category,

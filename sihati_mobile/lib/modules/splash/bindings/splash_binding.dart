@@ -1,20 +1,34 @@
+// lib/modules/splash/bindings/splash_binding.dart
 import 'package:get/get.dart';
+import '../../../core/services/api_service.dart';
 import '../../../core/services/storage_service.dart';
-import '../../../data/providers/mock/mock_auth_provider.dart';
+import '../../../data/providers/auth_provider.dart'; // ✅ Real provider
 import '../../../data/repositories/auth_repository.dart';
 import '../controllers/splash_controller.dart';
 
 class SplashBinding extends Bindings {
   @override
   void dependencies() {
-    // Provider
-    Get.lazyPut(() => MockAuthProvider());
+    // Core services (if not already registered)
+    if (!Get.isRegistered<ApiService>()) {
+      Get.put(ApiService(), permanent: true);
+    }
+    if (!Get.isRegistered<StorageService>()) {
+      Get.put(StorageService(), permanent: true);
+    }
 
-    // Repository
-    Get.lazyPut(() => AuthRepository(
-          authProvider: Get.find(),
-          storageService: Get.find<StorageService>(),
-        ));
+    // ✅ Real Provider
+    if (!Get.isRegistered<AuthProvider>()) {
+      Get.lazyPut(() => AuthProvider(Get.find<ApiService>()));
+    }
+
+    // ✅ Repository avec Real Provider
+    if (!Get.isRegistered<AuthRepository>()) {
+      Get.lazyPut(() => AuthRepository(
+            authProvider: Get.find<AuthProvider>(),
+            storageService: Get.find<StorageService>(),
+          ));
+    }
 
     // Controller
     Get.put(SplashController(

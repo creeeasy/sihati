@@ -1,3 +1,4 @@
+// lib/core/services/storage_service.dart
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sihati_mobile/core/models/user_model.dart';
@@ -30,6 +31,24 @@ class StorageService extends GetxService {
       return _prefs.getString(StorageKeys.TOKEN);
     } catch (e) {
       print('Error getting token: $e');
+      return null;
+    }
+  }
+
+  // 🆕 REFRESH TOKEN - Added for real backend
+  Future<void> saveRefreshToken(String token) async {
+    try {
+      await _prefs.setString(StorageKeys.REFRESH_TOKEN, token);
+    } catch (e) {
+      print('Error saving refresh token: $e');
+    }
+  }
+
+  Future<String?> getRefreshToken() async {
+    try {
+      return _prefs.getString(StorageKeys.REFRESH_TOKEN);
+    } catch (e) {
+      print('Error getting refresh token: $e');
       return null;
     }
   }
@@ -80,8 +99,10 @@ class StorageService extends GetxService {
     }
   }
 
+  // 🆕 UPDATED clearAuth - Now removes refresh token too
   Future<void> clearAuth() async {
     await removeToken();
+    await _prefs.remove(StorageKeys.REFRESH_TOKEN);
     await removeUser();
   }
 
@@ -223,12 +244,32 @@ class StorageService extends GetxService {
     }
   }
 
+  // 🆕 FIXED: getBool returns bool? (nullable)
   Future<bool?> getBool(String key) async {
     try {
       return _prefs.getBool(key);
     } catch (e) {
       print('Error getting bool: $e');
       return null;
+    }
+  }
+
+  // 🆕 Convenience method for guest mode (returns non-nullable with default)
+  Future<bool> getGuestModeStatus() async {
+    try {
+      return _prefs.getBool('guest_mode') ?? false;
+    } catch (e) {
+      print('Error getting guest mode status: $e');
+      return false;
+    }
+  }
+
+  // 🆕 Save guest mode status
+  Future<void> saveGuestModeStatus(bool isGuest) async {
+    try {
+      await _prefs.setBool('guest_mode', isGuest);
+    } catch (e) {
+      print('Error saving guest mode status: $e');
     }
   }
 
@@ -287,26 +328,6 @@ class StorageService extends GetxService {
       await _prefs.clear();
     } catch (e) {
       print('Error clearing all data: $e');
-    }
-  }
-  // Add these methods to your StorageService class
-
-  /// 🆕 Save guest mode status
-  Future<void> saveGuestModeStatus(bool isGuest) async {
-    try {
-      await _prefs.setBool('guest_mode', isGuest);
-    } catch (e) {
-      print('Error saving guest mode status: $e');
-    }
-  }
-
-  /// 🆕 Get guest mode status
-  Future<bool> getGuestModeStatus() async {
-    try {
-      return _prefs.getBool('guest_mode') ?? false;
-    } catch (e) {
-      print('Error getting guest mode status: $e');
-      return false;
     }
   }
 }

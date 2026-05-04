@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
-import 'package:sihati_mobile/core/models/medication_search_result.dart';
+import 'package:sihati_mobile/core/models/pharmacy_with_stock.dart';
 
 class PharmacyStockCard extends StatelessWidget {
   final PharmacyWithStock pharmacyStock;

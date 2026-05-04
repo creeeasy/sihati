@@ -1,17 +1,17 @@
-import 'package:sihati_mobile/core/models/doctor_model.dart';
-import 'package:sihati_mobile/core/models/specialty_model.dart';
+// lib/data/repositories/doctor_repository.dart
+import '../providers/doctor_provider.dart';
 import '../../core/services/location_service.dart';
-import '../providers/mock/mock_doctor_provider.dart';
+import '../../core/models/doctor_model.dart';
+import '../../core/models/specialty_model.dart';
 
 /// Doctor repository
 /// Handles doctor directory operations
-/// Coordinates between DoctorProvider and LocationService
 class DoctorRepository {
-  final MockDoctorProvider _doctorProvider;
+  final DoctorProvider _doctorProvider;
   final LocationService _locationService;
 
   DoctorRepository({
-    required MockDoctorProvider doctorProvider,
+    required DoctorProvider doctorProvider,
     required LocationService locationService,
   })  : _doctorProvider = doctorProvider,
         _locationService = locationService;
@@ -26,9 +26,9 @@ class DoctorRepository {
   }
 
   /// Search doctors with filters
-  /// Can filter by specialty, wilaya, and location
+  /// ✅ CORRIGÉ: Utilise directement String (UUID)
   Future<List<DoctorModel>> searchDoctors({
-    int? specialtyId,
+    String? specialtyId, // ✅ String? (UUID)
     String? wilaya,
     bool useLocation = false,
     double radius = 10,
@@ -37,7 +37,6 @@ class DoctorRepository {
       double? latitude;
       double? longitude;
 
-      // Get location if requested
       if (useLocation) {
         try {
           final position = await _locationService.getCurrentLocation();
@@ -47,13 +46,12 @@ class DoctorRepository {
           }
         } catch (e) {
           print('Failed to get location: $e');
-          // Continue without location
         }
       }
 
-      // Search doctors
+      // ✅ Passage direct String au provider (sans conversion)
       final doctors = await _doctorProvider.searchDoctors(
-        specialtyId: specialtyId,
+        specialtyId: specialtyId, // ✅ String? direct
         wilaya: wilaya,
         latitude: latitude,
         longitude: longitude,
@@ -70,7 +68,7 @@ class DoctorRepository {
   Future<List<DoctorModel>> searchDoctorsAt({
     required double latitude,
     required double longitude,
-    int? specialtyId,
+    String? specialtyId,
     String? wilaya,
     double radius = 10,
   }) async {
@@ -88,7 +86,7 @@ class DoctorRepository {
   }
 
   /// Get doctor details by ID
-  Future<DoctorModel> getDoctorDetails(int id) async {
+  Future<DoctorModel> getDoctorDetails(String id) async {
     try {
       return await _doctorProvider.getDoctorById(id);
     } catch (e) {
@@ -106,7 +104,7 @@ class DoctorRepository {
   }
 
   /// Get doctors by specialty
-  Future<List<DoctorModel>> getDoctorsBySpecialty(int specialtyId) async {
+  Future<List<DoctorModel>> getDoctorsBySpecialty(String specialtyId) async {
     try {
       return await _doctorProvider.getDoctorsBySpecialty(specialtyId);
     } catch (e) {
@@ -153,7 +151,7 @@ class DoctorRepository {
   }
 
   /// Get specialty by ID
-  Future<SpecialtyModel> getSpecialtyById(int id) async {
+  Future<SpecialtyModel> getSpecialtyById(String id) async {
     try {
       return await _doctorProvider.getSpecialtyById(id);
     } catch (e) {
@@ -200,12 +198,8 @@ class DoctorRepository {
   Future<List<DoctorModel>> sortByDistance(List<DoctorModel> doctors) async {
     try {
       final position = await _locationService.getCurrentLocation();
-      if (position == null) {
-        // Can't sort without location, return as is
-        return doctors;
-      }
+      if (position == null) return doctors;
 
-      // Calculate distance for each doctor
       final doctorsWithDistance = doctors.map((doctor) {
         final distance = _locationService.calculateDistance(
           position.latitude,
@@ -216,7 +210,6 @@ class DoctorRepository {
         return doctor.copyWith(distance: distance);
       }).toList();
 
-      // Sort by distance
       doctorsWithDistance.sort((a, b) {
         if (a.distance == null && b.distance == null) return 0;
         if (a.distance == null) return 1;
@@ -226,7 +219,6 @@ class DoctorRepository {
 
       return doctorsWithDistance;
     } catch (e) {
-      // Error getting location, return unsorted
       return doctors;
     }
   }
@@ -237,7 +229,7 @@ class DoctorRepository {
     sorted.sort((a, b) {
       final ratingA = a.averageRating ?? 0;
       final ratingB = b.averageRating ?? 0;
-      return ratingB.compareTo(ratingA); // Descending
+      return ratingB.compareTo(ratingA);
     });
     return sorted;
   }
@@ -248,7 +240,7 @@ class DoctorRepository {
     sorted.sort((a, b) {
       final expA = a.yearsOfExperience ?? 0;
       final expB = b.yearsOfExperience ?? 0;
-      return expB.compareTo(expA); // Descending
+      return expB.compareTo(expA);
     });
     return sorted;
   }
@@ -259,7 +251,7 @@ class DoctorRepository {
     sorted.sort((a, b) {
       final feeA = a.consultationFee ?? double.infinity;
       final feeB = b.consultationFee ?? double.infinity;
-      return feeA.compareTo(feeB); // Ascending
+      return feeA.compareTo(feeB);
     });
     return sorted;
   }

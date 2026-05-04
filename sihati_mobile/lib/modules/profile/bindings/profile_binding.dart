@@ -1,42 +1,42 @@
+// lib/modules/profile/bindings/profile_binding.dart
 import 'package:get/get.dart';
-import 'package:sihati_mobile/data/repositories/auth_repository.dart';
-import 'package:sihati_mobile/core/services/storage_service.dart';
-import 'package:sihati_mobile/data/providers/mock/mock_auth_provider.dart';
+import '../../../core/services/api_service.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../data/providers/auth_provider.dart'; // ✅ Real provider
+import '../../../data/repositories/auth_repository.dart';
 import '../controllers/profile_controller.dart';
 
 class ProfileBinding extends Bindings {
   @override
   void dependencies() {
-    // Register MockAuthProvider if not already registered
-    if (!Get.isRegistered<MockAuthProvider>()) {
-      Get.put(
-        MockAuthProvider(),
-        permanent: true,
-      );
+    // Core services (if not already registered)
+    if (!Get.isRegistered<ApiService>()) {
+      Get.put(ApiService(), permanent: true);
     }
-
-    // Register StorageService if not already registered
     if (!Get.isRegistered<StorageService>()) {
-      // Note: StorageService should be initialized at app startup
-      // This is just a fallback
+      Get.put(StorageService(), permanent: true);
+    }
+
+    // ✅ Real Provider
+    if (!Get.isRegistered<AuthProvider>()) {
       Get.put(
-        StorageService(),
+        AuthProvider(Get.find<ApiService>()),
         permanent: true,
       );
     }
 
-    // Register AuthRepository if not already registered
+    // ✅ Repository avec Real Provider
     if (!Get.isRegistered<AuthRepository>()) {
       Get.put(
         AuthRepository(
-          authProvider: Get.find<MockAuthProvider>(),
+          authProvider: Get.find<AuthProvider>(),
           storageService: Get.find<StorageService>(),
         ),
-        permanent: true, // Repository should persist
+        permanent: true,
       );
     }
 
-    // Register ProfileController
+    // Controller
     Get.lazyPut(
       () => ProfileController(
         authRepository: Get.find<AuthRepository>(),

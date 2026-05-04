@@ -8,7 +8,7 @@ import 'pharmacy_stock_card.dart';
 
 class MedicationResultCard extends StatelessWidget {
   final MedicationSearchResult result;
-  final Function(int)? onPharmacyTap;
+  final Function(String)? onPharmacyTap; // ✅ CORRIGÉ: String au lieu de int
   final VoidCallback? onDetailTap;
 
   const MedicationResultCard({
@@ -189,7 +189,8 @@ class MedicationResultCard extends StatelessWidget {
     return 'Disponible dans $count pharmacies';
   }
 
-  void _navigateToPharmacy(int pharmacyId) {
+  /// ✅ CORRIGÉ: String pharmacyId
+  void _navigateToPharmacy(String pharmacyId) {
     if (onPharmacyTap != null) {
       onPharmacyTap!(pharmacyId);
     } else {

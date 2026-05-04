@@ -1,4 +1,4 @@
-import 'package:sihati_mobile/core/models/appointment_model.dart';
+/*import 'package:sihati_mobile/core/models/appointment_model.dart';
 import 'mock_doctor_provider.dart';
 
 class MockAppointmentProvider {
@@ -334,3 +334,5 @@ class MockAppointmentProvider {
     return '${days[date.weekday % 7]} ${date.day}/${date.month}';
   }
 }
+
+*/

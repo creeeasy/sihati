@@ -1,34 +1,46 @@
+// lib/modules/medications/bindings/medication_binding.dart
 import 'package:get/get.dart';
-import 'package:sihati_mobile/core/services/location_service.dart';
-import 'package:sihati_mobile/data/providers/mock/mock_medication_provider.dart';
-import 'package:sihati_mobile/data/repositories/medication_repository.dart';
+import '../../../core/services/api_service.dart';
+import '../../../core/services/location_service.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../data/providers/medication_provider.dart';
+import '../../../data/repositories/medication_repository.dart';
 import '../controllers/medication_search_controller.dart';
 
 class MedicationBinding extends Bindings {
   @override
   void dependencies() {
-    // Register LocationService if not already registered
+    // Core services
+    if (!Get.isRegistered<ApiService>()) {
+      Get.put(ApiService(), permanent: true);
+    }
     if (!Get.isRegistered<LocationService>()) {
       Get.put(LocationService(), permanent: true);
     }
-
-    // Register MockMedicationProvider if not already registered
-    if (!Get.isRegistered<MockMedicationProvider>()) {
-      Get.put(MockMedicationProvider(), permanent: true);
+    if (!Get.isRegistered<StorageService>()) {
+      Get.put(StorageService(), permanent: true);
     }
 
-    // Register MedicationRepository if not already registered
+    // Real Provider
+    if (!Get.isRegistered<MedicationProvider>()) {
+      Get.put(
+        MedicationProvider(Get.find<ApiService>()),
+        permanent: true,
+      );
+    }
+
+    // Repository
     if (!Get.isRegistered<MedicationRepository>()) {
       Get.put(
         MedicationRepository(
-          medicationProvider: Get.find<MockMedicationProvider>(),
+          medicationProvider: Get.find<MedicationProvider>(),
           locationService: Get.find<LocationService>(),
         ),
         permanent: true,
       );
     }
 
-    // Register MedicationSearchController
+    // Controller
     Get.lazyPut(
       () => MedicationSearchController(
         medicationRepository: Get.find<MedicationRepository>(),

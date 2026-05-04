@@ -1,3 +1,4 @@
+// lib/modules/doctors/controllers/doctor_list_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
@@ -10,7 +11,6 @@ class DoctorListController extends GetxController {
   final DoctorRepository doctorRepository;
   final StorageService storageService;
 
-  // Custom storage key for wilaya filter
   final String _lastWilayaKey = 'last_wilaya_filter';
 
   DoctorListController({
@@ -25,12 +25,12 @@ class DoctorListController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
-  // Filters
-  final selectedSpecialtyId = Rxn<int>();
+  // Filters - ✅ String pour specialtyId (UUID)
+  final selectedSpecialtyId = Rxn<String>();
   final selectedWilaya = Rxn<String>();
   final useLocation = false.obs;
   final searchQuery = ''.obs;
-  final sortBy = 'distance'.obs; // 'distance', 'rating', 'fee', 'experience'
+  final sortBy = 'distance'.obs;
 
   // Pagination
   final currentPage = 1.obs;
@@ -93,9 +93,7 @@ class DoctorListController extends GetxController {
   void onInit() {
     super.onInit();
     loadSpecialties();
-    searchDoctors(); // Initial load with current filters
-
-    // Load last used filters from storage (async)
+    searchDoctors();
     _loadSavedFilters();
   }
 
@@ -103,12 +101,10 @@ class DoctorListController extends GetxController {
     final savedWilaya = await storageService.getString(_lastWilayaKey);
     if (savedWilaya != null && savedWilaya.isNotEmpty) {
       selectedWilaya.value = savedWilaya;
-      // Reload with saved wilaya
       searchDoctors();
     }
   }
 
-  // Load specialties
   Future<void> loadSpecialties() async {
     try {
       final specs = await doctorRepository.getSpecialties();
@@ -118,7 +114,7 @@ class DoctorListController extends GetxController {
     }
   }
 
-  // Search doctors with current filters
+  /// ✅ CORRIGÉ: Utilise directement String sans conversion
   Future<void> searchDoctors({bool refresh = false}) async {
     if (refresh) {
       currentPage.value = 1;
@@ -132,15 +128,15 @@ class DoctorListController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      // Call the repository's searchDoctors method with current filters
+      // ✅ Passage direct de selectedSpecialtyId.value (String? UUID)
       final results = await doctorRepository.searchDoctors(
-        specialtyId: selectedSpecialtyId.value,
+        specialtyId: selectedSpecialtyId.value, // ✅ String? direct
         wilaya: selectedWilaya.value,
         useLocation: useLocation.value,
       );
 
       doctors.value = results;
-      _applyFilters(); // Apply search query and sorting
+      _applyFilters();
     } catch (e) {
       errorMessage.value = 'Erreur lors du chargement des médecins: $e';
     } finally {
@@ -148,13 +144,12 @@ class DoctorListController extends GetxController {
     }
   }
 
-  // Filter by specialty
-  void filterBySpecialty(int? specialtyId) {
+  /// ✅ CORRIGÉ: Accepte String ID
+  void filterBySpecialty(String? specialtyId) {
     selectedSpecialtyId.value = specialtyId;
     searchDoctors(refresh: true);
   }
 
-  // Filter by wilaya
   void filterByWilaya(String? wilaya) {
     selectedWilaya.value = wilaya;
     if (wilaya != null && wilaya.isNotEmpty) {
@@ -165,7 +160,6 @@ class DoctorListController extends GetxController {
     searchDoctors(refresh: true);
   }
 
-  // Toggle nearby filter
   void toggleNearbyFilter() {
     useLocation.value = !useLocation.value;
     if (useLocation.value) {
@@ -175,7 +169,6 @@ class DoctorListController extends GetxController {
     }
   }
 
-  // Request location permission
   Future<void> _requestLocationPermission() async {
     final granted = await doctorRepository.requestLocationPermission();
     if (!granted) {
@@ -192,13 +185,11 @@ class DoctorListController extends GetxController {
     }
   }
 
-  // Search doctors by name (local filtering)
   void searchDoctorsByName(String query) {
     searchQuery.value = query.toLowerCase().trim();
     _applyFilters();
   }
 
-  // Clear all filters
   void clearFilters() {
     selectedSpecialtyId.value = null;
     selectedWilaya.value = null;
@@ -209,37 +200,29 @@ class DoctorListController extends GetxController {
     searchDoctors(refresh: true);
   }
 
-  // Change sort order
   void changeSortBy(String sortOption) {
     sortBy.value = sortOption;
     _applySorting();
   }
 
-  // Apply search query filter and sorting to the doctors list
   void _applyFilters() {
     var results = List<DoctorModel>.from(doctors);
 
-    // Apply search query (local filtering)
     if (searchQuery.value.isNotEmpty) {
       results = results.where((doctor) {
         return doctor.doctorName.toLowerCase().contains(searchQuery.value) ||
             doctor.specialty.nameFr.toLowerCase().contains(searchQuery.value) ||
-            (doctor.clinicName.toLowerCase().contains(searchQuery.value));
+            doctor.clinicName.toLowerCase().contains(searchQuery.value);
       }).toList();
     }
 
-    // Update filteredDoctors
     filteredDoctors.value = results;
-
-    // Apply sorting
     _applySorting();
   }
 
-  // Apply sorting to filteredDoctors
   void _applySorting() {
     var results = List<DoctorModel>.from(filteredDoctors);
 
-    // Apply sorting based on selected option
     switch (sortBy.value) {
       case 'rating':
         results = doctorRepository.sortByRating(results);
@@ -255,7 +238,6 @@ class DoctorListController extends GetxController {
         break;
       case 'distance':
       default:
-        // Sort by distance if location is enabled, otherwise keep as is
         if (useLocation.value) {
           doctorRepository.sortByDistance(results).then((sorted) {
             filteredDoctors.value = sorted;
@@ -267,19 +249,18 @@ class DoctorListController extends GetxController {
     }
   }
 
-  // Navigate to doctor detail
-  void goToDoctorDetail(int doctorId) {
+  /// ✅ CORRIGÉ: String ID
+  void goToDoctorDetail(String doctorId) {
     Get.toNamed('${AppRoutes.DOCTOR_DETAIL}/$doctorId');
   }
 
-  // Get specialty name by ID
-  String getSpecialtyName(int? specialtyId) {
+  /// ✅ CORRIGÉ: String ID
+  String getSpecialtyName(String? specialtyId) {
     if (specialtyId == null) return 'Toutes spécialités';
     final specialty = specialties.firstWhereOrNull((s) => s.id == specialtyId);
     return specialty?.nameFr ?? 'Spécialité';
   }
 
-  // Get filter summary text
   String getFilterSummary() {
     List<String> parts = [];
     if (selectedSpecialtyId.value != null) {
@@ -297,7 +278,6 @@ class DoctorListController extends GetxController {
     return parts.isEmpty ? 'Tous les médecins' : parts.join(' • ');
   }
 
-  // Refresh data (pull-to-refresh)
   Future<void> refreshData() async {
     await searchDoctors(refresh: true);
   }

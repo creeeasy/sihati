@@ -1,17 +1,18 @@
-import 'package:sihati_mobile/core/models/appointment_model.dart';
-import '../providers/mock/mock_appointment_provider.dart';
+// lib/data/repositories/appointment_repository.dart
+import '../providers/appointment_provider.dart';
+import '../../core/models/appointment_model.dart';
 
 /// Appointment repository
-/// Handles appointment operations
+/// Handles appointment operations with real backend
 class AppointmentRepository {
-  final MockAppointmentProvider _appointmentProvider;
+  final AppointmentProvider _appointmentProvider;
 
   AppointmentRepository({
-    required MockAppointmentProvider appointmentProvider,
+    required AppointmentProvider appointmentProvider,
   }) : _appointmentProvider = appointmentProvider;
 
   /// Get all appointments for current user
-  Future<List<AppointmentModel>> getMyAppointments(int patientId) async {
+  Future<List<AppointmentModel>> getMyAppointments(String patientId) async {
     try {
       return await _appointmentProvider.getPatientAppointments(patientId);
     } catch (e) {
@@ -20,7 +21,8 @@ class AppointmentRepository {
   }
 
   /// Get upcoming appointments
-  Future<List<AppointmentModel>> getUpcomingAppointments(int patientId) async {
+  Future<List<AppointmentModel>> getUpcomingAppointments(
+      String patientId) async {
     try {
       return await _appointmentProvider.getUpcomingAppointments(patientId);
     } catch (e) {
@@ -29,7 +31,7 @@ class AppointmentRepository {
   }
 
   /// Get past appointments
-  Future<List<AppointmentModel>> getPastAppointments(int patientId) async {
+  Future<List<AppointmentModel>> getPastAppointments(String patientId) async {
     try {
       return await _appointmentProvider.getPastAppointments(patientId);
     } catch (e) {
@@ -38,7 +40,7 @@ class AppointmentRepository {
   }
 
   /// Get appointment by ID
-  Future<AppointmentModel> getAppointmentById(int id) async {
+  Future<AppointmentModel> getAppointmentById(String id) async {
     try {
       return await _appointmentProvider.getAppointmentById(id);
     } catch (e) {
@@ -48,15 +50,24 @@ class AppointmentRepository {
 
   /// Book new appointment
   Future<AppointmentModel> bookAppointment({
-    required int patientId,
-    required int doctorId,
+    required String patientId,
+    required String doctorId,
     required DateTime date,
     required String time,
     String? reason,
+    String? officeId,
   }) async {
     try {
-      // Validate date (not in the past)
-      if (date.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+      final today = DateTime.now();
+      final appointmentDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        int.parse(time.split(':')[0]),
+        int.parse(time.split(':')[1]),
+      );
+
+      if (appointmentDateTime.isBefore(today)) {
         throw Exception('La date ne peut pas être dans le passé');
       }
 
@@ -66,6 +77,7 @@ class AppointmentRepository {
         date: date,
         time: time,
         reason: reason,
+        officeId: officeId,
       );
     } catch (e) {
       rethrow;
@@ -73,7 +85,7 @@ class AppointmentRepository {
   }
 
   /// Cancel appointment
-  Future<void> cancelAppointment(int appointmentId) async {
+  Future<void> cancelAppointment(String appointmentId) async {
     try {
       await _appointmentProvider.cancelAppointment(appointmentId);
     } catch (e) {
@@ -83,13 +95,21 @@ class AppointmentRepository {
 
   /// Reschedule appointment
   Future<AppointmentModel> rescheduleAppointment({
-    required int appointmentId,
+    required String appointmentId,
     required DateTime newDate,
     required String newTime,
   }) async {
     try {
-      // Validate date (not in the past)
-      if (newDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+      final today = DateTime.now();
+      final appointmentDateTime = DateTime(
+        newDate.year,
+        newDate.month,
+        newDate.day,
+        int.parse(newTime.split(':')[0]),
+        int.parse(newTime.split(':')[1]),
+      );
+
+      if (appointmentDateTime.isBefore(today)) {
         throw Exception('La date ne peut pas être dans le passé');
       }
 
@@ -105,30 +125,61 @@ class AppointmentRepository {
 
   /// Get available slots for a doctor on a specific date
   Future<List<String>> getAvailableSlots({
-    required int doctorId,
+    required String doctorId,
     required DateTime date,
+    String? officeId,
   }) async {
     try {
       return await _appointmentProvider.getAvailableSlots(
         doctorId: doctorId,
         date: date,
+        officeId: officeId,
       );
     } catch (e) {
-      rethrow;
+      return [];
     }
   }
 
-  /// Get next available slot for a doctor
-  Future<String?> getNextAvailableSlot(int doctorId) async {
+  /// 🆕 Get next available slot for a doctor
+  /// Returns a human-readable string like "Aujourd'hui 10:00" or "Demain 14:30"
+  Future<String?> getNextAvailableSlot(String doctorId) async {
     try {
-      return await _appointmentProvider.getNextAvailableSlot(doctorId);
+      final now = DateTime.now();
+
+      // Check next 7 days
+      for (var i = 0; i < 7; i++) {
+        final date = now.add(Duration(days: i));
+        final slots = await getAvailableSlots(
+          doctorId: doctorId,
+          date: date,
+        );
+
+        if (slots.isNotEmpty) {
+          if (i == 0) {
+            return 'Aujourd\'hui ${slots.first}';
+          } else if (i == 1) {
+            return 'Demain ${slots.first}';
+          } else {
+            return '${_formatDate(date)} ${slots.first}';
+          }
+        }
+      }
+
+      return null;
     } catch (e) {
+      print('Error getting next available slot: $e');
       return null;
     }
   }
 
+  /// 🆕 Format date for display
+  String _formatDate(DateTime date) {
+    final days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    return '${days[date.weekday % 7]} ${date.day}/${date.month}';
+  }
+
   /// Check if user has appointment with doctor
-  Future<bool> hasAppointmentWith(int patientId, int doctorId) async {
+  Future<bool> hasAppointmentWith(String patientId, String doctorId) async {
     try {
       final appointments = await getUpcomingAppointments(patientId);
       return appointments.any((a) => a.doctorId == doctorId);
@@ -138,7 +189,7 @@ class AppointmentRepository {
   }
 
   /// Get appointments count
-  Future<Map<String, int>> getAppointmentsCounts(int patientId) async {
+  Future<Map<String, int>> getAppointmentsCounts(String patientId) async {
     try {
       final appointments = await getMyAppointments(patientId);
 

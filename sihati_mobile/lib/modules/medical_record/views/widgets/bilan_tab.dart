@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../controllers/medical_record_controller.dart';
+import '../../../../core/models/medication_history_model.dart';
 
 class BilanTab extends GetView<MedicalRecordController> {
   const BilanTab({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class BilanTab extends GetView<MedicalRecordController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Dernière consultation
-          _buildLastConsultationCard(),
+          Obx(() => _buildLastConsultationCard()),
 
           const SizedBox(height: AppSpacing.lg),
 
@@ -87,6 +88,28 @@ class BilanTab extends GetView<MedicalRecordController> {
   }
 
   Widget _buildLastConsultationCard() {
+    final consultation = controller.lastConsultation.value;
+
+    if (consultation == null) {
+      return Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: const Center(
+          child: Text(
+            'Aucune consultation récente',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -134,14 +157,14 @@ class BilanTab extends GetView<MedicalRecordController> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Obx(() => Text(
-                          controller.lastConsultation['date'] as String,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        )),
+                    Text(
+                      consultation.formattedDate,
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -154,15 +177,15 @@ class BilanTab extends GetView<MedicalRecordController> {
                   color: AppColors.success,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Obx(() => Text(
-                      controller.lastConsultation['status'] as String,
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    )),
+                child: const Text(
+                  'Terminée',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ],
           ),
@@ -177,15 +200,15 @@ class BilanTab extends GetView<MedicalRecordController> {
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: 8),
-              Obx(() => Text(
-                    controller.lastConsultation['doctor'] as String,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  )),
+              Text(
+                consultation.doctor?.doctorName ?? 'Médecin non spécifié',
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -197,16 +220,40 @@ class BilanTab extends GetView<MedicalRecordController> {
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: 8),
-              Obx(() => Text(
-                    controller.lastConsultation['specialty'] as String,
+              Text(
+                consultation.doctor?.specialty.nameFr ??
+                    'Spécialité non spécifiée',
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          if (consultation.diagnosis != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                const Icon(
+                  Icons.healing,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    consultation.diagnosis!,
                     style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 13,
                       color: AppColors.textSecondary,
                     ),
-                  )),
-            ],
-          ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
@@ -214,7 +261,14 @@ class BilanTab extends GetView<MedicalRecordController> {
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.description, size: 18),
                   label: const Text('Voir ordonnance'),
-                  onPressed: () => controller.viewPrescription('last'),
+                  onPressed: () {
+                    // TODO: Navigate to prescription detail
+                    Get.snackbar(
+                      'Info',
+                      'Fonctionnalité à venir',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
                     side: BorderSide(color: AppColors.primary),
@@ -336,14 +390,30 @@ class BilanTab extends GetView<MedicalRecordController> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Obx(() => Column(
-                children: controller.allergies.map((allergy) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _buildAllergyChip(allergy),
-                  );
-                }).toList(),
-              )),
+          Obx(() {
+            if (controller.allergies.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text(
+                    'Aucune allergie déclarée',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              );
+            }
+            return Column(
+              children: controller.allergies.map((allergy) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildAllergyChip(allergy),
+                );
+              }).toList(),
+            );
+          }),
           const SizedBox(height: AppSpacing.md),
           TextButton.icon(
             icon: const Icon(Icons.add, size: 18),
@@ -358,7 +428,7 @@ class BilanTab extends GetView<MedicalRecordController> {
     );
   }
 
-  Widget _buildAllergyChip(String name) {
+  Widget _buildAllergyChip(Map<String, dynamic> allergy) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
@@ -374,15 +444,18 @@ class BilanTab extends GetView<MedicalRecordController> {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.close,
-            color: AppColors.error,
-            size: 18,
+          GestureDetector(
+            onTap: () => controller.removeAllergy(allergy),
+            child: const Icon(
+              Icons.close,
+              color: AppColors.error,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              name,
+              allergy['name'] ?? allergy['allergyName'] ?? 'Allergie',
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 14,
@@ -391,9 +464,42 @@ class BilanTab extends GetView<MedicalRecordController> {
               ),
             ),
           ),
+          if (allergy['severity'] != null)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: _getSeverityColor(allergy['severity']).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                allergy['severity'],
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: _getSeverityColor(allergy['severity']),
+                ),
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  Color _getSeverityColor(String severity) {
+    switch (severity.toLowerCase()) {
+      case 'severe':
+        return Colors.red;
+      case 'moderate':
+        return Colors.orange;
+      case 'mild':
+        return Colors.green;
+      default:
+        return AppColors.error;
+    }
   }
 
   Widget _buildCurrentMedicationsCard() {
@@ -409,23 +515,35 @@ class BilanTab extends GetView<MedicalRecordController> {
       ),
       child: Column(
         children: [
-          Obx(() => Column(
-                children:
-                    controller.currentMedications.asMap().entries.map((entry) {
-                  return Column(
-                    children: [
-                      _buildMedicationItem(
-                        name: entry.value['name'] as String,
-                        dosage: entry.value['dosage'] as String,
-                        duration: entry.value['duration'] as String,
-                        color: Color(entry.value['color'] as int),
-                      ),
-                      if (entry.key < controller.currentMedications.length - 1)
-                        const Divider(height: 24),
-                    ],
-                  );
-                }).toList(),
-              )),
+          Obx(() {
+            if (controller.currentMedications.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text(
+                    'Aucun traitement en cours',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              );
+            }
+            return Column(
+              children:
+                  controller.currentMedications.asMap().entries.map((entry) {
+                final medication = entry.value;
+                return Column(
+                  children: [
+                    _buildMedicationItem(medication),
+                    if (entry.key < controller.currentMedications.length - 1)
+                      const Divider(height: 24),
+                  ],
+                );
+              }).toList(),
+            );
+          }),
           const SizedBox(height: AppSpacing.md),
           OutlinedButton.icon(
             icon: const Icon(Icons.add, size: 18),
@@ -441,19 +559,14 @@ class BilanTab extends GetView<MedicalRecordController> {
     );
   }
 
-  Widget _buildMedicationItem({
-    required String name,
-    required String dosage,
-    required String duration,
-    required Color color,
-  }) {
+  Widget _buildMedicationItem(MedicationHistory medication) {
     return Row(
       children: [
         Container(
           width: 4,
-          height: 50,
+          height: 60,
           decoration: BoxDecoration(
-            color: color,
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -463,7 +576,7 @@ class BilanTab extends GetView<MedicalRecordController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                name,
+                medication.medicationName,
                 style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 15,
@@ -473,7 +586,7 @@ class BilanTab extends GetView<MedicalRecordController> {
               ),
               const SizedBox(height: 4),
               Text(
-                dosage,
+                medication.dosage,
                 style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 13,
@@ -482,18 +595,43 @@ class BilanTab extends GetView<MedicalRecordController> {
               ),
               const SizedBox(height: 2),
               Text(
-                duration,
+                '${medication.frequency} • ${medication.isContinuous ? 'En continu' : 'Jusqu\'au ${_formatEndDate(medication.endDate)}'}\nPrescrit par: ${medication.prescribedBy ?? 'Médecin'}',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 12,
-                  color: color,
+                  color: AppColors.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
         ),
+        if (medication.progressPercentage != null)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.success.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '${medication.progressPercentage!.toInt()}%',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.success,
+              ),
+            ),
+          ),
       ],
     );
+  }
+
+  String _formatEndDate(DateTime? endDate) {
+    if (endDate == null) return 'Date inconnue';
+    return '${endDate.day}/${endDate.month}/${endDate.year}';
   }
 }

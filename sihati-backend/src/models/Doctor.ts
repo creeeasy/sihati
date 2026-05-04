@@ -1,10 +1,11 @@
+// models/Doctor.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface DoctorAttributes {
-  id: number;
-  userId: number;
-  specialtyId: number;
+  id: string;  // ✅ UUID
+  userId: string;  // ✅ UUID
+  specialtyId: string;  // ✅ UUID
   doctorName: string;
   clinicName: string;
   clinicAddress: string;
@@ -26,18 +27,15 @@ export interface DoctorAttributes {
 }
 
 export interface DoctorCreationAttributes
-  extends Optional<
-    DoctorAttributes,
-    'id' | 'isVerified' | 'averageRating' | 'totalReviews'
-  > {}
+  extends Optional<DoctorAttributes, 'id' | 'isVerified' | 'averageRating' | 'totalReviews'> {}
 
 class Doctor
   extends Model<DoctorAttributes, DoctorCreationAttributes>
   implements DoctorAttributes
 {
-  public id!: number;
-  public userId!: number;
-  public specialtyId!: number;
+  public id!: string;
+  public userId!: string;
+  public specialtyId!: string;
   public doctorName!: string;
   public clinicName!: string;
   public clinicAddress!: string;
@@ -57,13 +55,11 @@ class Doctor
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Virtual: formatted consultation fee
   get formattedFee(): string | null {
     if (this.consultationFee == null) return null;
     return `${this.consultationFee.toLocaleString('fr-DZ')} DA`;
   }
 
-  // Virtual: formatted distance (set dynamically after geospatial query)
   get formattedDistance(): string | null {
     const distance = (this as any).dataValues?.distance;
     if (distance == null) return null;
@@ -72,13 +68,11 @@ class Doctor
       : `${distance.toFixed(1)} km`;
   }
 
-  // Update average rating after a new review
   public async updateRating(newRating: number): Promise<void> {
     const currentTotal = this.totalReviews ?? 0;
     const currentAvg = this.averageRating ?? 0;
     const updatedTotal = currentTotal + 1;
-    const updatedAvg =
-      (currentAvg * currentTotal + newRating) / updatedTotal;
+    const updatedAvg = (currentAvg * currentTotal + newRating) / updatedTotal;
 
     await this.update({
       averageRating: Math.round(updatedAvg * 100) / 100,
@@ -86,30 +80,31 @@ class Doctor
     });
   }
 
-  // Associations
   public static associate(): void {
-    const { User, Specialty } = sequelize.models;
+    const { User, Specialty, Appointment, Review } = sequelize.models;
     Doctor.belongsTo(User, { foreignKey: 'userId', as: 'user' });
     Doctor.belongsTo(Specialty, { foreignKey: 'specialtyId', as: 'specialty' });
+    Doctor.hasMany(Appointment, { foreignKey: 'doctorId', as: 'appointments' });
+    Doctor.hasMany(Review, { foreignKey: 'doctorId', as: 'reviews' });
   }
 }
 
 Doctor.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       unique: true,
       references: { model: 'users', key: 'id' },
       onDelete: 'CASCADE',
     },
     specialtyId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: 'specialties', key: 'id' },
     },

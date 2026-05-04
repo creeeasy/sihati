@@ -1,3 +1,4 @@
+// lib/core/models/auth_response.dart
 import 'user_model.dart';
 import 'pharmacy_model.dart';
 import 'doctor_model.dart';
@@ -7,21 +8,23 @@ import 'doctor_model.dart';
 class AuthResponse {
   final UserModel user;
   final String token;
-  final PharmacyModel? pharmacy; // Only if user is pharmacy
-  final DoctorModel? doctor; // Only if user is doctor
+  final String? refreshToken; // 🆕 Added refresh token
+  final PharmacyModel? pharmacy;
+  final DoctorModel? doctor;
 
   AuthResponse({
     required this.user,
     required this.token,
+    this.refreshToken,
     this.pharmacy,
     this.doctor,
   });
 
-  // Create from JSON
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
       token: json['token'] as String,
+      refreshToken: json['refreshToken'] as String?,
       pharmacy: json['pharmacy'] != null
           ? PharmacyModel.fromJson(json['pharmacy'] as Map<String, dynamic>)
           : null,
@@ -31,23 +34,21 @@ class AuthResponse {
     );
   }
 
-  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'user': user.toJson(),
       'token': token,
-      'pharmacy': pharmacy?.toJson(),
-      'doctor': doctor?.toJson(),
+      if (refreshToken != null) 'refreshToken': refreshToken,
+      if (pharmacy != null) 'pharmacy': pharmacy?.toJson(),
+      if (doctor != null) 'doctor': doctor?.toJson(),
     };
   }
 
-  // Helper: Check user type
   bool get isPatient => user.isPatient;
   bool get isPharmacy => user.isPharmacy;
   bool get isDoctor => user.isDoctor;
   bool get isAdmin => user.isAdmin;
 
-  // Helper: Get display name
   String get displayName {
     if (isPharmacy && pharmacy != null) {
       return pharmacy!.pharmacyName;

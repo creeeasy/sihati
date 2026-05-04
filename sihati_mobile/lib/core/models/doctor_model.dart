@@ -1,7 +1,8 @@
+// lib/core/models/doctor_model.dart
 import 'specialty_model.dart';
 
 class DoctorModel {
-  final int id;
+  final String id; // ✅ Changed from int to String (UUID)
   final String doctorName;
   final SpecialtyModel specialty;
   final String clinicName;
@@ -21,8 +22,6 @@ class DoctorModel {
   final int? totalReviews;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-
-  // Optional: distance from user (calculated)
   final double? distance;
 
   DoctorModel({
@@ -49,10 +48,9 @@ class DoctorModel {
     this.distance,
   });
 
-  // Create DoctorModel from JSON
   factory DoctorModel.fromJson(Map<String, dynamic> json) {
     return DoctorModel(
-      id: json['id'] as int,
+      id: json['id'].toString(), // ✅ Convert to String
       doctorName: json['doctorName'] ?? json['doctor_name'] ?? '',
       specialty:
           SpecialtyModel.fromJson(json['specialty'] as Map<String, dynamic>),
@@ -96,7 +94,6 @@ class DoctorModel {
     );
   }
 
-  // Convert DoctorModel to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -123,7 +120,6 @@ class DoctorModel {
     };
   }
 
-  // Helper: Get full clinic address
   String get fullClinicAddress {
     if (commune != null && commune!.isNotEmpty) {
       return '$clinicAddress, $commune, $wilaya';
@@ -131,7 +127,6 @@ class DoctorModel {
     return '$clinicAddress, $wilaya';
   }
 
-  // Helper: Get formatted distance
   String get formattedDistance {
     if (distance == null) return '';
     if (distance! < 1) {
@@ -140,41 +135,31 @@ class DoctorModel {
     return '${distance!.toStringAsFixed(1)} km';
   }
 
-  // Helper: Get formatted consultation fee
   String get formattedFee {
     if (consultationFee == null) return 'Non spécifié';
     return '${consultationFee!.toStringAsFixed(0)} DA';
   }
 
-  // Helper: Get experience text
   String get experienceText {
     if (yearsOfExperience == null) return '';
     if (yearsOfExperience == 1) return '1 an d\'expérience';
     return '$yearsOfExperience ans d\'expérience';
   }
 
-  // Helper: Get rating text
   String get ratingText {
     if (averageRating == null || totalReviews == null) return 'Pas d\'avis';
     return '${averageRating!.toStringAsFixed(1)} (${totalReviews} avis)';
   }
 
-  // Helper: Check if has WhatsApp
   bool get hasWhatsapp => whatsappNumber != null && whatsappNumber!.isNotEmpty;
-
-  // Helper: Check if has bio
   bool get hasBio => bio != null && bio!.isNotEmpty;
-
-  // Helper: Check if has reviews
   bool get hasReviews => totalReviews != null && totalReviews! > 0;
 
-  // Helper: Get rating stars (for UI)
   int get ratingStars {
     if (averageRating == null) return 0;
     return averageRating!.round();
   }
 
-  // Helper: Get working hours for a specific day
   Map<String, String>? getHoursForDay(String day) {
     if (workingHours == null) return null;
 
@@ -191,7 +176,6 @@ class DoctorModel {
     return null;
   }
 
-  // Helper: Check if working on a specific day
   bool isWorkingOnDay(String day) {
     final hours = getHoursForDay(day);
     if (hours == null) return false;
@@ -199,9 +183,8 @@ class DoctorModel {
         (hours['afternoon'] != null && hours['afternoon']!.isNotEmpty);
   }
 
-  // CopyWith method
   DoctorModel copyWith({
-    int? id,
+    String? id,
     String? doctorName,
     SpecialtyModel? specialty,
     String? clinicName,

@@ -1,64 +1,37 @@
+// lib/core/models/specialty_model.dart
 class SpecialtyModel {
-  final int id;
-  final String nameAr; // Arabic name
-  final String nameFr; // French name
-  final DateTime? createdAt;
+  final String id; // ✅ Changed from int to String (UUID)
+  final String nameFr;
+  final String nameAr;
+  final String? iconUrl;
+  final String? description;
 
   SpecialtyModel({
     required this.id,
-    required this.nameAr,
     required this.nameFr,
-    this.createdAt,
+    required this.nameAr,
+    this.iconUrl,
+    this.description,
   });
 
-  // Create SpecialtyModel from JSON
   factory SpecialtyModel.fromJson(Map<String, dynamic> json) {
     return SpecialtyModel(
-      id: json['id'] as int,
-      nameAr: json['nameAr'] ?? json['name_ar'] ?? '',
+      id: json['id'].toString(), // ✅ Convert to String
       nameFr: json['nameFr'] ?? json['name_fr'] ?? '',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : json['created_at'] != null
-              ? DateTime.parse(json['created_at'] as String)
-              : null,
+      nameAr: json['nameAr'] ?? json['name_ar'] ?? '',
+      iconUrl: json['iconUrl'] ?? json['icon_url'],
+      description: json['description'],
     );
   }
 
-  // Convert SpecialtyModel to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'nameAr': nameAr,
       'nameFr': nameFr,
-      'createdAt': createdAt?.toIso8601String(),
+      'nameAr': nameAr,
+      'iconUrl': iconUrl,
+      'description': description,
     };
-  }
-
-  // Helper: Get name based on language (defaults to French)
-  String getName([String language = 'fr']) {
-    switch (language.toLowerCase()) {
-      case 'ar':
-        return nameAr;
-      case 'fr':
-      default:
-        return nameFr;
-    }
-  }
-
-  // CopyWith method
-  SpecialtyModel copyWith({
-    int? id,
-    String? nameAr,
-    String? nameFr,
-    DateTime? createdAt,
-  }) {
-    return SpecialtyModel(
-      id: id ?? this.id,
-      nameAr: nameAr ?? this.nameAr,
-      nameFr: nameFr ?? this.nameFr,
-      createdAt: createdAt ?? this.createdAt,
-    );
   }
 
   @override

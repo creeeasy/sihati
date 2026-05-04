@@ -99,7 +99,8 @@ class MedicationSearchController extends GetxController {
 
   // ─── Navigation ───────────────────────────────────────────
 
-  void goToPharmacyDetail(int pharmacyId) {
+  /// ✅ CORRIGÉ: Navigate to pharmacy detail with String ID
+  void goToPharmacyDetail(String pharmacyId) {
     Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
   }
 

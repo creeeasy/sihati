@@ -1,8 +1,6 @@
+// lib/modules/ai_assistant/bindings/ai_assistant_binding.dart
 import 'package:get/get.dart';
 import '../../../core/services/ai_service.dart';
-import '../../../core/services/location_service.dart';
-import '../../../data/providers/mock/mock_medication_provider.dart';
-import '../../../data/repositories/medication_repository.dart';
 import '../controllers/ai_assistant_controller.dart';
 
 class AIAssistantBinding extends Bindings {
@@ -10,13 +8,9 @@ class AIAssistantBinding extends Bindings {
   void dependencies() {
     final tag = Get.arguments?['tag']?.toString() ?? 'home';
 
-    Get.lazyPut<AIService>(() => AIService());
-    Get.lazyPut<LocationService>(() => LocationService());
-    Get.lazyPut<MockMedicationProvider>(() => MockMedicationProvider());
-    Get.lazyPut<MedicationRepository>(() => MedicationRepository(
-          medicationProvider: Get.find<MockMedicationProvider>(),
-          locationService: Get.find<LocationService>(),
-        ));
+    if (!Get.isRegistered<AIService>()) {
+      Get.put(AIService(), permanent: true);
+    }
 
     Get.put<AIAssistantController>(
       AIAssistantController(aiService: Get.find<AIService>()),

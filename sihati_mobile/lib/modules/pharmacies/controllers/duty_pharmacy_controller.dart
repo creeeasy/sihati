@@ -92,8 +92,8 @@ class DutyPharmacyController extends GetxController {
     loadDutyPharmacies();
   }
 
-  /// Navigate to pharmacy details
-  void goToPharmacyDetail(int pharmacyId) {
+  /// ✅ CORRIGÉ: Navigate to pharmacy details with String ID
+  void goToPharmacyDetail(String pharmacyId) {
     Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
   }
 

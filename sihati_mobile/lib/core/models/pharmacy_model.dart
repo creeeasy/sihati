@@ -1,8 +1,9 @@
+// lib/core/models/pharmacy_model.dart
 import 'package:flutter/material.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
 
 class PharmacyModel {
-  final int id;
+  final String id; // ✅ Changed from int to String (UUID)
   final String pharmacyName;
   final String address;
   final String wilaya;
@@ -36,7 +37,7 @@ class PharmacyModel {
 
   factory PharmacyModel.fromJson(Map<String, dynamic> json) {
     return PharmacyModel(
-      id: json['id'] as int,
+      id: json['id'].toString(), // ✅ Convert to String
       pharmacyName: json['pharmacyName'] ?? json['pharmacy_name'] ?? '',
       address: json['address'] as String,
       wilaya: json['wilaya'] as String,
@@ -192,7 +193,7 @@ class PharmacyModel {
   }
 
   PharmacyModel copyWith({
-    int? id,
+    String? id,
     String? pharmacyName,
     String? address,
     String? wilaya,

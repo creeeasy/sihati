@@ -1,9 +1,10 @@
+// models/Pharmacy.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface PharmacyAttributes {
-  id: number;
-  userId?: number;
+  id: string;  // ✅ UUID
+  userId?: string;  // ✅ UUID
   pharmacyName: string;
   address: string;
   wilaya: string;
@@ -21,17 +22,14 @@ export interface PharmacyAttributes {
 }
 
 export interface PharmacyCreationAttributes
-  extends Optional<
-    PharmacyAttributes,
-    'id' | 'isOnDutyTonight' | 'isVerified'
-  > {}
+  extends Optional<PharmacyAttributes, 'id' | 'isOnDutyTonight' | 'isVerified'> {}
 
 class Pharmacy
   extends Model<PharmacyAttributes, PharmacyCreationAttributes>
   implements PharmacyAttributes
 {
-  public id!: number;
-  public userId?: number;
+  public id!: string;
+  public userId?: string;
   public pharmacyName!: string;
   public address!: string;
   public wilaya!: string;
@@ -47,13 +45,11 @@ class Pharmacy
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Virtual: full address string
   get fullAddress(): string {
     const parts = [this.address, this.commune, this.wilaya].filter(Boolean);
     return parts.join(', ');
   }
 
-  // Virtual: formatted distance (set dynamically after geospatial query)
   get formattedDistance(): string | null {
     const distance = (this as any).dataValues?.distance;
     if (distance == null) return null;
@@ -62,32 +58,31 @@ class Pharmacy
       : `${distance.toFixed(1)} km`;
   }
 
-  // Virtual: whether pharmacy has WhatsApp
   get hasWhatsapp(): boolean {
     return !!this.whatsappNumber;
   }
 
-  // Associations
   public static associate(): void {
-    const { User, Medication, PharmacyMedication } = sequelize.models;
+    const { User, Medication, PharmacyMedication, FavoritePharmacy } = sequelize.models;
     Pharmacy.belongsTo(User, { foreignKey: 'userId', as: 'user' });
     Pharmacy.belongsToMany(Medication, {
       through: PharmacyMedication,
       foreignKey: 'pharmacyId',
       as: 'medications',
     });
+    Pharmacy.hasMany(FavoritePharmacy, { foreignKey: 'pharmacyId', as: 'favoritedBy' });
   }
 }
 
 Pharmacy.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
       references: { model: 'users', key: 'id' },
       onDelete: 'SET NULL',

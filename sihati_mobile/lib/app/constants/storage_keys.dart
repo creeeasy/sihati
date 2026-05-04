@@ -1,6 +1,7 @@
 class StorageKeys {
   // Authentication
   static const String TOKEN = 'auth_token';
+  static const String REFRESH_TOKEN = 'refresh_token';
   static const String USER_DATA = 'user_data';
   static const String IS_LOGGED_IN = 'is_logged_in';
 

@@ -1,3 +1,4 @@
+// lib/modules/home/controllers/home_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
@@ -37,6 +38,7 @@ class HomeController extends GetxController {
   }
 
   void checkGuestMode() {
+    // ✅ Utilise l'observable du repository
     isGuestMode.value = authRepository.isGuestMode.value;
 
     if (isGuestMode.value) {
@@ -45,7 +47,7 @@ class HomeController extends GetxController {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // Friendly greeting for guests
+  // Greeting
   // ═══════════════════════════════════════════════════════════════
 
   String get greeting {
@@ -109,6 +111,7 @@ class HomeController extends GetxController {
         return;
       }
 
+      // ✅ TODO: Appeler le vrai API pour les stats
       upcomingAppointments.value = 2;
 
       if (storageService != null) {
@@ -170,7 +173,7 @@ class HomeController extends GetxController {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // Navigation Methods - ONLY Rendez-vous checks for guest mode!
+  // Navigation Methods
   // ═══════════════════════════════════════════════════════════════
 
   void goToMedicationSearch() {
@@ -190,8 +193,6 @@ class HomeController extends GetxController {
   }
 
   void goToProfile() {
-    // Profile requires login for both guests and logged-in users?
-    // If guests can't access profile, keep this check
     if (isGuestMode.value) {
       authRepository.promptLoginForFeature('accéder à votre profil');
       return;
@@ -204,12 +205,10 @@ class HomeController extends GetxController {
   }
 
   void goToFavorites() {
-    // ✅ NO guest check - guests can use favorites
     Get.toNamed(AppRoutes.FAVORITES);
   }
 
   void goToMyMedications() {
-    // ✅ NO guest check - guests can use medications
     Get.snackbar(
       'Mes médicaments',
       'Fonctionnalité à venir',
@@ -218,7 +217,6 @@ class HomeController extends GetxController {
   }
 
   void goToMyAppointments() {
-    // ✅ ONLY THIS ONE requires login (rendez-vous)
     if (isGuestMode.value) {
       authRepository.promptLoginForFeature('prendre ou voir vos rendez-vous');
       return;
@@ -227,7 +225,6 @@ class HomeController extends GetxController {
   }
 
   void goToHistory() {
-    // ✅ NO guest check - guests can use history
     Get.snackbar(
       'Historique',
       'Fonctionnalité à venir',

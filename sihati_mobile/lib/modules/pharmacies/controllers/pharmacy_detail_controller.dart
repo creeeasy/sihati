@@ -13,8 +13,8 @@ class PharmacyDetailController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
-  // Get pharmacy ID from route
-  int get pharmacyId => int.parse(Get.parameters['id'] ?? '0');
+  // ✅ CORRIGÉ: Get pharmacy ID from route as String
+  String get pharmacyId => Get.parameters['id'] ?? '';
 
   @override
   void onInit() {
@@ -24,6 +24,12 @@ class PharmacyDetailController extends GetxController {
 
   /// Load pharmacy details
   Future<void> loadPharmacyDetails() async {
+    // ✅ CORRIGÉ: Check if ID is empty
+    if (pharmacyId.isEmpty) {
+      errorMessage.value = 'ID de pharmacie invalide';
+      return;
+    }
+
     try {
       isLoading.value = true;
       errorMessage.value = '';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../core/services/ai_service.dart';
 import '../controllers/medication_detail_controller.dart';
 
 class MedicationDetailScreen extends GetView<MedicationDetailController> {
@@ -14,16 +13,12 @@ class MedicationDetailScreen extends GetView<MedicationDetailController> {
       backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
-          return _LoadingState(controller.medicationName);
+          return _LoadingState(medicationName: controller.medicationName);
         }
-        if (controller.hasError.value || controller.info.value == null) {
+        if (controller.hasError.value || controller.medication.value == null) {
           return _ErrorState(onRetry: controller.retry);
         }
-        return _Content(
-          name: controller.medicationName,
-          info: controller.info.value!,
-          controller: controller,
-        );
+        return _Content(controller: controller);
       }),
     );
   }
@@ -34,8 +29,8 @@ class MedicationDetailScreen extends GetView<MedicationDetailController> {
 // ═══════════════════════════════════════════════════════════════
 
 class _LoadingState extends StatelessWidget {
-  final String name;
-  const _LoadingState(this.name);
+  final String medicationName;
+  const _LoadingState({required this.medicationName});
 
   @override
   Widget build(BuildContext context) {
@@ -49,15 +44,16 @@ class _LoadingState extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          name,
-          style: TextStyle(
+          medicationName,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
+          overflow: TextOverflow.ellipsis,
         ),
       ),
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -65,10 +61,7 @@ class _LoadingState extends StatelessWidget {
             SizedBox(height: 24),
             Text(
               'Chargement des informations...',
-              style: TextStyle(
-                fontSize: 15,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -116,7 +109,7 @@ class _ErrorState extends StatelessWidget {
                 ),
               ),
               SizedBox(height: AppSpacing.lg),
-              Text(
+              const Text(
                 'Impossible de charger',
                 style: TextStyle(
                   fontSize: 20,
@@ -125,7 +118,7 @@ class _ErrorState extends StatelessWidget {
                 ),
               ),
               SizedBox(height: AppSpacing.sm),
-              Text(
+              const Text(
                 'Vérifiez votre connexion',
                 style: TextStyle(
                   fontSize: 14,
@@ -136,7 +129,7 @@ class _ErrorState extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: Icon(Icons.refresh_rounded),
-                label: Text('Réessayer'),
+                label: const Text('Réessayer'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -162,82 +155,48 @@ class _ErrorState extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 
 class _Content extends StatelessWidget {
-  final String name;
-  final MedicationInfoResponse info;
   final MedicationDetailController controller;
 
-  const _Content({
-    required this.name,
-    required this.info,
-    required this.controller,
-  });
+  const _Content({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final medication = controller.medication.value!;
+
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        _AppBar(name: name, info: info, controller: controller),
+        _AppBar(controller: controller),
         SliverPadding(
           padding: EdgeInsets.all(AppSpacing.md),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              if (info.reply.isNotEmpty) ...[
-                _SummaryCard(text: info.reply),
-                SizedBox(height: AppSpacing.sm + 4),
-              ],
-              if (info.foundInDb && info.dbData != null) ...[
-                _DbBadge(data: info.dbData!),
-                SizedBox(height: AppSpacing.sm + 4),
-              ],
+              // Description
+              if (medication.description != null &&
+                  medication.description!.isNotEmpty)
+                _Section(
+                  icon: Icons.description_rounded,
+                  title: 'Description',
+                  text: medication.description!,
+                  color: AppColors.primary,
+                ),
+
+              // Prescription requirement
+              _PrescriptionCard(
+                  requiresPrescription: medication.requiresPrescription),
+
+              // Drug Interaction Checker
               _DrugInteractionChecker(controller: controller),
-              SizedBox(height: AppSpacing.sm + 4),
-              _Section(
-                icon: Icons.medication_rounded,
-                title: 'Indications',
-                text: info.usage,
-                color: AppColors.primary,
-              ),
-              _Section(
-                icon: Icons.block_rounded,
-                title: 'Contre-indications',
-                text: info.contraindications,
-                color: AppColors.error,
-              ),
-              _Section(
-                icon: Icons.scale_rounded,
-                title: 'Posologie',
-                text: info.dosage,
-                color: AppColors.success,
-              ),
-              _Section(
-                icon: Icons.warning_amber_rounded,
-                title: 'Effets secondaires',
-                text: info.sideEffects,
-                color: AppColors.warning,
-              ),
-              _Section(
-                icon: Icons.pregnant_woman_rounded,
-                title: 'Grossesse & Allaitement',
-                text: info.pregnancy,
-                color: AppColors.accent,
-              ),
-              _Section(
-                icon: Icons.link_rounded,
-                title: 'Interactions',
-                text: info.interactions,
-                color: AppColors.secondary,
-              ),
-              if (info.warnings.isNotEmpty) ...[
-                SizedBox(height: 4),
-                _WarningCard(text: info.warnings),
-              ],
-              SizedBox(height: AppSpacing.md),
+
+              // Ask AI Section
               _AskAiSection(controller: controller),
-              SizedBox(height: AppSpacing.md),
-              _FindPharmaciesCTA(medicationName: name),
-              SizedBox(height: AppSpacing.md),
+
+              // Find Pharmacies CTA
+              _FindPharmaciesCTA(medicationName: medication.name),
+
+              // Disclaimer
               const _Disclaimer(),
+
               SizedBox(height: AppSpacing.xxl),
             ]),
           ),
@@ -252,18 +211,14 @@ class _Content extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 
 class _AppBar extends StatelessWidget {
-  final String name;
-  final MedicationInfoResponse info;
   final MedicationDetailController controller;
 
-  const _AppBar({
-    required this.name,
-    required this.info,
-    required this.controller,
-  });
+  const _AppBar({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final medication = controller.medication.value!;
+
     return SliverAppBar(
       expandedHeight: 160,
       pinned: true,
@@ -274,24 +229,6 @@ class _AppBar extends StatelessWidget {
         onPressed: () => Get.back(),
       ),
       actions: [
-        Obx(() => Container(
-              margin: EdgeInsets.only(right: 4),
-              decoration: BoxDecoration(
-                color: controller.isFavorite.value
-                    ? Colors.white.withOpacity(0.25)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  controller.isFavorite.value
-                      ? Icons.bookmark_rounded
-                      : Icons.bookmark_outline_rounded,
-                  color: Colors.white,
-                ),
-                onPressed: controller.toggleFavorite,
-              ),
-            )),
         Container(
           margin: EdgeInsets.only(right: 4),
           decoration: BoxDecoration(
@@ -329,19 +266,7 @@ class _AppBar extends StatelessWidget {
               right: 0,
               child: CustomPaint(
                 size: Size(Get.width, 30),
-                painter: WavePainter(),
-              ),
-            ),
-            Positioned(
-              top: 60,
-              right: -20,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                ),
+                painter: _WavePainter(),
               ),
             ),
             SafeArea(
@@ -374,17 +299,16 @@ class _AppBar extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text(
-                            name,
+                            medication.name,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (info.foundInDb &&
-                              info.dbData?['genericName'] != null)
+                          if (medication.genericName != null)
                             Text(
-                              info.dbData!['genericName'],
+                              medication.genericName!,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.85),
                                 fontSize: 13,
@@ -404,8 +328,63 @@ class _AppBar extends StatelessWidget {
   }
 }
 
-// Remaining helper widgets with updated styling...
-// (Due to length, I'll continue in the next part)
+// ═══════════════════════════════════════════════════════════════
+// PRESCRIPTION CARD
+// ═══════════════════════════════════════════════════════════════
+
+class _PrescriptionCard extends StatelessWidget {
+  final bool requiresPrescription;
+  const _PrescriptionCard({required this.requiresPrescription});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: requiresPrescription
+            ? AppColors.warningLight
+            : AppColors.successLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: requiresPrescription
+              ? AppColors.warning.withOpacity(0.3)
+              : AppColors.success.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            requiresPrescription
+                ? Icons.description_outlined
+                : Icons.check_circle_outline,
+            color: requiresPrescription ? AppColors.warning : AppColors.success,
+            size: 24,
+          ),
+          SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              requiresPrescription
+                  ? '🔴 Ordonnance médicale requise'
+                  : '✅ Disponible sans ordonnance',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: requiresPrescription
+                    ? AppColors.warningDark
+                    : AppColors.successDark,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRUG INTERACTION CHECKER
+// ═══════════════════════════════════════════════════════════════
 
 class _DrugInteractionChecker extends StatelessWidget {
   final MedicationDetailController controller;
@@ -414,6 +393,7 @@ class _DrugInteractionChecker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -514,6 +494,10 @@ class _DrugInteractionChecker extends StatelessWidget {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ASK AI SECTION
+// ═══════════════════════════════════════════════════════════════
+
 class _AskAiSection extends StatelessWidget {
   final MedicationDetailController controller;
   const _AskAiSection({required this.controller});
@@ -521,6 +505,7 @@ class _AskAiSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -669,200 +654,9 @@ class _AskAiSection extends StatelessWidget {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final String text;
-  const _SummaryCard({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.primarySoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 20),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                  fontSize: 14, color: AppColors.textPrimary, height: 1.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DbBadge extends StatelessWidget {
-  final Map<String, dynamic> data;
-  const _DbBadge({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.successLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.success.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.verified_rounded, color: AppColors.success, size: 20),
-          SizedBox(width: AppSpacing.sm + 4),
-          Expanded(
-            child: Text(
-              'Disponible dans notre base',
-              style: TextStyle(
-                color: AppColors.successDark,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          if (data['price'] != null)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.success,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '${data['price']} DA',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String text;
-  final Color color;
-
-  const _Section({
-    required this.icon,
-    required this.title,
-    required this.text,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (text.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppColors.shadowSm,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                SizedBox(width: AppSpacing.sm + 4),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textPrimary,
-                height: 1.6,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WarningCard extends StatelessWidget {
-  final String text;
-  const _WarningCard({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.warningLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 22),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Précautions importantes',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.warningDark,
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textPrimary,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// ═══════════════════════════════════════════════════════════════
+// FIND PHARMACIES CTA
+// ═══════════════════════════════════════════════════════════════
 
 class _FindPharmaciesCTA extends StatelessWidget {
   final String medicationName;
@@ -944,6 +738,80 @@ class _FindPharmaciesCTA extends StatelessWidget {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// SECTION
+// ═══════════════════════════════════════════════════════════════
+
+class _Section extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String text;
+  final Color color;
+
+  const _Section({
+    required this.icon,
+    required this.title,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (text.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.shadowSm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 20),
+                SizedBox(width: AppSpacing.sm + 4),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textPrimary,
+                height: 1.6,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DISCLAIMER
+// ═══════════════════════════════════════════════════════════════
+
 class _Disclaimer extends StatelessWidget {
   const _Disclaimer();
 
@@ -981,7 +849,11 @@ class _Disclaimer extends StatelessWidget {
   }
 }
 
-class WavePainter extends CustomPainter {
+// ═══════════════════════════════════════════════════════════════
+// WAVE PAINTER
+// ═══════════════════════════════════════════════════════════════
+
+class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()

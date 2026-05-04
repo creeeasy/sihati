@@ -1,21 +1,23 @@
+// models/Medication.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface MedicationAttributes {
-  id: number;
+  id: string;  // ✅ UUID
   name: string;
   genericName?: string;
+  dci?: string;  // 🆕 Dénomination Commune Internationale
+  form?: string;  // 🆕 Forme (comprimé, sirop, etc.)
+  dosage?: string;  // 🆕 Dosage
   category?: string;
   manufacturer?: string;
   description?: string;
-  dosageForm?: string;
-  strength?: string;
+  indications?: string;  // 🆕 Indications
+  contraindications?: string;  // 🆕 Contre-indications
+  sideEffects?: string;  // 🆕 Effets secondaires
+  posology?: string;  // 🆕 Posologie
   requiresPrescription: boolean;
-  price?: number;
   barcode?: string;
-  activeIngredients?: object;
-  sideEffects?: string;
-  contraindications?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -27,24 +29,24 @@ class Medication
   extends Model<MedicationAttributes, MedicationCreationAttributes>
   implements MedicationAttributes
 {
-  public id!: number;
+  public id!: string;
   public name!: string;
   public genericName?: string;
+  public dci?: string;
+  public form?: string;
+  public dosage?: string;
   public category?: string;
   public manufacturer?: string;
   public description?: string;
-  public dosageForm?: string;
-  public strength?: string;
-  public requiresPrescription!: boolean;
-  public price?: number;
-  public barcode?: string;
-  public activeIngredients?: object;
-  public sideEffects?: string;
+  public indications?: string;
   public contraindications?: string;
+  public sideEffects?: string;
+  public posology?: string;
+  public requiresPrescription!: boolean;
+  public barcode?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Associations
   public static associate(): void {
     const { Pharmacy, PharmacyMedication } = sequelize.models;
     Medication.belongsToMany(Pharmacy, {
@@ -58,8 +60,8 @@ class Medication
 Medication.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     name: {
@@ -68,6 +70,18 @@ Medication.init(
       unique: true,
     },
     genericName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    dci: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    form: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    dosage: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -83,12 +97,20 @@ Medication.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    dosageForm: {
-      type: DataTypes.STRING,
+    indications: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
-    strength: {
-      type: DataTypes.STRING,
+    contraindications: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    sideEffects: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    posology: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     requiresPrescription: {
@@ -96,26 +118,10 @@ Medication.init(
       allowNull: false,
       defaultValue: false,
     },
-    price: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-    },
     barcode: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
-    },
-    activeIngredients: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    sideEffects: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    contraindications: {
-      type: DataTypes.TEXT,
-      allowNull: true,
     },
   },
   {
@@ -126,6 +132,7 @@ Medication.init(
     indexes: [
       { unique: true, fields: ['name'] },
       { fields: ['category'] },
+      { fields: ['barcode'] },
     ],
     scopes: {
       otc: { where: { requiresPrescription: false } },

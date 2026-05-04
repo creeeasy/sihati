@@ -1,35 +1,41 @@
+// lib/modules/appointments/bindings/my_appointments_binding.dart
 import 'package:get/get.dart';
-import 'package:sihati_mobile/data/providers/mock/mock_appointment_provider.dart';
-import 'package:sihati_mobile/data/providers/mock/mock_doctor_provider.dart';
-import 'package:sihati_mobile/data/repositories/appointment_repository.dart';
+import '../../../core/services/api_service.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../data/providers/appointment_provider.dart';
+import '../../../data/repositories/appointment_repository.dart';
 import '../controllers/my_appointments_controller.dart';
 
 class MyAppointmentsBinding extends Bindings {
   @override
   void dependencies() {
-    // Register MockDoctorProvider if not already registered
-    if (!Get.isRegistered<MockDoctorProvider>()) {
-      Get.put(MockDoctorProvider(), permanent: true);
+    // Core services
+    if (!Get.isRegistered<ApiService>()) {
+      Get.put(ApiService(), permanent: true);
+    }
+    if (!Get.isRegistered<StorageService>()) {
+      Get.put(StorageService(), permanent: true);
     }
 
-    // Register MockAppointmentProvider if not already registered
-    if (!Get.isRegistered<MockAppointmentProvider>()) {
+    // Real Provider
+    if (!Get.isRegistered<AppointmentProvider>()) {
       Get.put(
-          MockAppointmentProvider(
-            doctorProvider: Get.find<MockDoctorProvider>(),
-          ),
-          permanent: true);
+        AppointmentProvider(Get.find<ApiService>()),
+        permanent: true,
+      );
     }
 
-    // Register AppointmentRepository if not already registered
+    // Repository
     if (!Get.isRegistered<AppointmentRepository>()) {
       Get.put(
         AppointmentRepository(
-          appointmentProvider: Get.find<MockAppointmentProvider>(),
+          appointmentProvider: Get.find<AppointmentProvider>(),
         ),
         permanent: true,
       );
     }
+
+    // Controller
     Get.lazyPut<MyAppointmentsController>(
       () => MyAppointmentsController(
         appointmentRepository: Get.find(),

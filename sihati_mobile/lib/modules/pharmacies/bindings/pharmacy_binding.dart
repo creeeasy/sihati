@@ -1,6 +1,9 @@
+// lib/modules/pharmacies/bindings/pharmacy_binding.dart
 import 'package:get/get.dart';
+import '../../../core/services/api_service.dart';
 import '../../../core/services/location_service.dart';
-import '../../../data/providers/mock/mock_pharmacy_provider.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../data/providers/pharmacy_provider.dart';
 import '../../../data/repositories/pharmacy_repository.dart';
 import '../controllers/pharmacy_list_controller.dart';
 import '../controllers/pharmacy_detail_controller.dart';
@@ -9,30 +12,47 @@ import '../controllers/duty_pharmacy_controller.dart';
 class PharmacyBinding extends Bindings {
   @override
   void dependencies() {
-    // Provider
-    if (!Get.isRegistered<MockPharmacyProvider>()) {
-      Get.lazyPut(() => MockPharmacyProvider());
+    // Core services
+    if (!Get.isRegistered<ApiService>()) {
+      Get.put(ApiService(), permanent: true);
+    }
+    if (!Get.isRegistered<LocationService>()) {
+      Get.put(LocationService(), permanent: true);
+    }
+    if (!Get.isRegistered<StorageService>()) {
+      Get.put(StorageService(), permanent: true);
+    }
+
+    // Real Provider
+    if (!Get.isRegistered<PharmacyProvider>()) {
+      Get.put(
+        PharmacyProvider(Get.find<ApiService>()),
+        permanent: true,
+      );
     }
 
     // Repository
     if (!Get.isRegistered<PharmacyRepository>()) {
-      Get.lazyPut(() => PharmacyRepository(
-            pharmacyProvider: Get.find(),
-            locationService: Get.find<LocationService>(),
-          ));
+      Get.put(
+        PharmacyRepository(
+          pharmacyProvider: Get.find<PharmacyProvider>(),
+          locationService: Get.find<LocationService>(),
+        ),
+        permanent: true,
+      );
     }
 
     // Controllers
     Get.lazyPut(() => PharmacyListController(
-          pharmacyRepository: Get.find(),
+          pharmacyRepository: Get.find<PharmacyRepository>(),
         ));
 
     Get.lazyPut(() => PharmacyDetailController(
-          pharmacyRepository: Get.find(),
+          pharmacyRepository: Get.find<PharmacyRepository>(),
         ));
 
     Get.lazyPut(() => DutyPharmacyController(
-          pharmacyRepository: Get.find(),
+          pharmacyRepository: Get.find<PharmacyRepository>(),
         ));
   }
 }

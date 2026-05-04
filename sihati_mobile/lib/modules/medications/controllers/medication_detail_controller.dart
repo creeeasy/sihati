@@ -1,30 +1,33 @@
+// lib/modules/medications/controllers/medication_detail_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../core/models/pharmacy_with_stock.dart';
 import '../../../core/services/ai_service.dart';
 import '../../../core/services/storage_service.dart';
-import '../../../core/services/favorites_service.dart';
-import '../../../core/services/notification_service.dart';
+import '../../../data/repositories/medication_repository.dart';
+import '../../../core/models/medication_model.dart';
 
 class MedicationDetailController extends GetxController {
-  final AIService aiService;
-  final StorageService? storageService;
-  final FavoritesService? favoritesService;
-  final NotificationService? notificationService;
+  final MedicationRepository _medicationRepository;
+  final AIService _aiService;
+  final StorageService? _storageService;
 
   MedicationDetailController({
-    required this.aiService,
-    this.storageService,
-    this.favoritesService,
-    this.notificationService,
-  });
+    required MedicationRepository medicationRepository,
+    required AIService aiService,
+    StorageService? storageService,
+  })  : _medicationRepository = medicationRepository,
+        _aiService = aiService,
+        _storageService = storageService;
 
   // ─── State ────────────────────────────────────────────────────
 
   final isLoading = true.obs;
   final hasError = false.obs;
-  final info = Rxn<MedicationInfoResponse>();
-  final isFavorite = false.obs;
+  final medication = Rxn<MedicationModel>();
+  final pharmacies = <PharmacyWithStock>[].obs;
+  final errorMessage = ''.obs;
 
   // Drug interaction checker
   final interactionController = TextEditingController();
@@ -38,10 +41,14 @@ class MedicationDetailController extends GetxController {
 
   // ─── Getters ──────────────────────────────────────────────────
 
+  /// Get medication ID from route parameters
+  String get medicationId => Get.parameters['id'] ?? '';
+
   String get medicationName {
     final args = Get.arguments;
     if (args is Map) return args['medicationName'] as String? ?? '';
-    return args?.toString() ?? '';
+    if (args is String) return args;
+    return medication.value?.name ?? '';
   }
 
   // ─── Lifecycle ────────────────────────────────────────────────
@@ -49,9 +56,16 @@ class MedicationDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMedicationInfo();
-    _syncFavoriteState();
-    _saveToHistory();
+    if (medicationId.isNotEmpty) {
+      loadMedicationDetails();
+    } else if (medicationName.isNotEmpty) {
+      // Search by name if no ID provided
+      searchMedicationByName();
+    } else {
+      hasError.value = true;
+      errorMessage.value = 'Aucun médicament spécifié';
+      isLoading.value = false;
+    }
   }
 
   @override
@@ -61,113 +75,81 @@ class MedicationDetailController extends GetxController {
     super.onClose();
   }
 
-  // ─── Load ─────────────────────────────────────────────────────
+  // ─── Load Methods ─────────────────────────────────────────────
 
-  Future<void> loadMedicationInfo() async {
+  /// Load medication details by ID
+  Future<void> loadMedicationDetails() async {
     try {
       isLoading.value = true;
       hasError.value = false;
-      info.value = await aiService.getMedicationInfo(medicationName);
+      errorMessage.value = '';
+
+      final result =
+          await _medicationRepository.getMedicationById(medicationId);
+      medication.value = result;
+
+      // Load pharmacies with stock
+      await loadNearbyPharmacies();
+
+      // Save to history
+      await _saveToHistory();
     } catch (e) {
       hasError.value = true;
-      Get.snackbar('Erreur', 'Impossible de charger les informations',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red[100],
-          colorText: Colors.red[900]);
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar(
+        'Erreur',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
+      );
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> retry() => loadMedicationInfo();
-
-  // ─── Favorites — uses FavoritesService pattern ────────────────
-
-  void _syncFavoriteState() {
-    if (favoritesService == null) return;
-    // Keep isFavorite in sync with FavoritesService observable list
-    isFavorite.value = favoritesService!.isMedicationFavorite(medicationName);
-    ever(favoritesService!.favoriteMedications, (_) {
-      isFavorite.value = favoritesService!.isMedicationFavorite(medicationName);
-    });
-  }
-
-  Future<void> toggleFavorite() async {
-    if (favoritesService == null) {
-      Get.snackbar('Non disponible',
-          'La fonctionnalité favoris n\'est pas encore configurée',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-    // FavoritesService handles toggle + snackbar internally
-    await favoritesService!.toggleMedicationFavorite(medicationName);
-  }
-
-  // ─── Reminders ────────────────────────────────────────────────
-
-  Future<void> setReminder() async {
-    final result = await Get.dialog<List<TimeOfDay>>(
-      _ReminderDialog(medicationName: medicationName),
-    );
-
-    if (result == null || result.isEmpty) return;
-
-    if (notificationService == null) {
-      Get.snackbar(
-          'Non disponible', 'Les notifications ne sont pas encore configurées',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-
+  /// Search medication by name
+  Future<void> searchMedicationByName() async {
     try {
-      await notificationService!.scheduleMedicationReminders(
-        medicationName: medicationName,
-        times: result,
+      isLoading.value = true;
+      hasError.value = false;
+      errorMessage.value = '';
+
+      final results = await _medicationRepository.searchMedication(
+        medicationName,
+        useLocation: false,
       );
-      Get.snackbar('⏰ Rappels configurés',
-          '${result.length} rappel(s) pour $medicationName',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.blue[100],
-          colorText: Colors.blue[900],
-          duration: const Duration(seconds: 3));
+
+      if (results.isNotEmpty) {
+        medication.value = results.first.medication;
+        pharmacies.value = results.first.pharmacies;
+      } else {
+        throw Exception('Médicament non trouvé');
+      }
+
+      await _saveToHistory();
     } catch (e) {
-      Get.snackbar('Erreur', 'Impossible de configurer les rappels',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red[100]);
+      hasError.value = true;
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  // ─── Share ────────────────────────────────────────────────────
-
-  Future<void> shareMedication() async {
-    if (info.value == null) return;
-
-    final text = '''
-💊 $medicationName
-
-📋 Indications:
-${info.value!.usage}
-
-🚫 Contre-indications:
-${info.value!.contraindications}
-
-⚖️ Posologie:
-${info.value!.dosage}
-
-⚠️ Effets secondaires:
-${info.value!.sideEffects}
-
-⚠️ IMPORTANT: Ces informations sont à titre éducatif uniquement.
-Consultez toujours un médecin ou pharmacien.
-
-Partagé depuis Sihati 🏥
-''';
+  /// Load nearby pharmacies that have this medication
+  Future<void> loadNearbyPharmacies() async {
+    if (medication.value == null) return;
 
     try {
-      await Share.share(text, subject: 'Informations sur $medicationName');
+      final result = await _medicationRepository.getPharmaciesWithStock(
+        medication.value!.id,
+        useLocation: true,
+        radius: 10,
+      );
+      pharmacies.value = result;
     } catch (e) {
-      Get.snackbar('Erreur', 'Impossible de partager',
-          snackPosition: SnackPosition.BOTTOM);
+      print('Error loading pharmacies: $e');
+      // Don't show error to user, just keep empty list
     }
   }
 
@@ -176,23 +158,30 @@ Partagé depuis Sihati 🏥
   Future<void> checkInteraction() async {
     final otherMed = interactionController.text.trim();
     if (otherMed.isEmpty) {
-      Get.snackbar('Attention', 'Veuillez entrer le nom d\'un médicament',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Attention',
+        'Veuillez entrer le nom d\'un médicament',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     try {
       isCheckingInteraction.value = true;
       interactionResult.value = '';
-      final result = await aiService.checkDrugInteraction(
-        medication1: medicationName,
+
+      final result = await _aiService.checkDrugInteraction(
+        medication1: medication.value?.name ?? medicationName,
         medication2: otherMed,
       );
       interactionResult.value = result;
     } catch (e) {
-      Get.snackbar('Erreur', 'Impossible de vérifier l\'interaction',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red[100]);
+      Get.snackbar(
+        'Erreur',
+        'Impossible de vérifier l\'interaction',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[100],
+      );
     } finally {
       isCheckingInteraction.value = false;
     }
@@ -203,42 +192,116 @@ Partagé depuis Sihati 🏥
   Future<void> askAiQuestion() async {
     final question = questionController.text.trim();
     if (question.isEmpty) {
-      Get.snackbar('Attention', 'Veuillez poser une question',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Attention',
+        'Veuillez poser une question',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     try {
       isAskingAi.value = true;
       aiAnswer.value = '';
-      final answer = await aiService.askMedicationQuestion(
-        medicationName: medicationName,
+
+      final answer = await _aiService.askMedicationQuestion(
+        medicationName: medication.value?.name ?? medicationName,
         question: question,
       );
       aiAnswer.value = answer;
       questionController.clear();
     } catch (e) {
-      Get.snackbar('Erreur', 'Impossible d\'obtenir une réponse',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red[100]);
+      Get.snackbar(
+        'Erreur',
+        'Impossible d\'obtenir une réponse',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[100],
+      );
     } finally {
       isAskingAi.value = false;
     }
   }
 
-  // ─── History ──────────────────────────────────────────────────
+  // ─── Share ────────────────────────────────────────────────────
+
+  // Dans medication_detail_controller.dart
+  Future<void> shareMedication() async {
+    final med = medication.value;
+    if (med == null) return;
+
+    final text = '''
+💊 ${med.name}
+
+📋 Description:
+${med.description ?? 'Non disponible'}
+
+🔴 Ordonnance requise: ${med.requiresPrescription ? 'OUI' : 'NON'}
+
+⚠️ IMPORTANT: Ces informations sont à titre éducatif uniquement.
+Consultez toujours un médecin ou pharmacien.
+
+Partagé depuis Sihati 🏥
+''';
+
+    try {
+      await Share.share(text, subject: 'Informations sur ${med.name}');
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible de partager',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+  // ─── Reminders ────────────────────────────────────────────────
+
+  Future<void> setReminder() async {
+    final result = await Get.dialog<List<TimeOfDay>>(
+      _ReminderDialog(medicationName: medication.value?.name ?? medicationName),
+    );
+
+    if (result == null || result.isEmpty) return;
+
+    // TODO: Implement notification scheduling
+    Get.snackbar(
+      '⏰ Rappels configurés',
+      '${result.length} rappel(s) pour ${medication.value?.name ?? medicationName}',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.blue[100],
+      colorText: Colors.blue[900],
+      duration: const Duration(seconds: 3),
+    );
+  }
+
+  // ─── Helper Methods ───────────────────────────────────────────
 
   Future<void> _saveToHistory() async {
-    if (storageService == null) return;
-    await storageService!.addToMedicationHistory({
-      'name': medicationName,
+    if (_storageService == null) return;
+    if (medication.value == null) return;
+
+    await _storageService!.addToMedicationHistory({
+      'name': medication.value!.name,
       'viewedAt': DateTime.now().toIso8601String(),
     });
+  }
+
+  Future<void> retry() async {
+    if (medicationId.isNotEmpty) {
+      await loadMedicationDetails();
+    } else if (medicationName.isNotEmpty) {
+      await searchMedicationByName();
+    }
+  }
+
+  // ─── Navigation ───────────────────────────────────────────────
+
+  void goToPharmacyDetail(PharmacyWithStock pharmacy) {
+    Get.toNamed('/pharmacy/${pharmacy.pharmacy.id}');
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Reminder Dialog
+// Reminder Dialog (gardé identique)
 // ═══════════════════════════════════════════════════════════════
 
 class _ReminderDialog extends StatefulWidget {

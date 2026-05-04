@@ -1,7 +1,6 @@
+// lib/app/constants/api_constants.dart
 class ApiConstants {
-  // Base URL (will be used when backend is ready)
-  //static const String BASE_URL = 'http://192.168.1.105:3000/api';
-  // Base URL (will be used when backend is ready)
+  // Base URL
   static const String BASE_URL = 'https://sihati-1.onrender.com/api';
 
   // Authentication endpoints
@@ -11,6 +10,12 @@ class ApiConstants {
   static const String REGISTER_DOCTOR = '/auth/doctor/register';
   static const String PROFILE = '/auth/profile';
   static const String LOGOUT = '/auth/logout';
+  static const String REFRESH_TOKEN = '/auth/refresh-token';
+  static const String UPDATE_CHIFA = '/user/chifa';
+
+  // 🆕 Appointment endpoints
+  static const String APPOINTMENTS = '/appointments';
+  static const String MY_APPOINTMENTS = '/appointments/my';
 
   // Pharmacy endpoints
   static const String PHARMACIES = '/pharmacies';

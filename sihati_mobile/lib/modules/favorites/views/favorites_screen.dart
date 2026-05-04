@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
 import 'package:sihati_mobile/core/models/pharmacy_model.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/services/favorites_service.dart';
@@ -373,31 +372,14 @@ class FavoritesScreen extends StatelessWidget {
                         service.clearAll();
                         Get.back();
                         Get.snackbar(
-                          '',
-                          '',
-                          titleText: Row(
-                            children: [
-                              Icon(Icons.check_circle_rounded,
-                                  color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                'Supprimé',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                          messageText: Text(
-                            'Tous les favoris ont été supprimés',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          'Supprimé',
+                          'Tous les favoris ont été supprimés',
                           snackPosition: SnackPosition.BOTTOM,
                           backgroundColor: AppColors.success,
+                          colorText: Colors.white,
                           margin: EdgeInsets.all(AppSpacing.md),
                           borderRadius: 12,
+                          duration: const Duration(seconds: 2),
                         );
                       },
                       style: ElevatedButton.styleFrom(

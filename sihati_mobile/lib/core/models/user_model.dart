@@ -1,10 +1,11 @@
+// lib/core/models/user_model.dart
 class UserModel {
-  final int id;
+  final String id;
   final String email;
-  final String role; // 'patient', 'pharmacy', 'doctor', 'admin'
+  final String role;
   final String fullName;
   final String phoneNumber;
-  final String? chifaNumber; // 🆕 Numéro Carte Chifa
+  final String? chifaNumber;
   final String? photoUrl;
   final bool isActive;
   final DateTime createdAt;
@@ -37,10 +38,9 @@ class UserModel {
     this.consultationsCount = 0,
   });
 
-  // Create UserModel from JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as int,
+      id: json['id'].toString(),
       email: json['email'] as String,
       role: json['role'] as String,
       fullName: json['fullName'] ?? json['full_name'] ?? '',
@@ -71,7 +71,6 @@ class UserModel {
     );
   }
 
-  // Convert UserModel to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -93,31 +92,14 @@ class UserModel {
     };
   }
 
-  // Helper method: Check if user is patient
   bool get isPatient => role == 'patient';
-
-  // Helper method: Check if user is pharmacy
   bool get isPharmacy => role == 'pharmacy';
-
-  // Helper method: Check if user is doctor
   bool get isDoctor => role == 'doctor';
-
-  // Helper method: Check if user is admin
   bool get isAdmin => role == 'admin';
 
-  // Helper method: Get initials for avatar
-  String get initials {
-    List<String> nameParts = fullName.split(' ');
-    if (nameParts.length >= 2) {
-      return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
-    }
-    return fullName.isNotEmpty ? fullName[0].toUpperCase() : '?';
-  }
-
-  // Helper method: Check if Chifa is set
   bool get hasChifa => chifaNumber != null && chifaNumber!.isNotEmpty;
 
-  // Get formatted Chifa number (with spaces every 3 digits)
+  /// ✅ AJOUTER CE GETTER
   String? get formattedChifa {
     if (!hasChifa) return null;
 
@@ -132,18 +114,16 @@ class UserModel {
     return formatted;
   }
 
-  // Validate Chifa number format
-  bool isValidChifa() {
-    if (!hasChifa) return false;
-    final clean = chifaNumber!.replaceAll(' ', '');
-    return clean.length >= 13 &&
-        clean.length <= 15 &&
-        RegExp(r'^\d+$').hasMatch(clean);
+  String get initials {
+    List<String> nameParts = fullName.split(' ');
+    if (nameParts.length >= 2) {
+      return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
+    }
+    return fullName.isNotEmpty ? fullName[0].toUpperCase() : '?';
   }
 
-  // CopyWith method for updating user data
   UserModel copyWith({
-    int? id,
+    String? id,
     String? email,
     String? role,
     String? fullName,
@@ -186,9 +166,9 @@ class UserModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is UserModel && other.id == id && other.email == email;
+    return other is UserModel && other.id == id;
   }
 
   @override
-  int get hashCode => id.hashCode ^ email.hashCode;
+  int get hashCode => id.hashCode;
 }
