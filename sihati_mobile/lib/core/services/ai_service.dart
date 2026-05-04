@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/api_constants.dart';
 
 // ─── Models ───────────────────────────────────────────────────
 
@@ -149,8 +150,6 @@ class HistoryItem {
 // ─── AI Service ───────────────────────────────────────────────
 
 class AIService extends GetxService {
-  // ⚠️ Change based on your environment
-  static const String BASE_URL = 'http://192.168.1.105:3000';
   // Android emulator: 'http://10.0.2.2:3000'
   // iOS simulator:    'http://localhost:3000'
   // Production:       'https://your-backend.onrender.com'
@@ -158,9 +157,11 @@ class AIService extends GetxService {
   String? _authToken;
 
   Future<AIService> init() async {
-    print('🤖 AI Service initialized — $BASE_URL');
+    print('🤖 AI Service initialized — ${ApiConstants.BASE_URL}');
     final ok = await _testConnection();
-    print(ok ? '✅ Backend reachable' : '⚠️ Backend not reachable at $BASE_URL');
+    print(ok
+        ? '✅ Backend reachable'
+        : '⚠️ Backend not reachable at ${ApiConstants.BASE_URL}');
     return this;
   }
 
@@ -182,7 +183,7 @@ class AIService extends GetxService {
   ) async {
     final response = await http
         .post(
-          Uri.parse('$BASE_URL$path'),
+          Uri.parse('${ApiConstants.BASE_URL}$path'),
           headers: _headers,
           body: json.encode(body),
         )
@@ -324,7 +325,7 @@ class AIService extends GetxService {
   Future<Map<String, dynamic>?> getConversation(int id) async {
     try {
       final response = await http
-          .get(Uri.parse('$BASE_URL/api/ai/conversation/$id'),
+          .get(Uri.parse('${ApiConstants.BASE_URL}/api/ai/conversation/$id'),
               headers: _headers)
           .timeout(const Duration(seconds: 15));
 
@@ -343,7 +344,8 @@ class AIService extends GetxService {
   Future<List<Map<String, dynamic>>> getHistory() async {
     try {
       final response = await http
-          .get(Uri.parse('$BASE_URL/api/ai/history'), headers: _headers)
+          .get(Uri.parse('${ApiConstants.BASE_URL}/api/ai/history'),
+              headers: _headers)
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -363,7 +365,7 @@ class AIService extends GetxService {
   Future<bool> _testConnection() async {
     try {
       final response = await http
-          .get(Uri.parse('$BASE_URL/health'))
+          .get(Uri.parse('${ApiConstants.BASE_URL}/health'))
           .timeout(const Duration(seconds: 5));
       return response.statusCode == 200;
     } catch (_) {
@@ -375,9 +377,9 @@ class AIService extends GetxService {
     final msg = e.toString();
     if (msg.contains('Failed host lookup') ||
         msg.contains('Network is unreachable')) {
-      return '⚠️ Impossible de contacter le serveur.\nVérifiez que le backend tourne sur:\n$BASE_URL';
+      return '⚠️ Impossible de contacter le serveur.\nVérifiez que le backend tourne sur:\n${ApiConstants.BASE_URL}';
     } else if (msg.contains('Connection refused')) {
-      return '⚠️ Connexion refusée — vérifiez l\'URL: $BASE_URL';
+      return '⚠️ Connexion refusée — vérifiez l\'URL: ${ApiConstants.BASE_URL}';
     } else if (msg.contains('Timeout')) {
       return '⏱️ Le serveur met trop de temps. Veuillez réessayer.';
     }

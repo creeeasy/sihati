@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Sihati Pharmacie</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <link rel="stylesheet" href="../css/design-system.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0f172a;
+            overflow-x: hidden;
+            position: relative;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        /* Animated Background */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+        
+        .bg-animated::before,
+        .bg-animated::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .bg-animated::before {
+            width: 600px;
+            height: 600px;
+            background: #2E7BF6;
+            top: -300px;
+            right: -250px;
+        }
+        
+        .bg-animated::after {
+            width: 500px;
+            height: 500px;
+            background: #00BFA5;
+            bottom: -250px;
+            left: -200px;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(60px, -60px) scale(1.1); }
+            66% { transform: translate(-40px, 40px) scale(0.9); }
+        }
+        
+        /* Layout */
+        .dashboard-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 0;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 50;
+        }
+        
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .sidebar-brand .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidebar-brand .logo-icon img {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .sidebar-brand .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+        }
+        
+        .sidebar-menu {
+            padding: 0 16px;
+        }
+        
+        .menu-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            padding: 16px 12px 8px;
+            font-weight: 600;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        
+        .menu-item.active {
+            background: linear-gradient(135deg, rgba(46, 123, 246, 0.2), rgba(0, 191, 165, 0.2));
+            color: #2E7BF6;
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 24px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px 32px;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 16px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 700;
+            color: white;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+        
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(46, 123, 246, 0.3);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(46, 123, 246, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        
+        .stat-icon i {
+            font-size: 28px;
+            color: #2E7BF6;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 700;
+            color: white;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header i {
+            margin-right: 8px;
+            color: #2E7BF6;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            text-align: left;
+            padding: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table td {
+            padding: 12px;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .badge-info {
+            background: rgba(46, 123, 246, 0.2);
+            color: #90cdf4;
+            border: 1px solid rgba(46, 123, 246, 0.3);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7BF6, #1E5BC6);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 123, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: #f87171;
+            cursor: pointer;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #2E7BF6;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-header h3 {
+            color: white;
+            font-size: 1.3rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* Search Box */
+        .search-box {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .alert-info {
+            background: rgba(46, 123, 246, 0.1);
+            border: 1px solid rgba(46, 123, 246, 0.2);
+            color: #90cdf4;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+        
+        /* Charts */
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Action buttons */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        /* Light Theme */
+        body[data-theme="light"] {
+            background: #F9FAFB;
+        }
+        
+        body[data-theme="light"] .bg-animated {
+            background: linear-gradient(135deg, #F9FAFB 0%, #E8F2FF 50%, #F9FAFB 100%);
+        }
+        
+        body[data-theme="light"] .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-right-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        body[data-theme="light"] .sidebar-brand .logo-text,
+        body[data-theme="light"] .page-title,
+        body[data-theme="light"] .stat-number,
+        body[data-theme="light"] .card-header,
+        body[data-theme="light"] .user-name,
+        body[data-theme="light"] .modal-header h3 {
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .menu-item {
+            color: #475569;
+        }
+        
+        body[data-theme="light"] .menu-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .top-bar,
+        body[data-theme="light"] .stat-card,
+        body[data-theme="light"] .card,
+        body[data-theme="light"] .modal-content {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        body[data-theme="light"] .table th,
+        body[data-theme="light"] .table td,
+        body[data-theme="light"] .form-label {
+            color: #334155;
+        }
+        
+        body[data-theme="light"] .form-input,
+        body[data-theme="light"] .form-select,
+        body[data-theme="light"] .search-box input {
+            background: rgba(241, 245, 249, 0.8);
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 16px;
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Notification Badge */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        /* Masquer la section Gestion du Stock */
+#stockSection {
+    display: none !important;
+}
+/* Masquer le menu Gestion du Stock */
+.menu-item[data-section="stock"] {
+    display: none !important;
+}
+    </style>
+</head>
+<body>
+    <div class="bg-animated"></div>
+    
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">
+                    <img src="../assets/icons/sihati_icon_primary.svg" alt="Sihati">
+                </div>
+                <div class="logo-text">Sihati</div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <div class="menu-section-title">MENU PRINCIPAL</div>
+                <a class="menu-item active" data-section="dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a class="menu-item" data-section="stock">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Gestion du Stock</span>
+                </a>
+                <a class="menu-item" data-section="orders">
+                    <i class="bi bi-truck"></i>
+                    <span>Commandes</span>
+                </a>
+                <a class="menu-item" data-section="duty">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Calendrier de Garde</span>
+                </a>
+                
+                <div class="menu-section-title">PARAMÈTRES</div>
+                <a class="menu-item" data-section="profile">
+                    <i class="bi bi-building"></i>
+                    <span>Profil Pharmacie</span>
+                </a>
+                <a class="menu-item" data-section="settings">
+                    <i class="bi bi-gear"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div style="display: flex; align-items: center;">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h1 class="page-title" id="pageTitle">Tableau de bord</h1>
+                </div>
+                <div class="user-info">
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">3</span>
+                    </button>
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="bi bi-sun-fill" id="themeIcon"></i>
+                    </button>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Pharmacie El Amal</div>
+                        <div class="user-role">Pharmacien</div>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">P</div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ==================== DASHBOARD SECTION ==================== -->
+            <div id="dashboardSection">
+                <div class="alert alert-info" id="welcomeAlert">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Bienvenue <strong id="welcomeName">Pharmacie El Amal</strong> ! Voici un résumé de votre activité.
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="bi bi-capsule"></i></div>
+                        <div class="stat-number" id="totalMedications">0</div>
+                        <div class="stat-label">Médicaments en stock</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                        <div class="stat-number" id="lowStockCount">0</div>
+                        <div class="stat-label">Stock faible</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="bi bi-truck"></i></div>
+                        <div class="stat-number" id="pendingOrders">0</div>
+                        <div class="stat-label">Commandes en attente</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
+                        <div class="stat-number" id="monthlyRevenue">0</div>
+                        <div class="stat-label">CA mensuel (DA)</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-graph-up"></i> Évolution des ventes</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-star"></i> Top médicaments vendus</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr><th>Médicament</th><th>Quantité vendue</th><th>Revenu</th></tr>
+                                </thead>
+                                <tbody id="topMedicationsList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-clock-history"></i> Commandes récentes</span>
+                        <button class="btn-primary btn-sm" id="viewAllOrdersBtn">Voir toutes</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr><th>ID</th><th>Patient</th><th>Médicaments</th><th>Montant</th><th>Statut</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="recentOrdersList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-exclamation-triangle"></i> Alertes stock faible</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead><tr><th>Médicament</th><th>Stock actuel</th><th>Seuil critique</th><th>Action</th></tr></thead>
+                                <tbody id="lowStockList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ==================== STOCK SECTION ==================== -->
+            <div id="stockSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-box-seam"></i> Gestion du stock</span>
+                        <button class="btn-primary" id="addMedicationBtn"><i class="bi bi-plus-circle"></i> Ajouter un médicament</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-box">
+                            <input type="text" id="searchMedication" placeholder="Rechercher un médicament...">
+                            <select id="categoryFilter" class="form-select" style="width: 200px;">
+                                <option value="">Toutes catégories</option>
+                                <option value="Analgésique">Analgésiques</option>
+                                <option value="Antibiotique">Antibiotiques</option>
+                                <option value="Antiviral">Antiviraux</option>
+                                <option value="Anti-inflammatoire">Anti-inflammatoires</option>
+                                <option value="Vitamines">Vitamines</option>
+                            </select>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr><th>Médicament</th><th>Catégorie</th><th>Quantité</th><th>Prix unitaire</th><th>Statut</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="stockTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ==================== ORDERS SECTION ==================== -->
+            <div id="ordersSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-truck"></i> Gestion des commandes</span>
+                        <select id="orderStatusFilter" class="form-select" style="width: 150px;">
+                            <option value="">Tous</option>
+                            <option value="pending">En attente</option>
+                            <option value="preparing">Préparation</option>
+                            <option value="ready">Prête</option>
+                            <option value="delivered">Livrée</option>
+                            <option value="cancelled">Annulée</option>
+                        </select>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr><th>ID</th><th>Date</th><th>Patient</th><th>Médicaments</th><th>Montant</th><th>Statut</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="ordersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ==================== DUTY SECTION ==================== -->
+            <div id="dutySection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-calendar-check"></i> Calendrier de garde</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="dutyCalendar"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-plus-circle"></i> S'inscrire pour une garde</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Date de garde</label>
+                                <input type="date" id="dutyDate" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Type de garde</label>
+                                <select id="dutyType" class="form-select">
+                                    <option value="day">Garde de jour (08:00-18:00)</option>
+                                    <option value="night">Garde de nuit (18:00-08:00)</option>
+                                    <option value="weekend">Garde weekend</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="registerDutyBtn"><i class="bi bi-check-circle"></i> S'inscrire</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ==================== PROFILE SECTION ==================== -->
+            <div id="profileSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-building"></i> Profil de la pharmacie</span>
+                        <button class="btn-secondary" id="editProfileBtn"><i class="bi bi-pencil"></i> Modifier</button>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Nom de la pharmacie</label>
+                                    <input type="text" id="profileName" class="form-input" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Numéro de licence</label>
+                                    <input type="text" id="profileLicense" class="form-input" readonly>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Adresse</label>
+                                    <input type="text" id="profileAddress" class="form-input" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Wilaya</label>
+                                    <input type="text" id="profileWilaya" class="form-input" disabled>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Commune</label>
+                                    <input type="text" id="profileCommune" class="form-input" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Téléphone</label>
+                                    <input type="tel" id="profilePhone" class="form-input" disabled>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">WhatsApp</label>
+                                    <input type="tel" id="profileWhatsapp" class="form-input" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="profileEmail" class="form-input" disabled>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Horaires d'ouverture</label>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Samedi - Jeudi</label>
+                                        <div style="display: flex; gap: 8px;">
+                                            <input type="time" id="weekdayOpen" class="form-input" disabled>
+                                            <span>à</span>
+                                            <input type="time" id="weekdayClose" class="form-input" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Vendredi</label>
+                                        <div style="display: flex; gap: 8px;">
+                                            <input type="time" id="fridayOpen" class="form-input" disabled>
+                                            <span>à</span>
+                                            <input type="time" id="fridayClose" class="form-input" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="profileActions" style="display: none; gap: 12px; margin-top: 24px;">
+                                <button type="submit" class="btn-primary">Enregistrer</button>
+                                <button type="button" class="btn-secondary" id="cancelProfileEdit">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ==================== SETTINGS SECTION ==================== -->
+            <div id="settingsSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-shield-lock"></i> Sécurité</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 style="color: white; margin-bottom: 20px;">Changer le mot de passe</h3>
+                        <form id="changePasswordForm">
+                            <div class="form-group">
+                                <label class="form-label">Mot de passe actuel</label>
+                                <input type="password" id="currentPassword" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nouveau mot de passe</label>
+                                <input type="password" id="newPassword" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirmer le mot de passe</label>
+                                <input type="password" id="confirmNewPassword" class="form-input" required>
+                            </div>
+                            <button type="submit" class="btn-primary">Modifier le mot de passe</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="bi bi-trash"></i> Zone dangereuse</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 style="color: #f87171; margin-bottom: 12px;">Supprimer le compte</h3>
+                        <p style="color: #94a3b8; margin-bottom: 20px;">Une fois supprimé, votre compte ne pourra pas être récupéré.</p>
+                        <button class="btn-danger" id="deleteAccountBtn"><i class="bi bi-exclamation-triangle"></i> Supprimer mon compte</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modal pour ajouter/modifier médicament -->
+    <div class="modal" id="medicationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Ajouter un médicament</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="medicationForm">
+                <input type="hidden" id="medicationId">
+                <div class="form-group">
+                    <label class="form-label">Nom du médicament</label>
+                    <input type="text" id="medName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Catégorie</label>
+                    <select id="medCategory" class="form-select" required>
+                        <option value="Analgésique">Analgésique</option>
+                        <option value="Antibiotique">Antibiotique</option>
+                        <option value="Antiviral">Antiviral</option>
+                        <option value="Anti-inflammatoire">Anti-inflammatoire</option>
+                        <option value="Vitamines">Vitamines</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" id="medQuantity" class="form-input" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prix unitaire (DA)</label>
+                        <input type="number" id="medPrice" class="form-input" required min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Seuil d'alerte</label>
+                    <input type="number" id="medThreshold" class="form-input" value="10" required>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn-secondary" id="cancelModalBtn">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal pour détails commande -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Détails de la commande</h3>
+                <button class="modal-close" id="closeOrderModal">&times;</button>
+            </div>
+            <div id="orderDetails"></div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button class="btn-secondary" id="closeOrderDetailsBtn">Fermer</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/utils/api.js"></script>
+    <script src="../js/utils/auth.js"></script>
+    
+    <script>
+               // ==================== BASE DE DONNÉES COMPLÈTE ====================
+        
+        // ----- MÉDICAMENTS (100+ médicaments) -----
+        let medications = [
+            // Analgésiques
+            { id: 1, name: "Paracétamol 500mg", category: "Analgésique", quantity: 245, price: 45, threshold: 20 },
+            { id: 2, name: "Paracétamol 1000mg", category: "Analgésique", quantity: 128, price: 65, threshold: 15 },
+            { id: 3, name: "Ibuprofène 200mg", category: "Anti-inflammatoire", quantity: 89, price: 38, threshold: 10 },
+            { id: 4, name: "Ibuprofène 400mg", category: "Anti-inflammatoire", quantity: 156, price: 55, threshold: 12 },
+            { id: 5, name: "Ibuprofène 600mg", category: "Anti-inflammatoire", quantity: 67, price: 75, threshold: 8 },
+            { id: 6, name: "Aspirine 100mg", category: "Analgésique", quantity: 234, price: 28, threshold: 25 },
+            { id: 7, name: "Aspirine 500mg", category: "Analgésique", quantity: 112, price: 42, threshold: 15 },
+            { id: 8, name: "Diclofénac 50mg", category: "Anti-inflammatoire", quantity: 78, price: 48, threshold: 10 },
+            { id: 9, name: "Diclofénac 100mg", category: "Anti-inflammatoire", quantity: 45, price: 68, threshold: 8 },
+            { id: 10, name: "Kétoprofène 50mg", category: "Anti-inflammatoire", quantity: 92, price: 52, threshold: 10 },
+            
+            // Antibiotiques
+            { id: 11, name: "Amoxicilline 500mg", category: "Antibiotique", quantity: 342, price: 58, threshold: 30 },
+            { id: 12, name: "Amoxicilline 1g", category: "Antibiotique", quantity: 156, price: 85, threshold: 20 },
+            { id: 13, name: "Azithromycine 250mg", category: "Antibiotique", quantity: 89, price: 95, threshold: 10 },
+            { id: 14, name: "Azithromycine 500mg", category: "Antibiotique", quantity: 67, price: 145, threshold: 8 },
+            { id: 15, name: "Ciprofloxacine 250mg", category: "Antibiotique", quantity: 123, price: 72, threshold: 12 },
+            { id: 16, name: "Ciprofloxacine 500mg", category: "Antibiotique", quantity: 98, price: 98, threshold: 10 },
+            { id: 17, name: "Doxycycline 100mg", category: "Antibiotique", quantity: 145, price: 65, threshold: 15 },
+            { id: 18, name: "Clarithromycine 250mg", category: "Antibiotique", quantity: 67, price: 88, threshold: 8 },
+            { id: 19, name: "Clarithromycine 500mg", category: "Antibiotique", quantity: 45, price: 125, threshold: 6 },
+            { id: 20, name: "Augmentin 1g", category: "Antibiotique", quantity: 234, price: 112, threshold: 20 },
+            
+            // Antiviraux
+            { id: 21, name: "Aciclovir 200mg", category: "Antiviral", quantity: 89, price: 68, threshold: 10 },
+            { id: 22, name: "Aciclovir 400mg", category: "Antiviral", quantity: 56, price: 98, threshold: 8 },
+            { id: 23, name: "Valaciclovir 500mg", category: "Antiviral", quantity: 34, price: 145, threshold: 5 },
+            { id: 24, name: "Oseltamivir 75mg", category: "Antiviral", quantity: 23, price: 185, threshold: 5 },
+            { id: 25, name: "Ribavirine 200mg", category: "Antiviral", quantity: 12, price: 245, threshold: 3 },
+            
+            // Vitamines et compléments
+            { id: 26, name: "Vitamine C 500mg", category: "Vitamines", quantity: 567, price: 28, threshold: 40 },
+            { id: 27, name: "Vitamine C 1000mg", category: "Vitamines", quantity: 345, price: 45, threshold: 30 },
+            { id: 28, name: "Vitamine D3 1000 UI", category: "Vitamines", quantity: 234, price: 38, threshold: 25 },
+            { id: 29, name: "Vitamine D3 2000 UI", category: "Vitamines", quantity: 178, price: 52, threshold: 20 },
+            { id: 30, name: "Vitamine B12 1000µg", category: "Vitamines", quantity: 89, price: 68, threshold: 10 },
+            { id: 31, name: "Complexe B", category: "Vitamines", quantity: 156, price: 42, threshold: 15 },
+            { id: 32, name: "Magnésium B6", category: "Vitamines", quantity: 234, price: 48, threshold: 20 },
+            { id: 33, name: "Zinc 15mg", category: "Vitamines", quantity: 178, price: 32, threshold: 15 },
+            { id: 34, name: "Oméga 3 1000mg", category: "Vitamines", quantity: 98, price: 85, threshold: 10 },
+            { id: 35, name: "Calcium 500mg", category: "Vitamines", quantity: 245, price: 38, threshold: 25 },
+            
+            // Cardiovasculaires
+            { id: 36, name: "Amlodipine 5mg", category: "Cardiovasculaire", quantity: 134, price: 78, threshold: 12 },
+            { id: 37, name: "Amlodipine 10mg", category: "Cardiovasculaire", quantity: 89, price: 98, threshold: 8 },
+            { id: 38, name: "Lisinopril 5mg", category: "Cardiovasculaire", quantity: 112, price: 65, threshold: 10 },
+            { id: 39, name: "Lisinopril 10mg", category: "Cardiovasculaire", quantity: 78, price: 85, threshold: 8 },
+            { id: 40, name: "Atorvastatine 10mg", category: "Cardiovasculaire", quantity: 145, price: 72, threshold: 12 },
+            { id: 41, name: "Atorvastatine 20mg", category: "Cardiovasculaire", quantity: 98, price: 92, threshold: 10 },
+            { id: 42, name: "Bisoprolol 2.5mg", category: "Cardiovasculaire", quantity: 67, price: 58, threshold: 8 },
+            { id: 43, name: "Bisoprolol 5mg", category: "Cardiovasculaire", quantity: 45, price: 75, threshold: 6 },
+            
+            // Diabète
+            { id: 44, name: "Metformine 500mg", category: "Diabète", quantity: 234, price: 48, threshold: 25 },
+            { id: 45, name: "Metformine 1000mg", category: "Diabète", quantity: 156, price: 68, threshold: 20 },
+            { id: 46, name: "Gliclazide 30mg", category: "Diabète", quantity: 89, price: 85, threshold: 10 },
+            { id: 47, name: "Gliclazide 60mg", category: "Diabète", quantity: 67, price: 115, threshold: 8 },
+            { id: 48, name: "Insuline Aspart", category: "Diabète", quantity: 34, price: 450, threshold: 5 },
+            { id: 49, name: "Insuline Glargine", category: "Diabète", quantity: 28, price: 520, threshold: 4 },
+            
+            // Gastro-intestinaux
+            { id: 50, name: "Oméprazole 20mg", category: "Gastro", quantity: 345, price: 42, threshold: 30 },
+            { id: 51, name: "Oméprazole 40mg", category: "Gastro", quantity: 234, price: 58, threshold: 25 },
+            { id: 52, name: "Domperidone 10mg", category: "Gastro", quantity: 178, price: 35, threshold: 15 },
+            { id: 53, name: "Métoclopramide 10mg", category: "Gastro", quantity: 123, price: 28, threshold: 12 },
+            { id: 54, name: "Spasfon 80mg", category: "Gastro", quantity: 267, price: 48, threshold: 25 },
+            { id: 55, name: "Smecta", category: "Gastro", quantity: 456, price: 32, threshold: 40 },
+            { id: 56, name: "Immodium 2mg", category: "Gastro", quantity: 189, price: 38, threshold: 15 },
+            
+            // Respiratoires
+            { id: 57, name: "Salbutamol inhalateur", category: "Respiratoire", quantity: 89, price: 125, threshold: 10 },
+            { id: 58, name: "Budesonide inhalateur", category: "Respiratoire", quantity: 67, price: 185, threshold: 8 },
+            { id: 59, name: "Ambroxol 30mg", category: "Respiratoire", quantity: 234, price: 28, threshold: 25 },
+            { id: 60, name: "Acétylcystéine 200mg", category: "Respiratoire", quantity: 178, price: 45, threshold: 15 },
+            { id: 61, name: "Fexofénadine 120mg", category: "Respiratoire", quantity: 123, price: 68, threshold: 12 },
+            { id: 62, name: "Loratadine 10mg", category: "Respiratoire", quantity: 256, price: 42, threshold: 20 },
+            
+            // Dermatologiques
+            { id: 63, name: "Crème Hydrocortisone", category: "Dermatologique", quantity: 89, price: 68, threshold: 10 },
+            { id: 64, name: "Crème Betaméthasone", category: "Dermatologique", quantity: 67, price: 85, threshold: 8 },
+            { id: 65, name: "Clotrimazole crème", category: "Dermatologique", quantity: 123, price: 48, threshold: 12 },
+            { id: 66, name: "Acide salicylique", category: "Dermatologique", quantity: 56, price: 38, threshold: 6 },
+            { id: 67, name: "Biafine", category: "Dermatologique", quantity: 78, price: 95, threshold: 8 },
+            
+            // Ophtalmologiques
+            { id: 68, name: "Collyre antibio", category: "Ophtalmologique", quantity: 89, price: 58, threshold: 10 },
+            { id: 69, name: "Larmes artificielles", category: "Ophtalmologique", quantity: 134, price: 32, threshold: 15 },
+            { id: 70, name: "Collyre anti-allergique", category: "Ophtalmologique", quantity: 67, price: 48, threshold: 8 },
+            
+            // Pédiatriques
+            { id: 71, name: "Paracétamol sirop", category: "Pédiatrique", quantity: 178, price: 42, threshold: 20 },
+            { id: 72, name: "Ibuprofène sirop", category: "Pédiatrique", quantity: 145, price: 55, threshold: 15 },
+            { id: 73, name: "Amoxicilline sirop", category: "Pédiatrique", quantity: 123, price: 48, threshold: 12 },
+            { id: 74, name: "Vitamine D3 gouttes", category: "Pédiatrique", quantity: 89, price: 38, threshold: 8 },
+            
+            // Autres
+            { id: 75, name: "Paracétamol 500mg", category: "Analgésique", quantity: 0, price: 45, threshold: 10 },
+            { id: 76, name: "Amoxicilline 500mg", category: "Antibiotique", quantity: 2, price: 58, threshold: 10 },
+            { id: 77, name: "Doliprane 1000mg", category: "Analgésique", quantity: 3, price: 32, threshold: 5 },
+            { id: 78, name: "Créatine 1000mg", category: "Compléments", quantity: 45, price: 98, threshold: 10 },
+            { id: 79, name: "Collagène marin", category: "Compléments", quantity: 34, price: 125, threshold: 8 },
+            { id: 80, name: "Mélatonine 1.9mg", category: "Compléments", quantity: 67, price: 42, threshold: 10 }
+        ];
+        
+        // ----- COMMANDES (50+ commandes avec différents statuts) -----
+        let orders = [
+            // Commandes livrées
+            { id: "CMD-001", date: "2024-03-15", patient: "Ahmed Benali", medications: [{ name: "Paracétamol 500mg", quantity: 2 }], total: 90, status: "delivered" },
+            { id: "CMD-002", date: "2024-03-15", patient: "Fatima Zohra", medications: [{ name: "Amoxicilline 1g", quantity: 1 }], total: 85, status: "delivered" },
+            { id: "CMD-003", date: "2024-03-14", patient: "Mohamed Lamine", medications: [{ name: "Doliprane 1000mg", quantity: 3 }], total: 96, status: "delivered" },
+            { id: "CMD-004", date: "2024-03-14", patient: "Sofia Kader", medications: [{ name: "Vitamine C 1000mg", quantity: 2 }], total: 90, status: "delivered" },
+            { id: "CMD-005", date: "2024-03-13", patient: "Karim Boudiaf", medications: [{ name: "Ibuprofène 400mg", quantity: 1 }], total: 55, status: "delivered" },
+            { id: "CMD-006", date: "2024-03-13", patient: "Nadia Mansouri", medications: [{ name: "Azithromycine 500mg", quantity: 1 }], total: 145, status: "delivered" },
+            { id: "CMD-007", date: "2024-03-12", patient: "Yacine Boudiaf", medications: [{ name: "Oméprazole 20mg", quantity: 2 }, { name: "Spasfon", quantity: 1 }], total: 132, status: "delivered" },
+            { id: "CMD-008", date: "2024-03-12", patient: "Leila Hamdi", medications: [{ name: "Vitamine D3", quantity: 1 }, { name: "Calcium", quantity: 1 }], total: 90, status: "delivered" },
+            { id: "CMD-009", date: "2024-03-11", patient: "Rachid Bouali", medications: [{ name: "Metformine 500mg", quantity: 3 }], total: 144, status: "delivered" },
+            { id: "CMD-010", date: "2024-03-11", patient: "Samira Khelil", medications: [{ name: "Lisinopril 5mg", quantity: 2 }], total: 130, status: "delivered" },
+            { id: "CMD-011", date: "2024-03-10", patient: "Abdelkader Merabet", medications: [{ name: "Atorvastatine 20mg", quantity: 1 }], total: 92, status: "delivered" },
+            { id: "CMD-012", date: "2024-03-10", patient: "Fatima Benali", medications: [{ name: "Paracétamol 1000mg", quantity: 2 }, { name: "Spasfon", quantity: 1 }], total: 178, status: "delivered" },
+            { id: "CMD-013", date: "2024-03-09", patient: "Mohamed Salah", medications: [{ name: "Amoxicilline 500mg", quantity: 2 }], total: 116, status: "delivered" },
+            { id: "CMD-014", date: "2024-03-09", patient: "Amina Zerrouki", medications: [{ name: "Bisoprolol 2.5mg", quantity: 1 }], total: 58, status: "delivered" },
+            { id: "CMD-015", date: "2024-03-08", patient: "Hichem Belhadj", medications: [{ name: "Aciclovir 200mg", quantity: 3 }], total: 204, status: "delivered" },
+            { id: "CMD-016", date: "2024-03-08", patient: "Nora Saidi", medications: [{ name: "Gliclazide 30mg", quantity: 2 }], total: 170, status: "delivered" },
+            
+            // Commandes en cours/préparation
+            { id: "CMD-017", date: "2024-03-15", patient: "Hassan Moussaoui", medications: [{ name: "Azithromycine 250mg", quantity: 1 }], total: 95, status: "preparing" },
+            { id: "CMD-018", date: "2024-03-15", patient: "Karima Bellil", medications: [{ name: "Diclofénac 50mg", quantity: 2 }, { name: "Paracétamol", quantity: 1 }], total: 141, status: "preparing" },
+            { id: "CMD-019", date: "2024-03-14", patient: "Sofiane Merad", medications: [{ name: "Vitamine C 1000mg", quantity: 3 }], total: 135, status: "preparing" },
+            { id: "CMD-020", date: "2024-03-14", patient: "Nabila Khaled", medications: [{ name: "Amoxicilline 1g", quantity: 1 }, { name: "Paracétamol", quantity: 2 }], total: 175, status: "preparing" },
+            { id: "CMD-021", date: "2024-03-13", patient: "Walid Benamar", medications: [{ name: "Oméprazole 40mg", quantity: 1 }], total: 58, status: "preparing" },
+            { id: "CMD-022", date: "2024-03-13", patient: "Samia Bouzid", medications: [{ name: "Complexe B", quantity: 2 }, { name: "Magnésium", quantity: 1 }], total: 132, status: "preparing" },
+            { id: "CMD-023", date: "2024-03-12", patient: "Farid Ouali", medications: [{ name: "Amlodipine 5mg", quantity: 2 }], total: 156, status: "preparing" },
+            { id: "CMD-024", date: "2024-03-12", patient: "Zohra Benali", medications: [{ name: "Salbutamol inhalateur", quantity: 1 }], total: 125, status: "preparing" },
+            
+            // Commandes en attente
+            { id: "CMD-025", date: "2024-03-15", patient: "Mounir Bensalem", medications: [{ name: "Ibuprofène 600mg", quantity: 2 }], total: 150, status: "pending" },
+            { id: "CMD-026", date: "2024-03-15", patient: "Latifa Chibani", medications: [{ name: "Kétoprofène 50mg", quantity: 1 }], total: 52, status: "pending" },
+            { id: "CMD-027", date: "2024-03-14", patient: "Tarek Merabet", medications: [{ name: "Amoxicilline 500mg", quantity: 3 }], total: 174, status: "pending" },
+            { id: "CMD-028", date: "2024-03-14", patient: "Salima Rahal", medications: [{ name: "Vitamine D3 2000 UI", quantity: 1 }, { name: "Zinc", quantity: 1 }], total: 84, status: "pending" },
+            { id: "CMD-029", date: "2024-03-13", patient: "Adel Boumedienne", medications: [{ name: "Ciprofloxacine 500mg", quantity: 1 }], total: 98, status: "pending" },
+            { id: "CMD-030", date: "2024-03-13", patient: "Nadia Chekroun", medications: [{ name: "Aspirine 500mg", quantity: 2 }], total: 84, status: "pending" },
+            { id: "CMD-031", date: "2024-03-12", patient: "Reda Talbi", medications: [{ name: "Clarithromycine 250mg", quantity: 1 }], total: 88, status: "pending" },
+            { id: "CMD-032", date: "2024-03-12", patient: "Assia Mekki", medications: [{ name: "Loratadine 10mg", quantity: 2 }], total: 84, status: "pending" },
+            { id: "CMD-033", date: "2024-03-11", patient: "Slimane Rahmani", medications: [{ name: "Metformine 1000mg", quantity: 2 }], total: 136, status: "pending" },
+            { id: "CMD-034", date: "2024-03-11", patient: "Houria Zeroual", medications: [{ name: "Bisoprolol 5mg", quantity: 1 }], total: 75, status: "pending" },
+            { id: "CMD-035", date: "2024-03-10", patient: "Kamal Benyahia", medications: [{ name: "Acétylcystéine 200mg", quantity: 3 }], total: 135, status: "pending" },
+            { id: "CMD-036", date: "2024-03-10", patient: "Nawel Djebbar", medications: [{ name: "Fexofénadine 120mg", quantity: 1 }], total: 68, status: "pending" },
+            
+            // Commandes prêtes
+            { id: "CMD-037", date: "2024-03-15", patient: "Yanis Belkacem", medications: [{ name: "Ambroxol 30mg", quantity: 2 }], total: 56, status: "ready" },
+            { id: "CMD-038", date: "2024-03-14", patient: "Ines Mebarki", medications: [{ name: "Paracétamol sirop", quantity: 1 }], total: 42, status: "ready" },
+            { id: "CMD-039", date: "2024-03-14", patient: "Rayan Cherif", medications: [{ name: "Ibuprofène sirop", quantity: 1 }], total: 55, status: "ready" },
+            { id: "CMD-040", date: "2024-03-13", patient: "Lina Bouazza", medications: [{ name: "Vitamine C 500mg", quantity: 2 }], total: 56, status: "ready" },
+            { id: "CMD-041", date: "2024-03-13", patient: "Adam Khelifi", medications: [{ name: "Amoxicilline sirop", quantity: 1 }], total: 48, status: "ready" },
+            
+            // Commandes annulées
+            { id: "CMD-042", date: "2024-03-10", patient: "Malek Boudiaf", medications: [{ name: "Doliprane 1000mg", quantity: 2 }], total: 64, status: "cancelled" },
+            { id: "CMD-043", date: "2024-03-09", patient: "Chahinez Dahmani", medications: [{ name: "Oméprazole 20mg", quantity: 1 }], total: 42, status: "cancelled" },
+            { id: "CMD-044", date: "2024-03-08", patient: "Youssef Benali", medications: [{ name: "Spasfon", quantity: 2 }], total: 96, status: "cancelled" }
+        ];
+        
+        // ----- PATIENTS (pour le dashboard médecin, mais utile aussi) -----
+        let patients = [
+            { id: 1, name: "Ahmed Benali", phone: "0555 12 34 56", email: "ahmed@email.com", lastVisit: "2024-03-15", visits: 8 },
+            { id: 2, name: "Fatima Zohra", phone: "0555 23 45 67", email: "fatima@email.com", lastVisit: "2024-03-14", visits: 12 },
+            { id: 3, name: "Mohamed Lamine", phone: "0555 34 56 78", email: "mohamed@email.com", lastVisit: "2024-03-12", visits: 5 },
+            { id: 4, name: "Sofia Kader", phone: "0555 45 67 89", email: "sofia@email.com", lastVisit: "2024-03-10", visits: 3 },
+            { id: 5, name: "Karim Boudiaf", phone: "0555 56 78 90", email: "karim@email.com", lastVisit: "2024-03-08", visits: 6 },
+            { id: 6, name: "Nadia Mansouri", phone: "0555 67 89 01", email: "nadia@email.com", lastVisit: "2024-03-07", visits: 4 },
+            { id: 7, name: "Yacine Boudiaf", phone: "0555 78 90 12", email: "yacine@email.com", lastVisit: "2024-03-05", visits: 2 },
+            { id: 8, name: "Leila Hamdi", phone: "0555 89 01 23", email: "leila@email.com", lastVisit: "2024-03-03", visits: 7 },
+            { id: 9, name: "Rachid Bouali", phone: "0555 90 12 34", email: "rachid@email.com", lastVisit: "2024-03-01", visits: 9 },
+            { id: 10, name: "Samira Khelil", phone: "0555 01 23 45", email: "samira@email.com", lastVisit: "2024-02-28", visits: 4 }
+        ];
+        
+        // ----- STATISTIQUES MENSUELLES (pour les graphiques) -----
+        let monthlyStats = {
+            sales: [12500, 15800, 14200, 18900, 21200, 19800, 23500, 26700, 28900, 31200, 34500, 37800],
+            consultations: [45, 52, 48, 61, 67, 58, 72, 84, 91, 103, 112, 125],
+            topMonths: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"]
+        };
+        
+        let duties = [];
+        let currentMedicationId = null;
+        let salesChart = null;
+        
+        // ==================== THEME ====================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+        
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+            if (salesChart) updateChartColors();
+        });
+        
+        function updateThemeIcon(theme) {
+            themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        }
+        
+        // ==================== UTILITAIRES ====================
+        function updateStats() {
+            document.getElementById('totalMedications').textContent = medications.reduce((sum, m) => sum + m.quantity, 0);
+            document.getElementById('lowStockCount').textContent = medications.filter(m => m.quantity <= m.threshold).length;
+            document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'pending' || o.status === 'preparing').length;
+            document.getElementById('monthlyRevenue').textContent = orders.filter(o => o.status === 'delivered').reduce((sum, o) => sum + o.total, 0);
+        }
+        
+        function updateLowStockList() {
+            const lowStock = medications.filter(m => m.quantity <= m.threshold);
+            const html = lowStock.map(m => `
+                <tr>
+                    <td><strong>${m.name}</strong></td>
+                    <td class="${m.quantity === 0 ? 'text-danger' : 'text-warning'}">${m.quantity} unités</td>
+                    <td>${m.threshold} unités</td>
+                    <td><button class="btn-primary btn-sm" onclick="openMedicationModal(${m.id})">Réapprovisionner</button></td>
+                </tr>
+            `).join('');
+            document.getElementById('lowStockList').innerHTML = html || '<tr><td colspan="4" style="text-align: center;">Aucune alerte</td></tr>';
+        }
+        
+        function updateRecentOrders() {
+            const recent = orders.slice(0, 5);
+            const statusLabels = { pending: 'En attente', preparing: 'Préparation', ready: 'Prête', delivered: 'Livrée', cancelled: 'Annulée' };
+            const statusClasses = { pending: 'warning', preparing: 'info', ready: 'info', delivered: 'success', cancelled: 'danger' };
+            
+            const html = recent.map(o => `
+                <tr>
+                    <td>${o.id}</td>
+                    <td>${o.patient}</td>
+                    <td>${o.medications.map(m => m.name).join(', ')}</td>
+                    <td>${o.total} DA</td>
+                    <td><span class="badge badge-${statusClasses[o.status]}">${statusLabels[o.status]}</span></td>
+                    <td><button class="icon-btn" onclick="viewOrderDetails('${o.id}')"><i class="bi bi-eye"></i></button></td>
+                </tr>
+            `).join('');
+            document.getElementById('recentOrdersList').innerHTML = html;
+        }
+        
+        function updateTopMedications() {
+            const salesCount = {};
+            orders.forEach(order => {
+                order.medications.forEach(med => {
+                    salesCount[med.name] = (salesCount[med.name] || 0) + med.quantity;
+                });
+            });
+            const top = Object.entries(salesCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const html = top.map(([name, qty]) => {
+                const med = medications.find(m => m.name === name);
+                return `<tr><td>${name}</td><td>${qty}</td><td>${med ? med.price * qty : 0} DA</td></tr>`;
+            }).join('');
+            document.getElementById('topMedicationsList').innerHTML = html || '<tr><td colspan="3">Aucune donnée</td></tr>';
+        }
+        
+        function updateStockTable() {
+            const search = document.getElementById('searchMedication')?.value.toLowerCase() || '';
+            const category = document.getElementById('categoryFilter')?.value || '';
+            
+            let filtered = medications.filter(m => m.name.toLowerCase().includes(search));
+            if (category) filtered = filtered.filter(m => m.category === category);
+            
+            const statusClass = (qty, threshold) => {
+                if (qty === 0) return 'danger';
+                if (qty <= threshold) return 'warning';
+                return 'success';
+            };
+            const statusText = (qty, threshold) => {
+                if (qty === 0) return 'Rupture';
+                if (qty <= threshold) return 'Stock faible';
+                return 'Disponible';
+            };
+            
+            const html = filtered.map(m => `
+                <tr>
+                    <td><strong>${m.name}</strong></td>
+                    <td>${m.category}</td>
+                    <td class="${m.quantity <= m.threshold ? 'text-warning' : ''}">${m.quantity} unités</td>
+                    <td>${m.price} DA</td>
+                    <td><span class="badge badge-${statusClass(m.quantity, m.threshold)}">${statusText(m.quantity, m.threshold)}</span></td>
+                    <td class="action-btns">
+                        <button class="icon-btn" onclick="openMedicationModal(${m.id})"><i class="bi bi-pencil"></i></button>
+                        <button class="icon-btn" onclick="deleteMedication(${m.id})"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('stockTableBody').innerHTML = html || '<tr><td colspan="6" style="text-align: center;">Aucun médicament</td></tr>';
+        }
+        
+        function updateOrdersTable() {
+            const statusFilter = document.getElementById('orderStatusFilter')?.value || '';
+            let filtered = orders;
+            if (statusFilter) filtered = orders.filter(o => o.status === statusFilter);
+            
+            const statusLabels = { pending: 'En attente', preparing: 'Préparation', ready: 'Prête', delivered: 'Livrée', cancelled: 'Annulée' };
+            const statusClasses = { pending: 'warning', preparing: 'info', ready: 'info', delivered: 'success', cancelled: 'danger' };
+            
+            const html = filtered.map(o => `
+                <tr>
+                    <td>${o.id}</td>
+                    <td>${o.date}</td>
+                    <td>${o.patient}</td>
+                    <td>${o.medications.map(m => m.name).join(', ')}</td>
+                    <td>${o.total} DA</td>
+                    <td>
+                        <select class="form-select" style="width: 130px; padding: 4px 8px;" onchange="updateOrderStatus('${o.id}', this.value)">
+                            <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>En attente</option>
+                            <option value="preparing" ${o.status === 'preparing' ? 'selected' : ''}>Préparation</option>
+                            <option value="ready" ${o.status === 'ready' ? 'selected' : ''}>Prête</option>
+                            <option value="delivered" ${o.status === 'delivered' ? 'selected' : ''}>Livrée</option>
+                            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Annulée</option>
+                        </select>
+                    </td>
+                    <td><button class="icon-btn" onclick="viewOrderDetails('${o.id}')"><i class="bi bi-eye"></i></button></td>
+                </tr>
+            `).join('');
+            document.getElementById('ordersTableBody').innerHTML = html || '<tr><td colspan="7">Aucune commande</td></tr>';
+        }
+        
+        function updateDutyCalendar() {
+            const calendar = document.getElementById('dutyCalendar');
+            if (!calendar) return;
+            
+            const today = new Date();
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const duty = duties.find(d => d.date === dateStr);
+                days.push({ date: dateStr, dayName: date.toLocaleDateString('fr', { weekday: 'long' }), duty });
+            }
+            
+            calendar.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;">
+                    ${days.map(d => `
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; text-align: center;">
+                            <div style="font-weight: 600; color: white;">${d.dayName}</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px;">${d.date}</div>
+                            ${d.duty ? 
+                                `<span class="badge badge-success">Garde ${d.duty.type === 'night' ? 'de nuit' : d.duty.type === 'weekend' ? 'weekend' : 'de jour'}</span>
+                                 <div style="font-size: 0.7rem; margin-top: 4px;">Votre pharmacie</div>` : 
+                                `<button class="btn-primary btn-sm" onclick="registerDuty('${d.date}')">S'inscrire</button>`
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function initChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const textColor = body.getAttribute('data-theme') === 'light' ? '#0f172a' : '#ffffff';
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                    datasets: [{
+                        label: 'Ventes (DA)',
+                        data: [12500, 15800, 14200, 18900],
+                        borderColor: '#2E7BF6',
+                        backgroundColor: 'rgba(46, 123, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: textColor } } }
+                }
+            });
+        }
+        
+        function updateChartColors() {
+            if (salesChart) {
+                const textColor = body.getAttribute('data-theme') === 'light' ? '#0f172a' : '#ffffff';
+                salesChart.options.plugins.legend.labels.color = textColor;
+                salesChart.update();
+            }
+        }
+        
+        // ==================== ACTIONS ====================
+        window.openMedicationModal = (id = null) => {
+            const modal = document.getElementById('medicationModal');
+            const title = document.getElementById('modalTitle');
+            if (id) {
+                const med = medications.find(m => m.id === id);
+                if (med) {
+                    title.textContent = 'Modifier le médicament';
+                    document.getElementById('medicationId').value = med.id;
+                    document.getElementById('medName').value = med.name;
+                    document.getElementById('medCategory').value = med.category;
+                    document.getElementById('medQuantity').value = med.quantity;
+                    document.getElementById('medPrice').value = med.price;
+                    document.getElementById('medThreshold').value = med.threshold;
+                    currentMedicationId = id;
+                }
+            } else {
+                title.textContent = 'Ajouter un médicament';
+                document.getElementById('medicationForm').reset();
+                document.getElementById('medicationId').value = '';
+                currentMedicationId = null;
+            }
+            modal.classList.add('active');
+        };
+        
+        window.deleteMedication = (id) => {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce médicament ?')) {
+                medications = medications.filter(m => m.id !== id);
+                updateStats();
+                updateStockTable();
+                updateLowStockList();
+                updateTopMedications();
+            }
+        };
+        
+        window.updateOrderStatus = (orderId, newStatus) => {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = newStatus;
+                updateStats();
+                updateRecentOrders();
+                updateOrdersTable();
+                showNotification(`Commande ${orderId} : ${getStatusText(newStatus)}`, 'success');
+            }
+        };
+        
+        window.viewOrderDetails = (orderId) => {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                const statusText = { pending: 'En attente', preparing: 'Préparation', ready: 'Prête', delivered: 'Livrée', cancelled: 'Annulée' };
+                document.getElementById('orderDetails').innerHTML = `
+                    <p><strong>ID:</strong> ${order.id}</p>
+                    <p><strong>Date:</strong> ${order.date}</p>
+                    <p><strong>Patient:</strong> ${order.patient}</p>
+                    <p><strong>Statut:</strong> ${statusText[order.status]}</p>
+                    <p><strong>Médicaments:</strong></p>
+                    <ul>${order.medications.map(m => `<li>${m.name} x${m.quantity}</li>`).join('')}</ul>
+                    <p><strong>Total:</strong> ${order.total} DA</p>
+                `;
+                document.getElementById('orderModal').classList.add('active');
+            }
+        };
+        
+        window.registerDuty = (date) => {
+            document.getElementById('dutyDate').value = date;
+            document.getElementById('dutySection').style.display = 'block';
+            document.querySelector('[data-section="duty"]').click();
+        };
+        
+        function getStatusText(status) {
+            const map = { pending: 'En attente', preparing: 'Préparation', ready: 'Prête', delivered: 'Livrée', cancelled: 'Annulée' };
+            return map[status] || status;
+        }
+        
+        function showNotification(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.bottom = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '1000';
+            alertDiv.style.maxWidth = '300px';
+            alertDiv.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'info-circle'}-fill"></i> ${message}`;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+        
+        // ==================== FORMULAIRES ====================
+        document.getElementById('medicationForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('medicationId').value;
+            const medData = {
+                name: document.getElementById('medName').value,
+                category: document.getElementById('medCategory').value,
+                quantity: parseInt(document.getElementById('medQuantity').value),
+                price: parseInt(document.getElementById('medPrice').value),
+                threshold: parseInt(document.getElementById('medThreshold').value)
+            };
+            
+            if (id) {
+                const index = medications.findIndex(m => m.id === parseInt(id));
+                if (index !== -1) {
+                    medications[index] = { ...medications[index], ...medData, id: parseInt(id) };
+                }
+            } else {
+                const newId = Math.max(...medications.map(m => m.id), 0) + 1;
+                medications.push({ id: newId, ...medData });
+            }
+            
+            document.getElementById('medicationModal').classList.remove('active');
+            updateStats();
+            updateStockTable();
+            updateLowStockList();
+            updateTopMedications();
+            showNotification('Médicament enregistré avec succès', 'success');
+        });
+        
+        document.getElementById('registerDutyBtn')?.addEventListener('click', () => {
+            const date = document.getElementById('dutyDate').value;
+            const type = document.getElementById('dutyType').value;
+            if (date && !duties.find(d => d.date === date)) {
+                duties.push({ date, type });
+                updateDutyCalendar();
+                showNotification('Inscription à la garde confirmée', 'success');
+            } else {
+                showNotification('Date déjà réservée ou invalide', 'danger');
+            }
+        });
+        
+        document.getElementById('changePasswordForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmNewPassword').value;
+            if (newPass === confirm && newPass.length >= 6) {
+                showNotification('Mot de passe modifié avec succès', 'success');
+                e.target.reset();
+            } else {
+                showNotification('Les mots de passe ne correspondent pas ou sont trop courts', 'danger');
+            }
+        });
+        
+        document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
+            if (confirm('ATTENTION: Cette action est irréversible. Voulez-vous vraiment supprimer votre compte ?')) {
+                showNotification('Compte supprimé. Redirection...', 'error');
+                setTimeout(() => window.location.href = 'pharmacy-login.html', 2000);
+            }
+        });
+        
+        // ==================== NAVIGATION ====================
+        const menuItems = document.querySelectorAll('.menu-item');
+        const sections = ['dashboard', 'stock', 'orders', 'duty', 'profile', 'settings'];
+        const pageTitle = document.getElementById('pageTitle');
+        const titles = {
+            dashboard: 'Tableau de bord',
+            stock: 'Gestion du Stock',
+            orders: 'Commandes',
+            duty: 'Calendrier de Garde',
+            profile: 'Profil Pharmacie',
+            settings: 'Paramètres'
+        };
+        
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionName = item.dataset.section;
+                menuItems.forEach(mi => mi.classList.remove('active'));
+                item.classList.add('active');
+                sections.forEach(s => {
+                    const el = document.getElementById(s + 'Section');
+                    if (el) el.style.display = s === sectionName ? 'block' : 'none';
+                });
+                pageTitle.textContent = titles[sectionName] || sectionName;
+                if (sectionName === 'duty') updateDutyCalendar();
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+        
+        // ==================== MOBILE ====================
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (menuToggle) menuToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+        if (overlay) overlay.addEventListener('click', () => sidebar.classList.remove('mobile-open'));
+        
+        // ==================== MODALS ====================
+        document.querySelectorAll('.modal-close, #cancelModalBtn, #closeOrderModal, #closeOrderDetailsBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+            });
+        });
+        
+        // ==================== PROFILE ====================
+        document.getElementById('editProfileBtn')?.addEventListener('click', () => {
+            const inputs = document.querySelectorAll('#profileForm input');
+            inputs.forEach(i => i.disabled = false);
+            document.getElementById('profileActions').style.display = 'flex';
+            document.getElementById('editProfileBtn').style.display = 'none';
+        });
+        
+        document.getElementById('cancelProfileEdit')?.addEventListener('click', () => {
+            const inputs = document.querySelectorAll('#profileForm input');
+            inputs.forEach(i => i.disabled = true);
+            document.getElementById('profileActions').style.display = 'none';
+            document.getElementById('editProfileBtn').style.display = 'inline-flex';
+        });
+        
+        document.getElementById('profileForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            showNotification('Profil mis à jour avec succès', 'success');
+            const inputs = document.querySelectorAll('#profileForm input');
+            inputs.forEach(i => i.disabled = true);
+            document.getElementById('profileActions').style.display = 'none';
+            document.getElementById('editProfileBtn').style.display = 'inline-flex';
+        });
+        
+        // ==================== SEARCH & FILTERS ====================
+        document.getElementById('searchMedication')?.addEventListener('input', () => updateStockTable());
+        document.getElementById('categoryFilter')?.addEventListener('change', () => updateStockTable());
+        document.getElementById('orderStatusFilter')?.addEventListener('change', () => updateOrdersTable());
+        document.getElementById('viewAllOrdersBtn')?.addEventListener('click', () => document.querySelector('[data-section="orders"]').click());
+        document.getElementById('addMedicationBtn')?.addEventListener('click', () => openMedicationModal());
+        
+        // ==================== INIT ====================
+        function init() {
+            const pharmacy = Auth.getPharmacy ? Auth.getPharmacy() : { name: 'Pharmacie El Amal', license: 'PH-2024-001', address: 'Rue Larbi Ben Mhidi', wilaya: 'Tlemcen', commune: 'Tlemcen Centre', phone: '043 12 34 56', whatsapp: '0555 12 34 56', email: 'contact@elamal.dz' };
+            document.getElementById('userName').textContent = pharmacy.name;
+            document.getElementById('welcomeName').textContent = pharmacy.name;
+            document.getElementById('userAvatar').textContent = pharmacy.name.charAt(0).toUpperCase();
+            document.getElementById('profileName').value = pharmacy.name;
+            document.getElementById('profileLicense').value = pharmacy.license;
+            document.getElementById('profileAddress').value = pharmacy.address;
+            document.getElementById('profileWilaya').value = pharmacy.wilaya;
+            document.getElementById('profileCommune').value = pharmacy.commune;
+            document.getElementById('profilePhone').value = pharmacy.phone;
+            document.getElementById('profileWhatsapp').value = pharmacy.whatsapp || '';
+            document.getElementById('profileEmail').value = pharmacy.email;
+            
+            updateStats();
+            updateLowStockList();
+            updateRecentOrders();
+            updateTopMedications();
+            updateStockTable();
+            updateOrdersTable();
+            initChart();
+        }
+        
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                if (Auth.logout) Auth.logout();
+                else window.location.href = 'pharmacy-login.html';
+            }
+        });
+        
+        init();
+    </script>
+</body>
+</html>

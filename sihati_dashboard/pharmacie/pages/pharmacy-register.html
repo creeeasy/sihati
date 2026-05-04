@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription Pharmacie - Sihati</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../css/design-system.css">
+    
+    <style>
+        body {
+            min-height: 100vh;
+            background: #0f172a;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated Background */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+        
+        .bg-animated::before,
+        .bg-animated::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .bg-animated::before {
+            width: 600px;
+            height: 600px;
+            background: #2E7BF6;
+            top: -300px;
+            right: -250px;
+        }
+        
+        .bg-animated::after {
+            width: 500px;
+            height: 500px;
+            background: #00BFA5;
+            bottom: -250px;
+            left: -200px;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(60px, -60px) scale(1.1); }
+            66% { transform: translate(-40px, 40px) scale(0.9); }
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+        
+        .theme-toggle i {
+            font-size: 24px;
+            color: #fbbf24;
+        }
+        
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 1000;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(-4px);
+        }
+        
+        /* Container */
+        .register-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px 40px;
+        }
+        
+        .register-box {
+            max-width: 700px;
+            width: 100%;
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Logo */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(46, 123, 246, 0.3);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo img {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .register-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .register-subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+        
+        /* Steps Indicator */
+        .steps-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .step.active .step-number {
+            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
+            border-color: transparent;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10B981;
+            color: #10B981;
+        }
+        
+        .step-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .step.active .step-label {
+            color: white;
+        }
+        
+        .step-divider {
+            width: 60px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Form Card */
+        .form-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            margin-bottom: 24px;
+        }
+        
+        /* Step Forms */
+        .step-form {
+            display: none;
+        }
+        
+        .step-form.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Form Group */
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .form-input,
+        .form-select {
+            width: 100%;
+            height: 56px;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #2E7BF6;
+            box-shadow: 0 0 0 4px rgba(46, 123, 246, 0.1);
+        }
+        
+        .form-input::placeholder {
+            color: #64748b;
+        }
+        
+        .form-select option {
+            background: #1e293b;
+            color: white;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px;
+            transition: color 0.3s;
+        }
+        
+        .toggle-password:hover {
+            color: #2E7BF6;
+        }
+        
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        
+        .form-check input {
+            width: 18px;
+            height: 18px;
+            accent-color: #2E7BF6;
+            cursor: pointer;
+        }
+        
+        .form-check label {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .form-check a {
+            color: #2E7BF6;
+            text-decoration: none;
+        }
+        
+        /* Messages */
+        .error-box,
+        .success-box {
+            display: none;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .success-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+        
+        /* Buttons */
+        .btn {
+            height: 56px;
+            padding: 0 32px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7BF6, #1E5BC6);
+            color: white;
+            box-shadow: 0 8px 24px rgba(46, 123, 246, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(46, 123, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+        
+        /* Login Link */
+        .login-link {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .login-link p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .login-link a {
+            color: #2E7BF6;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .login-link a:hover {
+            color: #5B9BFF;
+        }
+        
+        /* Hours Grid */
+        .hours-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .hours-item label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .time-inputs {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .time-inputs input {
+            flex: 1;
+        }
+        
+        .time-inputs span {
+            color: #64748b;
+        }
+        
+        /* Light Theme */
+        body[data-theme="light"] {
+            background: #F9FAFB;
+        }
+        
+        body[data-theme="light"] .bg-animated {
+            background: linear-gradient(135deg, #F9FAFB 0%, #E8F2FF 50%, #F9FAFB 100%);
+        }
+        
+        body[data-theme="light"] .bg-animated::before,
+        body[data-theme="light"] .bg-animated::after {
+            opacity: 0.08;
+        }
+        
+        body[data-theme="light"] .theme-toggle {
+            background: rgba(46, 123, 246, 0.1);
+            border-color: rgba(46, 123, 246, 0.2);
+        }
+        
+        body[data-theme="light"] .theme-toggle i {
+            color: #1e40af;
+        }
+        
+        body[data-theme="light"] .back-btn {
+            background: rgba(46, 123, 246, 0.1);
+            border-color: rgba(46, 123, 246, 0.2);
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .logo {
+            background: rgba(46, 123, 246, 0.05);
+        }
+        
+        body[data-theme="light"] .register-title {
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .register-subtitle {
+            color: #64748b;
+        }
+        
+        body[data-theme="light"] .step-number {
+            background: rgba(241, 245, 249, 0.8);
+            border-color: #e2e8f0;
+        }
+        
+        body[data-theme="light"] .step-label {
+            color: #64748b;
+        }
+        
+        body[data-theme="light"] .step.active .step-label {
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .form-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(46, 123, 246, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+        
+        body[data-theme="light"] .step-title {
+            color: #0f172a;
+            border-color: #e2e8f0;
+        }
+        
+        body[data-theme="light"] .form-label {
+            color: #475569;
+        }
+        
+        body[data-theme="light"] .form-input,
+        body[data-theme="light"] .form-select {
+            background: rgba(241, 245, 249, 0.8);
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .form-select option {
+            background: white;
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .form-check label {
+            color: #475569;
+        }
+        
+        body[data-theme="light"] .btn-secondary {
+            background: rgba(241, 245, 249, 0.8);
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        
+        body[data-theme="light"] .login-link {
+            border-color: #e2e8f0;
+        }
+        
+        body[data-theme="light"] .login-link p {
+            color: #64748b;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row,
+            .hours-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-card {
+                padding: 32px 24px;
+            }
+            
+            .steps-indicator {
+                gap: 8px;
+            }
+            
+            .step-label {
+                display: none;
+            }
+            
+            .step-divider {
+                width: 30px;
+            }
+            
+            .btn-actions {
+                flex-direction: column-reverse;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="bi bi-sun-fill" id="themeIcon"></i>
+    </button>
+    
+    <!-- Back Button -->
+    <a href="pharmacy-login.html" class="back-btn">
+        <i class="bi bi-arrow-left"></i>
+        Retour
+    </a>
+    
+    <!-- Animated Background -->
+    <div class="bg-animated"></div>
+    
+    <!-- Register Container -->
+    <div class="register-container">
+        <div class="register-box">
+            
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="../assets/icons/sihati_icon_primary.svg" alt="Sihati">
+                </div>
+                <h1 class="register-title">Créer un compte pharmacie</h1>
+                <p class="register-subtitle">Rejoignez Sihati en quelques étapes</p>
+            </div>
+            
+            <!-- Steps Indicator -->
+            <div class="steps-indicator">
+                <div class="step active" id="step1Indicator">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Compte</div>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step" id="step2Indicator">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Pharmacie</div>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step" id="step3Indicator">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Horaires</div>
+                </div>
+            </div>
+            
+            <!-- Form Card -->
+            <div class="form-card">
+                
+                <!-- Messages -->
+                <div id="errorMessage" class="error-box">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <span id="errorText"></span>
+                </div>
+                
+                <div id="successMessage" class="success-box">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span id="successText"></span>
+                </div>
+                
+                <!-- STEP 1: Account Info -->
+                <div class="step-form active" id="stepForm1">
+                    <div class="step-title">
+                        <i class="bi bi-person-circle"></i> Informations du compte
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="email" placeholder="contact@pharmacie.dz" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Mot de passe</label>
+                            <div class="input-wrapper">
+                                <input type="password" class="form-input" id="password" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmer le mot de passe</label>
+                            <div class="input-wrapper">
+                                <input type="password" class="form-input" id="confirmPassword" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input type="checkbox" id="terms" required>
+                        <label for="terms">
+                            J'accepte les <a href="#">conditions d'utilisation</a>
+                        </label>
+                    </div>
+                    
+                    <div class="btn-actions">
+                        <button class="btn btn-primary" id="nextStep1Btn">
+                            Suivant <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- STEP 2: Pharmacy Info -->
+                <div class="step-form" id="stepForm2">
+                    <div class="step-title">
+                        <i class="bi bi-building"></i> Informations de la pharmacie
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nom de la pharmacie</label>
+                            <input type="text" class="form-input" id="pharmacyName" placeholder="Pharmacie El Amal">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Numéro de licence</label>
+                            <input type="text" class="form-input" id="licenseNumber" placeholder="PH-2024-001">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Adresse</label>
+                        <input type="text" class="form-input" id="address" placeholder="Rue, numéro...">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Wilaya</label>
+                            <select class="form-select" id="wilaya">
+                                <option value="">Sélectionner une wilaya</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Commune</label>
+                            <input type="text" class="form-input" id="commune" placeholder="Votre commune">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-input" id="phone" placeholder="043 12 34 56">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WhatsApp</label>
+                            <input type="tel" class="form-input" id="whatsapp" placeholder="0555 12 34 56">
+                        </div>
+                    </div>
+                    
+                    <div class="btn-actions">
+                        <button class="btn btn-secondary" id="backStep2Btn">
+                            <i class="bi bi-arrow-left"></i> Retour
+                        </button>
+                        <button class="btn btn-primary" id="nextStep2Btn">
+                            Suivant <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- STEP 3: Opening Hours -->
+                <div class="step-form" id="stepForm3">
+                    <div class="step-title">
+                        <i class="bi bi-clock"></i> Horaires d'ouverture
+                    </div>
+                    
+                    <div class="hours-grid">
+                        <div class="hours-item">
+                            <label>Samedi - Jeudi</label>
+                            <div class="time-inputs">
+                                <input type="time" class="form-input" id="weekdayOpen" value="08:00">
+                                <span>à</span>
+                                <input type="time" class="form-input" id="weekdayClose" value="18:00">
+                            </div>
+                        </div>
+                        
+                        <div class="hours-item">
+                            <label>Vendredi</label>
+                            <div class="time-inputs">
+                                <input type="time" class="form-input" id="fridayOpen" value="14:00">
+                                <span>à</span>
+                                <input type="time" class="form-input" id="fridayClose" value="18:00">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input type="checkbox" id="is24h">
+                        <label for="is24h">
+                            <i class="bi bi-clock-history"></i> Pharmacie ouverte 24h/24
+                        </label>
+                    </div>
+                    
+                    <div class="btn-actions">
+                        <button class="btn btn-secondary" id="backStep3Btn">
+                            <i class="bi bi-arrow-left"></i> Retour
+                        </button>
+                        <button class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-check-circle"></i>
+                            <span id="submitBtnText">Créer mon compte</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Login Link -->
+                <div class="login-link">
+                    <p>Vous avez déjà un compte ?</p>
+                    <a href="pharmacy-login.html">Se connecter</a>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/utils/api.js"></script>
+    <script src="../js/utils/auth.js"></script>
+    <script src="../js/utils/validator.js"></script>
+    
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+        
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+        
+        function updateThemeIcon(theme) {
+            themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        }
+        
+        // Populate Wilaya
+        const wilayaSelect = document.getElementById('wilaya');
+        CONFIG.WILAYAS.forEach(wilaya => {
+            const option = document.createElement('option');
+            option.value = wilaya;
+            option.textContent = wilaya;
+            wilayaSelect.appendChild(option);
+        });
+        
+        // Toggle Passwords
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const input = document.getElementById('password');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        });
+        
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const input = document.getElementById('confirmPassword');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        });
+        
+        // Steps Navigation
+        let currentStep = 1;
+        
+        function showStep(step) {
+            document.querySelectorAll('.step-form').forEach(f => f.classList.remove('active'));
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'completed'));
+            
+            document.getElementById(`stepForm${step}`).classList.add('active');
+            document.getElementById(`step${step}Indicator`).classList.add('active');
+            
+            for (let i = 1; i < step; i++) {
+                const indicator = document.getElementById(`step${i}Indicator`);
+                indicator.classList.add('completed');
+                indicator.querySelector('.step-number').innerHTML = '<i class="bi bi-check"></i>';
+            }
+            
+            currentStep = step;
+        }
+        
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('errorMessage').style.display = 'flex';
+            document.getElementById('errorText').textContent = message;
+        }
+        
+        // Step 1 Navigation
+        document.getElementById('nextStep1Btn').addEventListener('click', () => {
+            hideMessages();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const terms = document.getElementById('terms').checked;
+            
+            if (Validator.isEmpty(email)) {
+                showError('L\'email est requis');
+                return;
+            }
+            if (!Validator.isValidEmail(email)) {
+                showError('Email invalide');
+                return;
+            }
+            if (Validator.isEmpty(password)) {
+                showError('Le mot de passe est requis');
+                return;
+            }
+            if (!Validator.isValidPassword(password)) {
+                showError('Le mot de passe doit contenir au moins 6 caractères');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showError('Les mots de passe ne correspondent pas');
+                return;
+            }
+            if (!terms) {
+                showError('Vous devez accepter les conditions d\'utilisation');
+                return;
+            }
+            
+            showStep(2);
+        });
+        
+        // Step 2 Navigation
+        document.getElementById('backStep2Btn').addEventListener('click', () => showStep(1));
+        
+        document.getElementById('nextStep2Btn').addEventListener('click', () => {
+            hideMessages();
+            
+            const pharmacyName = document.getElementById('pharmacyName').value;
+            const licenseNumber = document.getElementById('licenseNumber').value;
+            const address = document.getElementById('address').value;
+            const wilaya = document.getElementById('wilaya').value;
+            const commune = document.getElementById('commune').value;
+            const phone = document.getElementById('phone').value;
+            
+            if (Validator.isEmpty(pharmacyName)) {
+                showError('Le nom de la pharmacie est requis');
+                return;
+            }
+            if (Validator.isEmpty(licenseNumber)) {
+                showError('Le numéro de licence est requis');
+                return;
+            }
+            if (Validator.isEmpty(address)) {
+                showError('L\'adresse est requise');
+                return;
+            }
+            if (Validator.isEmpty(wilaya)) {
+                showError('La wilaya est requise');
+                return;
+            }
+            if (Validator.isEmpty(commune)) {
+                showError('La commune est requise');
+                return;
+            }
+            if (Validator.isEmpty(phone)) {
+                showError('Le téléphone est requis');
+                return;
+            }
+            if (!Validator.isValidPhone(phone)) {
+                showError('Numéro de téléphone invalide');
+                return;
+            }
+            
+            showStep(3);
+        });
+        
+        // Step 3 Navigation
+        document.getElementById('backStep3Btn').addEventListener('click', () => showStep(2));
+        
+        // Submit
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            hideMessages();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
+            
+            submitBtn.disabled = true;
+            submitBtnText.textContent = 'Création en cours...';
+            
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                pharmacyName: document.getElementById('pharmacyName').value,
+                licenseNumber: document.getElementById('licenseNumber').value,
+                address: document.getElementById('address').value,
+                wilaya: document.getElementById('wilaya').value,
+                commune: document.getElementById('commune').value,
+                phone: document.getElementById('phone').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                openingHours: {
+                    weekdays: {
+                        open: document.getElementById('weekdayOpen').value,
+                        close: document.getElementById('weekdayClose').value
+                    },
+                    friday: {
+                        open: document.getElementById('fridayOpen').value,
+                        close: document.getElementById('fridayClose').value
+                    },
+                    is24h: document.getElementById('is24h').checked
+                }
+            };
+            
+            try {
+                const response = await API.post(CONFIG.ENDPOINTS.AUTH.REGISTER, formData);
+                
+                document.getElementById('successMessage').style.display = 'flex';
+                document.getElementById('successText').textContent = 
+                    'Compte créé avec succès ! Redirection...';
+                
+                setTimeout(() => {
+                    window.location.href = 'pharmacy-login.html';
+                }, 2000);
+                
+            } catch (error) {
+                showError(error.message || 'Erreur lors de la création du compte');
+                submitBtn.disabled = false;
+                submitBtnText.textContent = 'Créer mon compte';
+            }
+        });
+        
+        // 24h toggle
+        document.getElementById('is24h').addEventListener('change', function() {
+            const timeInputs = document.querySelectorAll('input[type="time"]');
+            timeInputs.forEach(input => input.disabled = this.checked);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Sihati Médecin</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <link rel="stylesheet" href="../css/design-system.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0f172a;
+            overflow-x: hidden;
+            position: relative;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+        
+        .bg-animated::before,
+        .bg-animated::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .bg-animated::before {
+            width: 600px;
+            height: 600px;
+            background: #2E7BF6;
+            top: -300px;
+            right: -250px;
+        }
+        
+        .bg-animated::after {
+            width: 500px;
+            height: 500px;
+            background: #00BFA5;
+            bottom: -250px;
+            left: -200px;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(60px, -60px) scale(1.1); }
+            66% { transform: translate(-40px, 40px) scale(0.9); }
+        }
+        
+        .dashboard-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 0;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 50;
+        }
+        
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .sidebar-brand .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidebar-brand .logo-icon i {
+            font-size: 28px;
+            color: white;
+        }
+        
+        .sidebar-brand .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+        }
+        
+        .sidebar-menu {
+            padding: 0 16px;
+        }
+        
+        .menu-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            padding: 16px 12px 8px;
+            font-weight: 600;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        
+        .menu-item.active {
+            background: linear-gradient(135deg, rgba(46, 123, 246, 0.2), rgba(0, 191, 165, 0.2));
+            color: #2E7BF6;
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 24px;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px 32px;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 16px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 700;
+            color: white;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+        
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .notification-btn {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(46, 123, 246, 0.3);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(46, 123, 246, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        
+        .stat-icon i {
+            font-size: 28px;
+            color: #2E7BF6;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 700;
+            color: white;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header i {
+            margin-right: 8px;
+            color: #2E7BF6;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            text-align: left;
+            padding: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table td {
+            padding: 12px;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-info { background: rgba(46, 123, 246, 0.2); color: #90cdf4; border: 1px solid rgba(46, 123, 246, 0.3); }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7BF6, #1E5BC6);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(46, 123, 246, 0.3); }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: #cbd5e1;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; color: #cbd5e1; margin-bottom: 8px; font-weight: 500; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #2E7BF6; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .availability-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .day-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px; }
+        .day-card.active { border-color: #2E7BF6; background: rgba(46, 123, 246, 0.05); }
+        .day-name { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: white; margin-bottom: 12px; }
+        .day-toggle { width: 48px; height: 24px; background: rgba(255, 255, 255, 0.2); border-radius: 20px; position: relative; cursor: pointer; border: none; }
+        .day-toggle.active { background: #2E7BF6; }
+        .day-toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.3s; }
+        .day-toggle.active::after { left: 27px; }
+        .time-inputs { display: flex; align-items: center; gap: 8px; }
+        .time-inputs input { flex: 1; height: 40px; padding: 0 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: white; }
+        .time-inputs input:disabled { opacity: 0.5; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #1e293b; border-radius: 24px; padding: 32px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .modal-header h3 { color: white; }
+        .modal-close { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
+        
+        .alert { padding: 16px 20px; border-radius: 16px; margin-bottom: 24px; }
+        .alert-info { background: rgba(46, 123, 246, 0.1); border: 1px solid rgba(46, 123, 246, 0.2); color: #90cdf4; }
+        .alert-success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        
+        .chart-container { height: 300px; position: relative; }
+        
+        .icon-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); }
+                /* File d'attente */
+        .queue-patient-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .queue-patient-card.consulting {
+            border-color: #2E7BF6;
+            background: rgba(46, 123, 246, 0.1);
+        }
+
+        .queue-position {
+            width: 40px;
+            height: 40px;
+            background: rgba(46, 123, 246, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #2E7BF6;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-waiting { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+        .status-arrived { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .status-consulting { background: rgba(46, 123, 246, 0.2); color: #90cdf4; }
+        .status-completed { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+
+        .current-patient-bar {
+            background: linear-gradient(135deg, #2E7BF6, #1E5BC6);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .current-patient-bar .patient-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+        }
+        /* Specialties Grid */
+        .specialties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .specialty-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .specialty-card:hover {
+            transform: translateY(-4px);
+            border-color: #2E7BF6;
+            background: rgba(46, 123, 246, 0.05);
+        }
+        
+        .specialty-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        
+        .specialty-icon i { font-size: 30px; }
+        
+        .specialty-name { font-size: 1.2rem; font-weight: 700; color: white; margin-bottom: 12px; }
+        .specialty-stats { display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .specialty-stat { flex: 1; text-align: center; }
+        .specialty-stat-value { font-size: 1.3rem; font-weight: 700; color: #2E7BF6; }
+        .specialty-stat-label { font-size: 0.7rem; color: #94a3b8; }
+        
+        .search-box { display: flex; gap: 16px; margin-bottom: 24px; }
+        .search-box input { flex: 1; padding: 12px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: white; }
+        
+        /* Light Theme */
+        body[data-theme="light"] { background: #F9FAFB; }
+        body[data-theme="light"] .bg-animated { background: linear-gradient(135deg, #F9FAFB 0%, #E8F2FF 50%, #F9FAFB 100%); }
+        body[data-theme="light"] .bg-animated::before, body[data-theme="light"] .bg-animated::after { opacity: 0.08; }
+        body[data-theme="light"] .sidebar { background: rgba(255, 255, 255, 0.95); border-right-color: rgba(0, 0, 0, 0.05); }
+        body[data-theme="light"] .sidebar-brand .logo-text, body[data-theme="light"] .page-title, body[data-theme="light"] .stat-number, body[data-theme="light"] .card-header, body[data-theme="light"] .user-name, body[data-theme="light"] .day-name, body[data-theme="light"] .modal-header h3, body[data-theme="light"] .specialty-name { color: #0f172a; }
+        body[data-theme="light"] .menu-item { color: #475569; }
+        body[data-theme="light"] .menu-item:hover { background: rgba(0, 0, 0, 0.05); color: #0f172a; }
+        body[data-theme="light"] .top-bar, body[data-theme="light"] .stat-card, body[data-theme="light"] .card, body[data-theme="light"] .day-card, body[data-theme="light"] .modal-content, body[data-theme="light"] .specialty-card { background: rgba(255, 255, 255, 0.9); border-color: rgba(0, 0, 0, 0.05); }
+        body[data-theme="light"] .table th, body[data-theme="light"] .table td, body[data-theme="light"] .form-label { color: #334155; }
+        body[data-theme="light"] .form-input, body[data-theme="light"] .form-select, body[data-theme="light"] .time-inputs input, body[data-theme="light"] .search-box input { background: rgba(241, 245, 249, 0.8); border-color: #e2e8f0; color: #0f172a; }
+        
+        @media (max-width: 1024px) { .stats-grid, .availability-grid, .specialties-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 16px; }
+            .stats-grid, .availability-grid, .form-row, .specialties-grid { grid-template-columns: 1fr; }
+            .menu-toggle { display: block; }
+        }
+        .menu-toggle { display: none; background: rgba(255, 255, 255, 0.1); border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 16px; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 40; }
+        .sidebar-overlay.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="bg-animated"></div>
+    
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+    <div class="logo">
+        <img src="D:\memoire\icons/sihati_wordmark_dark.svg" alt="Sihati" style="width: 50px; height: 50px;">
+    </div>
+    <div class="logo-text">Sihati</div>
+</div>
+            <nav class="sidebar-menu">
+                <div class="menu-section-title">MENU PRINCIPAL</div>
+                <a class="menu-item active" data-section="dashboard"><i class="bi bi-speedometer2"></i><span>Tableau de bord</span></a>
+                <a class="menu-item" data-section="profile"><i class="bi bi-person-badge"></i><span>Mon Profil</span></a>
+                <a class="menu-item" data-section="availability"><i class="bi bi-calendar-week"></i><span>Disponibilités</span></a>
+                <a class="menu-item" data-section="appointments"><i class="bi bi-calendar-check"></i><span>Rendez-vous</span></a>
+                <a class="menu-item" data-section="patients"><i class="bi bi-people"></i><span>Patients</span></a>
+                <a class="menu-item" data-section="patientRecord">
+    <i class="bi bi-folder2-open"></i>
+    <span>Bilan Patient</span>
+</a>
+                <a class="menu-item" data-section="specialties"><i class="bi bi-grid-3x3-gap-fill"></i><span>Spécialités</span></a>
+                <div class="menu-section-title">PARAMÈTRES</div>
+                <a class="menu-item" data-section="settings"><i class="bi bi-gear"></i><span>Paramètres</span></a>
+            </nav>
+        </aside>
+        
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div style="display: flex; align-items: center;">
+                    <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
+                    <h1 class="page-title" id="pageTitle">Tableau de bord</h1>
+                </div>
+                <div class="user-info">
+                    <button class="notification-btn" id="notificationBtn"><i class="bi bi-bell"></i><span class="notification-badge" id="notificationBadge">3</span></button>
+                    <button class="theme-toggle" id="themeToggle"><i class="bi bi-sun-fill" id="themeIcon"></i></button>
+                    <div class="user-details"><div class="user-name" id="userName">Dr. Ahmed Benali</div><div class="user-role" id="userSpecialty">Médecin Généraliste</div></div>
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <button class="logout-btn" id="logoutBtn"><i class="bi bi-box-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboardSection">
+                <div class="alert alert-info"><i class="bi bi-info-circle-fill"></i> Bienvenue <strong id="welcomeName">Dr. Ahmed Benali</strong> ! Voici un résumé de votre activité.</div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon"><i class="bi bi-calendar-check"></i></div><div class="stat-number" id="todayAppointments">0</div><div class="stat-label">Rendez-vous aujourd'hui</div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="bi bi-people"></i></div><div class="stat-number" id="monthlyPatients">0</div><div class="stat-label">Patients ce mois</div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="bi bi-clock-history"></i></div><div class="stat-number" id="pendingAppointments">0</div><div class="stat-label">En attente</div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="bi bi-star-fill"></i></div><div class="stat-number" id="averageRating">4.8</div><div class="stat-label">Note moyenne</div></div>
+                </div>
+                <!-- File d'attente -->
+<div class="card">
+    <div class="card-header">
+        <span><i class="bi bi-person-queue"></i> File d'attente du cabinet</span>
+        <span class="badge badge-info" id="waitingCount">0 en attente</span>
+    </div>
+    <div class="card-body">
+        <!-- Patient en consultation -->
+        <div id="currentConsultationCard" style="display: none;">
+            <div class="current-patient-bar">
+                <div>
+                    <div style="font-size: 0.8rem; opacity: 0.8;">Consultation en cours</div>
+                    <div class="patient-name" id="currentConsultationName">-</div>
+                    <div id="currentConsultationPosition"></div>
+                </div>
+                <button class="btn-primary" id="completeConsultationBtn" style="background: white; color: #2E7BF6;">
+                    <i class="bi bi-check-circle"></i> Terminer et passer au suivant
+                </button>
+            </div>
+        </div>
+
+        <!-- Liste des patients -->
+        <div id="queueContainer"></div>
+
+        <!-- Message si vide -->
+        <div id="emptyQueueMessage" class="alert alert-info" style="display: none; text-align: center;">
+            <i class="bi bi-info-circle"></i> Aucun patient dans la file d'attente aujourd'hui
+        </div>
+    </div>
+</div>
+                <div class="card"><div class="card-header"><span><i class="bi bi-calendar-event"></i> Prochains rendez-vous</span><button class="btn-primary btn-sm" id="viewAllAppointmentsBtn">Voir tous</button></div>
+                <div class="card-body"><div class="table-wrapper"><table class="table"><thead><tr><th>Patient</th><th>Date</th><th>Heure</th><th>Motif</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="upcomingAppointmentsList"></tbody></table></div></div></div>
+                <div class="card"><div class="card-header"><span><i class="bi bi-graph-up"></i> Évolution des consultations</span></div><div class="card-body"><div class="chart-container"><canvas id="consultationsChart"></canvas></div></div></div>
+            </div>
+            
+            <!-- PROFILE SECTION -->
+            <div id="profileSection" style="display: none;"><div class="card"><div class="card-header"><span><i class="bi bi-person-badge"></i> Mon Profil</span><button class="btn-secondary" id="editProfileBtn"><i class="bi bi-pencil"></i> Modifier</button></div><div class="card-body"><form id="profileForm"><div class="form-row"><div class="form-group"><label class="form-label">Prénom</label><input type="text" id="profileFirstName" class="form-input" disabled></div><div class="form-group"><label class="form-label">Nom</label><input type="text" id="profileLastName" class="form-input" disabled></div></div><div class="form-row"><div class="form-group"><label class="form-label">Spécialité</label><select id="profileSpecialty" class="form-select" disabled><option value="general">Médecin Généraliste</option><option value="cardio">Cardiologue</option><option value="dermato">Dermatologue</option><option value="pediatre">Pédiatre</option><option value="gyneco">Gynécologue</option><option value="ortho">Orthopédiste</option><option value="ophtalmo">Ophtalmologue</option><option value="pneumo">Pneumologue</option><option value="neuro">Neurologue</option></select></div><div class="form-group"><label class="form-label">Numéro de licence</label><input type="text" id="profileLicense" class="form-input" readonly></div></div><div class="form-row"><div class="form-group"><label class="form-label">Wilaya</label><select id="profileWilaya" class="form-select" disabled></select></div><div class="form-group"><label class="form-label">Commune</label><input type="text" id="profileCommune" class="form-input" disabled></div></div><div class="form-row"><div class="form-group"><label class="form-label">Téléphone</label><input type="tel" id="profilePhone" class="form-input" disabled></div><div class="form-group"><label class="form-label">Email</label><input type="email" id="profileEmail" class="form-input" disabled></div></div><div class="form-group"><label class="form-label">Adresse du cabinet</label><input type="text" id="profileAddress" class="form-input" disabled></div><div class="form-group"><label class="form-label">Bio / Description</label><textarea id="profileBio" class="form-textarea" rows="3" disabled></textarea></div><div id="profileActions" style="display: none; gap: 12px; margin-top: 24px;"><button type="submit" class="btn-primary">Enregistrer</button><button type="button" class="btn-secondary" id="cancelProfileEdit">Annuler</button></div></form></div></div></div>
+            
+            <!-- AVAILABILITY SECTION -->
+            <div id="availabilitySection" style="display: none;"><div class="card"><div class="card-header"><span><i class="bi bi-calendar-week"></i> Mes Disponibilités</span><button class="btn-primary" id="saveAvailabilityBtn"><i class="bi bi-check-circle"></i> Enregistrer</button></div><div class="card-body"><div class="alert alert-info"><i class="bi bi-info-circle-fill"></i> Activez les jours où vous êtes disponible et définissez vos horaires.</div><div class="availability-grid" id="availabilityGrid"></div></div></div></div>
+            
+            <!-- APPOINTMENTS SECTION -->
+            <div id="appointmentsSection" style="display: none;"><div class="card"><div class="card-header"><span><i class="bi bi-calendar-check"></i> Gestion des rendez-vous</span><div style="display: flex; gap: 12px;"><select id="appointmentStatusFilter" class="form-select" style="width: 130px;"><option value="">Tous</option><option value="confirmed">Confirmés</option><option value="pending">En attente</option><option value="completed">Terminés</option><option value="cancelled">Annulés</option></select><button class="btn-primary" id="addAppointmentBtn"><i class="bi bi-plus-circle"></i> Nouveau</button></div></div><div class="card-body"><div class="table-wrapper"><table class="table"><thead><tr><th>Patient</th><th>Date</th><th>Heure</th><th>Motif</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="appointmentsTableBody"></tbody></table></div></div></div></div>
+            
+            <!-- PATIENTS SECTION -->
+            <div id="patientsSection" style="display: none;"><div class="card"><div class="card-header"><span><i class="bi bi-people"></i> Mes Patients</span><div class="search-box" style="width: 250px;"><input type="text" id="searchPatient" class="form-input" placeholder="Rechercher un patient..."></div></div><div class="card-body"><div class="table-wrapper"><table class="table"><thead><tr><th>Patient</th><th>Dernière visite</th><th>Nombre de consultations</th><th>Prochain RDV</th><th>Actions</th></tr></thead><tbody id="patientsTableBody"></tbody></table></div></div></div></div>
+            
+            <!-- SPECIALTIES SECTION -->
+            <div id="specialtiesSection" style="display: none;">
+                <div class="card"><div class="card-header"><span><i class="bi bi-grid-3x3-gap-fill"></i> Spécialités Médicales</span><div class="search-box" style="width: 250px;"><input type="text" id="searchSpecialty" class="form-input" placeholder="Rechercher une spécialité..."></div></div><div class="card-body"><div class="specialties-grid" id="specialtiesGrid"></div></div></div>
+                <div class="card"><div class="card-header"><span><i class="bi bi-person-badge"></i> Médecins par Spécialité</span></div><div class="card-body"><select id="specialtyFilter" class="form-select" style="width: 250px; margin-bottom: 20px;"><option value="">Toutes les spécialités</option></select><div class="table-wrapper"><table class="table"><thead><tr><th>Médecin</th><th>Spécialité</th><th>Consultations</th><th>Note</th><th>Expérience</th><th>Contact</th> </tr></thead><tbody id="doctorsBySpecialtyList"></tbody> </table></div></div></div>
+            </div>
+            
+            <!-- SETTINGS SECTION -->
+            <div id="settingsSection" style="display: none;"><div class="card"><div class="card-header"><span><i class="bi bi-shield-lock"></i> Sécurité</span></div><div class="card-body"><h3 style="color: white; margin-bottom: 20px;">Changer le mot de passe</h3><form id="changePasswordForm"><div class="form-group"><label class="form-label">Mot de passe actuel</label><input type="password" id="currentPassword" class="form-input" required></div><div class="form-group"><label class="form-label">Nouveau mot de passe</label><input type="password" id="newPassword" class="form-input" required></div><div class="form-group"><label class="form-label">Confirmer le mot de passe</label><input type="password" id="confirmNewPassword" class="form-input" required></div><button type="submit" class="btn-primary">Modifier le mot de passe</button></form></div></div><div class="card"><div class="card-header"><span><i class="bi bi-trash"></i> Zone dangereuse</span></div><div class="card-body"><h3 style="color: #f87171; margin-bottom: 12px;">Supprimer le compte</h3><p style="color: #94a3b8; margin-bottom: 20px;">Une fois supprimé, votre compte ne pourra pas être récupéré.</p><button class="btn-danger" id="deleteAccountBtn"><i class="bi bi-exclamation-triangle"></i> Supprimer mon compte</button></div></div></div>
+        <!-- BILAN PATIENT SECTION -->
+<div id="patientRecordSection" style="display: none;">
+    
+    <!-- Recherche -->
+    <div class="card">
+        <div class="card-header">
+            <span><i class="bi bi-search"></i> Rechercher un patient</span>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">Numéro Carte Chifa</label>
+                <input type="text" id="searchChifaInput" class="form-input" placeholder="Ex: CHIFA-12345678901">
+            </div>
+            <button class="btn-primary" id="searchChifaBtn">
+                <i class="bi bi-search"></i> Rechercher
+            </button>
+        </div>
+    </div>
+
+    <!-- Résultats (caché au début) -->
+    <div id="patientBilanResult" style="display: none;">
+        
+        <!-- Infos patient -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-person-circle"></i> Informations patient</span>
+            </div>
+            <div class="card-body" id="patientInfo"></div>
+        </div>
+
+        <!-- Ordonnances -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-file-text"></i> Ordonnances</span>
+                <button class="btn-primary btn-sm" id="newOrdonnanceBtn">
+                    <i class="bi bi-plus-circle"></i> Nouvelle ordonnance
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Date</th><th>Médecin</th><th>Médicaments</th><th>Posologie</th><th>Durée</th></tr>
+                        </thead>
+                        <tbody id="ordonnancesList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Médicaments pris -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-capsule"></i> Historique des médicaments</span>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Médicament</th><th>Posologie</th><th>Date prescription</th><th>Durée</th><th>Statut</th></tr>
+                        </thead>
+                        <tbody id="medicamentsList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultations -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-calendar-check"></i> Historique des consultations</span>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Date</th><th>Motif</th><th>Diagnostic</th><th>Traitement</th></tr>
+                        </thead>
+                        <tbody id="consultationsList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Allergies et antécédents -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-exclamation-triangle"></i> Allergies & Antécédents</span>
+            </div>
+            <div class="card-body" id="allergiesAntecedents"></div>
+        </div>
+
+    </div>
+</div>
+        </main>
+    </div>
+    
+    <!-- Modal pour rendez-vous -->
+    <div class="modal" id="appointmentModal"><div class="modal-content"><div class="modal-header"><h3 id="appointmentModalTitle">Nouveau rendez-vous</h3><button class="modal-close" id="closeAppointmentModal">&times;</button></div><form id="appointmentForm"><input type="hidden" id="appointmentId"><div class="form-group"><label class="form-label">Patient</label><input type="text" id="appointmentPatient" class="form-input" required placeholder="Nom du patient"></div><div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="appointmentDate" class="form-input" required></div><div class="form-group"><label class="form-label">Heure</label><input type="time" id="appointmentTime" class="form-input" required></div></div><div class="form-group"><label class="form-label">Motif</label><input type="text" id="appointmentReason" class="form-input" required placeholder="Motif de la consultation"></div><div class="form-group"><label class="form-label">Notes</label><textarea id="appointmentNotes" class="form-textarea" rows="3" placeholder="Notes supplémentaires..."></textarea></div><div class="form-group"><label class="form-label">Statut</label><select id="appointmentStatus" class="form-select"><option value="pending">En attente</option><option value="confirmed">Confirmé</option><option value="completed">Terminé</option><option value="cancelled">Annulé</option></select></div><div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;"><button type="button" class="btn-secondary" id="cancelAppointmentBtn">Annuler</button><button type="submit" class="btn-primary">Enregistrer</button></div></form></div></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/utils/api.js"></script>
+    <script src="../js/utils/auth.js"></script>
+    
+    <script>
+        // ==================== BILAN PATIENT ====================
+let patientsBilan = [
+    {
+        chifaNumber: "CHIFA-12345678901",
+        nom: "Mohamed Benali",
+        dateNaissance: "15/05/1980",
+        groupeSanguin: "O+",
+        allergies: ["Pénicilline", "Arachides"],
+        antecedents: ["Hypertension", "Diabète type 2"],
+        ordonnances: [
+            { date: "15/03/2025", medecin: "Dr. Ahmed Benali", medicaments: "Paracétamol 500mg", posologie: "1 comprimé 3x/jour", duree: "5 jours" },
+            { date: "10/02/2025", medecin: "Dr. Fatima Zahra", medicaments: "Amoxicilline 1g", posologie: "1 comprimé 2x/jour", duree: "7 jours" }
+        ],
+        medicamentsPris: [
+            { nom: "Paracétamol 500mg", posologie: "1 comprimé 3x/jour", datePrescription: "15/03/2025", duree: "5 jours", statut: "Terminé" },
+            { nom: "Amoxicilline 1g", posologie: "1 comprimé 2x/jour", datePrescription: "10/02/2025", duree: "7 jours", statut: "Terminé" }
+        ],
+        consultations: [
+            { date: "15/03/2025", motif: "Fièvre et mal de gorge", diagnostic: "Angine bactérienne", traitement: "Antibiotique + repos" },
+            { date: "10/02/2025", motif: "Toux persistante", diagnostic: "Bronchite", traitement: "Antibiotique + sirop" }
+        ]
+    },
+    {
+        chifaNumber: "CHIFA-23456789012",
+        nom: "Fatima Zahra",
+        dateNaissance: "22/03/1975",
+        groupeSanguin: "A+",
+        allergies: ["Aucune"],
+        antecedents: ["Asthme"],
+        ordonnances: [
+            { date: "20/03/2025", medecin: "Dr. Ahmed Benali", medicaments: "Ventoline", posologie: "2 inhalations si besoin", duree: "En continu" }
+        ],
+        medicamentsPris: [
+            { nom: "Ventoline", posologie: "2 inhalations si besoin", datePrescription: "20/03/2025", duree: "En continu", statut: "En cours" }
+        ],
+        consultations: [
+            { date: "20/03/2025", motif: "Essoufflement", diagnostic: "Crise d'asthme", traitement: "Ventoline" }
+        ]
+    }
+];
+        // ==================== DONNÉES COMPLÈTES ====================
+        
+        // RENDEZ-VOUS (40+)
+        let appointments = [
+            { id: 1, patient: "Mohamed Benali", date: "2025-03-30", time: "09:00", reason: "Consultation générale", status: "confirmed", notes: "" },
+            { id: 2, patient: "Fatima Zahra", date: "2025-03-30", time: "10:30", reason: "Suivi traitement", status: "confirmed", notes: "" },
+            { id: 3, patient: "Karim Mansouri", date: "2025-03-30", time: "14:00", reason: "Douleurs dorsales", status: "pending", notes: "" },
+            { id: 4, patient: "Sofia Kader", date: "2025-03-30", time: "15:30", reason: "Résultats analyse", status: "confirmed", notes: "" },
+            { id: 5, patient: "Lamine Boudiaf", date: "2025-03-30", time: "16:45", reason: "Toux persistante", status: "pending", notes: "" },
+            { id: 6, patient: "Nadia Mansouri", date: "2025-03-31", time: "08:30", reason: "Vaccin grippe", status: "confirmed", notes: "" },
+            { id: 7, patient: "Yacine Boudiaf", date: "2025-03-31", time: "11:00", reason: "Douleurs articulaires", status: "pending", notes: "" },
+            { id: 8, patient: "Leila Hamdi", date: "2025-04-01", time: "09:30", reason: "Suivi diabète", status: "confirmed", notes: "" },
+            { id: 9, patient: "Rachid Bouali", date: "2025-04-01", time: "14:30", reason: "Certificat médical", status: "pending", notes: "" },
+            { id: 10, patient: "Samira Khelil", date: "2025-04-02", time: "10:00", reason: "Consultation pédiatrique", status: "confirmed", notes: "" },
+            { id: 11, patient: "Abdelkader Merabet", date: "2025-04-02", time: "15:00", reason: "Problèmes digestifs", status: "pending", notes: "" },
+            { id: 12, patient: "Amina Zerrouki", date: "2025-04-03", time: "08:00", reason: "Bilan de santé", status: "confirmed", notes: "" },
+            { id: 13, patient: "Hichem Belhadj", date: "2025-04-03", time: "13:00", reason: "Allergies", status: "pending", notes: "" },
+            { id: 14, patient: "Mohamed Benali", date: "2025-03-25", time: "09:00", reason: "Consultation", status: "completed", notes: "" },
+            { id: 15, patient: "Fatima Zahra", date: "2025-03-24", time: "11:00", reason: "Suivi", status: "completed", notes: "" },
+            { id: 16, patient: "Karim Mansouri", date: "2025-03-23", time: "14:30", reason: "Douleurs", status: "completed", notes: "" },
+            { id: 17, patient: "Ahmed Benali", date: "2025-03-28", time: "09:00", reason: "Consultation", status: "cancelled", notes: "" }
+        ];
+        
+        // PATIENTS (25)
+        let patients = [
+            { name: "Mohamed Benali", lastVisit: "2025-03-25", visits: 12, nextAppointment: "2025-04-15" },
+            { name: "Fatima Zahra", lastVisit: "2025-03-24", visits: 8, nextAppointment: "2025-04-20" },
+            { name: "Karim Mansouri", lastVisit: "2025-03-23", visits: 5, nextAppointment: "2025-04-10" },
+            { name: "Sofia Kader", lastVisit: "2025-03-22", visits: 4, nextAppointment: null },
+            { name: "Lamine Boudiaf", lastVisit: "2025-03-21", visits: 6, nextAppointment: "2025-04-05" },
+            { name: "Nadia Mansouri", lastVisit: "2025-03-20", visits: 3, nextAppointment: "2025-04-18" },
+            { name: "Yacine Boudiaf", lastVisit: "2025-03-19", visits: 7, nextAppointment: "2025-04-12" },
+            { name: "Leila Hamdi", lastVisit: "2025-03-18", visits: 9, nextAppointment: "2025-04-08" },
+            { name: "Rachid Bouali", lastVisit: "2025-03-17", visits: 4, nextAppointment: null },
+            { name: "Samira Khelil", lastVisit: "2025-03-16", visits: 6, nextAppointment: "2025-04-22" }
+        ];
+        
+        // MÉDECINS (15 avec différentes spécialités)
+        let doctors = [
+            { id: 1, name: "Dr. Ahmed Benali", specialty: "general", specialtyName: "Médecin Généraliste", license: "MED-2024-001", phone: "043 12 34 56", email: "ahmed.benali@clinique.dz", consultations: 145, rating: 4.8, yearsExperience: 12 },
+            { id: 2, name: "Dr. Fatima Zahra", specialty: "cardio", specialtyName: "Cardiologue", license: "MED-2024-002", phone: "043 23 45 67", email: "fatima.zahra@clinique.dz", consultations: 98, rating: 4.9, yearsExperience: 15 },
+            { id: 3, name: "Dr. Karim Mansouri", specialty: "dermato", specialtyName: "Dermatologue", license: "MED-2024-003", phone: "043 34 56 78", email: "karim.mansouri@clinique.dz", consultations: 112, rating: 4.7, yearsExperience: 8 },
+            { id: 4, name: "Dr. Sofia Kader", specialty: "pediatre", specialtyName: "Pédiatre", license: "MED-2024-004", phone: "043 45 67 89", email: "sofia.kader@clinique.dz", consultations: 156, rating: 4.9, yearsExperience: 10 },
+            { id: 5, name: "Dr. Lamine Boudiaf", specialty: "gyneco", specialtyName: "Gynécologue", license: "MED-2024-005", phone: "043 56 78 90", email: "lamine.boudiaf@clinique.dz", consultations: 89, rating: 4.6, yearsExperience: 20 },
+            { id: 6, name: "Dr. Nadia Mansouri", specialty: "ortho", specialtyName: "Orthopédiste", license: "MED-2024-006", phone: "043 67 89 01", email: "nadia.mansouri@clinique.dz", consultations: 76, rating: 4.8, yearsExperience: 7 },
+            { id: 7, name: "Dr. Yacine Boudiaf", specialty: "ophtalmo", specialtyName: "Ophtalmologue", license: "MED-2024-007", phone: "043 78 90 12", email: "yacine.boudiaf@clinique.dz", consultations: 84, rating: 4.7, yearsExperience: 9 },
+            { id: 8, name: "Dr. Leila Hamdi", specialty: "pneumo", specialtyName: "Pneumologue", license: "MED-2024-008", phone: "043 89 01 23", email: "leila.hamdi@clinique.dz", consultations: 67, rating: 4.8, yearsExperience: 11 },
+            { id: 9, name: "Dr. Rachid Bouali", specialty: "neuro", specialtyName: "Neurologue", license: "MED-2024-009", phone: "043 90 12 34", email: "rachid.bouali@clinique.dz", consultations: 59, rating: 4.9, yearsExperience: 14 },
+            { id: 10, name: "Dr. Samira Khelil", specialty: "general", specialtyName: "Médecin Généraliste", license: "MED-2024-010", phone: "043 01 23 45", email: "samira.khelil@clinique.dz", consultations: 123, rating: 4.7, yearsExperience: 6 }
+        ];
+        
+        // SPÉCIALITÉS MÉDICALES (15 spécialités)
+        let medicalSpecialties = [
+            { id: "general", name: "Médecine Générale", icon: "bi-heart-pulse", description: "Soins primaires, prévention, diagnostic et traitement des maladies courantes.", doctorsCount: 2, consultations: 268, patients: 187, avgRating: 4.75, color: "#2E7BF6" },
+            { id: "cardio", name: "Cardiologie", icon: "bi-heart", description: "Maladies du cœur et des vaisseaux sanguins.", doctorsCount: 1, consultations: 98, patients: 74, avgRating: 4.9, color: "#ef4444" },
+            { id: "dermato", name: "Dermatologie", icon: "bi-droplet", description: "Maladies de la peau, des cheveux et des ongles.", doctorsCount: 1, consultations: 112, patients: 85, avgRating: 4.7, color: "#f59e0b" },
+            { id: "pediatre", name: "Pédiatrie", icon: "bi-baby", description: "Soins médicaux des nourrissons, enfants et adolescents.", doctorsCount: 1, consultations: 156, patients: 112, avgRating: 4.9, color: "#10b981" },
+            { id: "gyneco", name: "Gynécologie", icon: "bi-gender-female", description: "Santé de la femme, suivi gynécologique.", doctorsCount: 1, consultations: 89, patients: 67, avgRating: 4.6, color: "#ec489a" },
+            { id: "ortho", name: "Orthopédie", icon: "bi-body-text", description: "Pathologies de l'appareil locomoteur.", doctorsCount: 1, consultations: 76, patients: 58, avgRating: 4.8, color: "#8b5cf6" },
+            { id: "ophtalmo", name: "Ophtalmologie", icon: "bi-eye", description: "Maladies des yeux, troubles de la vision.", doctorsCount: 1, consultations: 84, patients: 63, avgRating: 4.7, color: "#06b6d4" },
+            { id: "pneumo", name: "Pneumologie", icon: "bi-lungs", description: "Maladies respiratoires, asthme.", doctorsCount: 1, consultations: 67, patients: 52, avgRating: 4.8, color: "#14b8a6" },
+            { id: "neuro", name: "Neurologie", icon: "bi-motherboard", description: "Maladies du système nerveux.", doctorsCount: 1, consultations: 59, patients: 44, avgRating: 4.9, color: "#a855f7" },
+            { id: "gastro", name: "Gastro-entérologie", icon: "bi-stomach", description: "Maladies digestives.", doctorsCount: 0, consultations: 0, patients: 0, avgRating: 0, color: "#84cc16" },
+            { id: "urologie", name: "Urologie", icon: "bi-droplet-half", description: "Maladies des voies urinaires.", doctorsCount: 0, consultations: 0, patients: 0, avgRating: 0, color: "#3b82f6" },
+            { id: "psychiatrie", name: "Psychiatrie", icon: "bi-brain", description: "Troubles mentaux, dépression.", doctorsCount: 0, consultations: 0, patients: 0, avgRating: 0, color: "#d946ef" },
+            { id: "rhumato", name: "Rhumatologie", icon: "bi-bone", description: "Maladies des articulations.", doctorsCount: 0, consultations: 0, patients: 0, avgRating: 0, color: "#f97316" },
+            { id: "endocrino", name: "Endocrinologie", icon: "bi-graph-up", description: "Maladies hormonales, diabète.", doctorsCount: 0, consultations: 0, patients: 0, avgRating: 0, color: "#22c55e" }
+        ];
+        
+        let availability = { monday: { active: true, open: "08:00", close: "17:00" }, tuesday: { active: true, open: "08:00", close: "17:00" }, wednesday: { active: true, open: "08:00", close: "17:00" }, thursday: { active: true, open: "08:00", close: "17:00" }, friday: { active: true, open: "08:00", close: "12:00" }, saturday: { active: false, open: "09:00", close: "13:00" }, sunday: { active: false, open: "09:00", close: "13:00" } };
+        
+        let consultationsChart = null;
+        
+        // ==================== THEME ====================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', savedTheme);
+        function updateThemeIcon(theme) { themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill'; }
+        updateThemeIcon(savedTheme);
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+            if (consultationsChart) updateChartColors();
+        });
+        
+        // ==================== FONCTIONS ====================
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('todayAppointments').textContent = appointments.filter(a => a.date === today).length;
+            document.getElementById('monthlyPatients').textContent = patients.length;
+            document.getElementById('pendingAppointments').textContent = appointments.filter(a => a.status === 'pending').length;
+        }
+        
+        function updateUpcomingAppointments() {
+            const today = new Date().toISOString().split('T')[0];
+            const upcoming = appointments.filter(a => a.date >= today).slice(0, 5);
+            const statusText = { confirmed: 'Confirmé', pending: 'En attente', completed: 'Terminé', cancelled: 'Annulé' };
+            const statusClass = { confirmed: 'success', pending: 'warning', completed: 'info', cancelled: 'danger' };
+            const html = upcoming.map(a => `<tr><td>${a.patient}</td><td>${a.date}</td><td>${a.time}</td><td>${a.reason}</td><td><span class="badge badge-${statusClass[a.status]}">${statusText[a.status]}</span></td><td><button class="icon-btn" onclick="editAppointment(${a.id})"><i class="bi bi-pencil"></i></button></td></tr>`).join('');
+            document.getElementById('upcomingAppointmentsList').innerHTML = html || '<tr><td colspan="6">Aucun rendez-vous à venir</td></tr>';
+        }
+        
+        function updateAppointmentsTable() {
+            const statusFilter = document.getElementById('appointmentStatusFilter')?.value || '';
+            let filtered = statusFilter ? appointments.filter(a => a.status === statusFilter) : appointments;
+            const statusText = { confirmed: 'Confirmé', pending: 'En attente', completed: 'Terminé', cancelled: 'Annulé' };
+            const statusClass = { confirmed: 'success', pending: 'warning', completed: 'info', cancelled: 'danger' };
+            const html = filtered.map(a => `<tr><td>${a.patient}</td><td>${a.date}</td><td>${a.time}</td><td>${a.reason}</td><td><span class="badge badge-${statusClass[a.status]}">${statusText[a.status]}</span></td><td><button class="icon-btn" onclick="editAppointment(${a.id})"><i class="bi bi-pencil"></i></button><button class="icon-btn" onclick="deleteAppointment(${a.id})"><i class="bi bi-trash"></i></button></td></tr>`).join('');
+            document.getElementById('appointmentsTableBody').innerHTML = html || '<tr><td colspan="6">Aucun rendez-vous</td></tr>';
+        }
+        
+        function updatePatientsTable() {
+            const search = document.getElementById('searchPatient')?.value.toLowerCase() || '';
+            let filtered = patients.filter(p => p.name.toLowerCase().includes(search));
+            const html = filtered.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.lastVisit}</td><td>${p.visits}</td><td>${p.nextAppointment || '-'}</td><td><button class="icon-btn" onclick="alert('Dossier patient à venir')"><i class="bi bi-folder2-open"></i></button></td></tr>`).join('');
+            document.getElementById('patientsTableBody').innerHTML = html || '<tr><td colspan="5">Aucun patient trouvé</td></tr>';
+        }
+        
+        // SPÉCIALITÉS
+        function updateSpecialtiesGrid() {
+            const searchTerm = document.getElementById('searchSpecialty')?.value.toLowerCase() || '';
+            let filtered = medicalSpecialties.filter(s => s.name.toLowerCase().includes(searchTerm));
+            const html = filtered.map(spec => `<div class="specialty-card" onclick="filterDoctorsBySpecialty('${spec.id}')"><div class="specialty-icon" style="background: linear-gradient(135deg, ${spec.color}20, ${spec.color}10);"><i class="bi ${spec.icon}" style="color: ${spec.color}; font-size: 28px;"></i></div><div class="specialty-name">${spec.name}</div><div class="specialty-stats"><div class="specialty-stat"><div class="specialty-stat-value">${spec.doctorsCount}</div><div class="specialty-stat-label">Médecins</div></div><div class="specialty-stat"><div class="specialty-stat-value">${spec.consultations}</div><div class="specialty-stat-label">Consultations</div></div><div class="specialty-stat"><div class="specialty-stat-value">${spec.patients}</div><div class="specialty-stat-label">Patients</div></div>${spec.avgRating > 0 ? `<div class="specialty-stat"><div class="specialty-stat-value">${spec.avgRating}</div><div class="specialty-stat-label">Note</div></div>` : ''}</div><p style="color: #94a3b8; font-size: 0.8rem; margin-top: 12px;">${spec.description}</p></div>`).join('');
+            document.getElementById('specialtiesGrid').innerHTML = html || '<div class="text-center" style="color: #94a3b8; padding: 40px;">Aucune spécialité trouvée</div>';
+        }
+        
+        window.filterDoctorsBySpecialty = (specialtyId) => {
+            const specialtyFilter = document.getElementById('specialtyFilter');
+            if (specialtyFilter) specialtyFilter.value = specialtyId;
+            updateDoctorsBySpecialtyList(specialtyId);
+            document.querySelector('[data-section="specialties"]')?.click();
+        };
+        
+        function updateDoctorsBySpecialtyList(specialtyId = '') {
+            let filtered = doctors;
+            if (specialtyId) filtered = doctors.filter(d => d.specialty === specialtyId);
+            const html = filtered.map(doc => `<tr><td><strong>${doc.name}</strong><br><small class="text-muted">${doc.license}</small></td><td><span class="badge badge-info">${doc.specialtyName}</span></td><td>${doc.consultations}</td><td><i class="bi bi-star-fill" style="color: #fbbf24;"></i> ${doc.rating}</td><td>${doc.yearsExperience} ans</td><td><i class="bi bi-telephone"></i> ${doc.phone}<br><small>${doc.email}</small></td></tr>`).join('');
+            document.getElementById('doctorsBySpecialtyList').innerHTML = html || '<tr><td colspan="6">Aucun médecin trouvé</td></tr>';
+        }
+        
+        function populateSpecialtyFilter() {
+            const filter = document.getElementById('specialtyFilter');
+            if (!filter) return;
+            filter.innerHTML = '<option value="">Toutes les spécialités</option>' + medicalSpecialties.filter(s => s.doctorsCount > 0).map(spec => `<option value="${spec.id}">${spec.name} (${spec.doctorsCount} médecins)</option>`).join('');
+            filter.addEventListener('change', (e) => updateDoctorsBySpecialtyList(e.target.value));
+        }
+        
+        function buildAvailabilityGrid() {
+            const grid = document.getElementById('availabilityGrid');
+            const days = [{ id: 'monday', name: 'Lundi' }, { id: 'tuesday', name: 'Mardi' }, { id: 'wednesday', name: 'Mercredi' }, { id: 'thursday', name: 'Jeudi' }, { id: 'friday', name: 'Vendredi' }, { id: 'saturday', name: 'Samedi' }, { id: 'sunday', name: 'Dimanche' }];
+            grid.innerHTML = days.map(day => { const data = availability[day.id]; return `<div class="day-card ${data.active ? 'active' : ''}"><div class="day-name">${day.name}<button class="day-toggle ${data.active ? 'active' : ''}" data-day="${day.id}"></button></div><div class="time-inputs"><input type="time" class="day-open" value="${data.open}" ${!data.active ? 'disabled' : ''}><span>à</span><input type="time" class="day-close" value="${data.close}" ${!data.active ? 'disabled' : ''}></div></div>`; }).join('');
+            document.querySelectorAll('.day-toggle').forEach(toggle => { toggle.addEventListener('click', function() { const day = this.dataset.day; this.classList.toggle('active'); const isActive = this.classList.contains('active'); const dayCard = this.closest('.day-card'); isActive ? dayCard.classList.add('active') : dayCard.classList.remove('active'); const timeInputs = dayCard.querySelectorAll('input'); timeInputs.forEach(input => input.disabled = !isActive); availability[day].active = isActive; }); });
+            document.querySelectorAll('.time-inputs input').forEach(input => { input.addEventListener('change', function() { const dayCard = this.closest('.day-card'); const dayName = dayCard.querySelector('.day-name').childNodes[0]?.textContent?.trim().toLowerCase(); const dayKey = { 'lundi':'monday', 'mardi':'tuesday', 'mercredi':'wednesday', 'jeudi':'thursday', 'vendredi':'friday', 'samedi':'saturday', 'dimanche':'sunday' }[dayName]; if (dayKey) { const inputs = dayCard.querySelectorAll('input'); availability[dayKey].open = inputs[0]?.value || '08:00'; availability[dayKey].close = inputs[1]?.value || '17:00'; } }); });
+        }
+        
+        function initChart() {
+            const ctx = document.getElementById('consultationsChart').getContext('2d');
+            const textColor = body.getAttribute('data-theme') === 'light' ? '#0f172a' : '#ffffff';
+            consultationsChart = new Chart(ctx, { type: 'line', data: { labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'], datasets: [{ label: 'Consultations', data: [12, 18, 15, 24], borderColor: '#2E7BF6', backgroundColor: 'rgba(46, 123, 246, 0.1)', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } } } });
+        }
+        
+        function updateChartColors() { if (consultationsChart) { const textColor = body.getAttribute('data-theme') === 'light' ? '#0f172a' : '#ffffff'; consultationsChart.options.plugins.legend.labels.color = textColor; consultationsChart.update(); } }
+        
+        window.editAppointment = (id) => { const appt = appointments.find(a => a.id === id); if (appt) { document.getElementById('appointmentModalTitle').textContent = 'Modifier le rendez-vous'; document.getElementById('appointmentId').value = appt.id; document.getElementById('appointmentPatient').value = appt.patient; document.getElementById('appointmentDate').value = appt.date; document.getElementById('appointmentTime').value = appt.time; document.getElementById('appointmentReason').value = appt.reason; document.getElementById('appointmentNotes').value = appt.notes || ''; document.getElementById('appointmentStatus').value = appt.status; document.getElementById('appointmentModal').classList.add('active'); } };
+        window.deleteAppointment = (id) => { if (confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')) { appointments = appointments.filter(a => a.id !== id); updateStats(); updateUpcomingAppointments(); updateAppointmentsTable(); showNotification('Rendez-vous supprimé', 'success'); } };
+        
+        function showNotification(message, type = 'info') { const alertDiv = document.createElement('div'); alertDiv.className = `alert alert-${type}`; alertDiv.style.position = 'fixed'; alertDiv.style.bottom = '20px'; alertDiv.style.right = '20px'; alertDiv.style.zIndex = '1000'; alertDiv.style.maxWidth = '300px'; alertDiv.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'info-circle'}-fill"></i> ${message}`; document.body.appendChild(alertDiv); setTimeout(() => alertDiv.remove(), 3000); }
+        
+        // FORMULAIRES
+        document.getElementById('appointmentForm')?.addEventListener('submit', (e) => { e.preventDefault(); const id = document.getElementById('appointmentId').value; const appointmentData = { patient: document.getElementById('appointmentPatient').value, date: document.getElementById('appointmentDate').value, time: document.getElementById('appointmentTime').value, reason: document.getElementById('appointmentReason').value, notes: document.getElementById('appointmentNotes').value, status: document.getElementById('appointmentStatus').value }; if (id) { const index = appointments.findIndex(a => a.id === parseInt(id)); if (index !== -1) appointments[index] = { ...appointments[index], ...appointmentData, id: parseInt(id) }; } else { const newId = Math.max(...appointments.map(a => a.id), 0) + 1; appointments.push({ id: newId, ...appointmentData }); } document.getElementById('appointmentModal').classList.remove('active'); document.getElementById('appointmentForm').reset(); updateStats(); updateUpcomingAppointments(); updateAppointmentsTable(); showNotification('Rendez-vous enregistré', 'success'); });
+        document.getElementById('saveAvailabilityBtn')?.addEventListener('click', () => showNotification('Disponibilités enregistrées', 'success'));
+        document.getElementById('changePasswordForm')?.addEventListener('submit', (e) => { e.preventDefault(); const newPass = document.getElementById('newPassword').value; const confirm = document.getElementById('confirmNewPassword').value; if (newPass === confirm && newPass.length >= 6) { showNotification('Mot de passe modifié', 'success'); e.target.reset(); } else showNotification('Les mots de passe ne correspondent pas', 'danger'); });
+        document.getElementById('deleteAccountBtn')?.addEventListener('click', () => { if (confirm('Supprimer votre compte ?')) { showNotification('Compte supprimé', 'error'); setTimeout(() => window.location.href = 'doctor-login.html', 2000); } });
+        
+        // NAVIGATION
+        const menuItems = document.querySelectorAll('.menu-item');
+const sections = ['dashboard', 'profile', 'availability', 'appointments', 'patients', 'patientRecord', 'settings'];        const titles = { dashboard: 'Tableau de bord', profile: 'Mon Profil', availability: 'Mes Disponibilités', appointments: 'Rendez-vous', patients: 'Mes Patients', specialties: 'Spécialités Médicales', patientRecord: 'Bilan Patient', settings: 'Paramètres' };
+        menuItems.forEach(item => { item.addEventListener('click', (e) => { e.preventDefault(); const sectionName = item.dataset.section; menuItems.forEach(mi => mi.classList.remove('active')); item.classList.add('active'); sections.forEach(s => { const el = document.getElementById(s + 'Section'); if (el) el.style.display = s === sectionName ? 'block' : 'none'; }); document.getElementById('pageTitle').textContent = titles[sectionName]; if (sectionName === 'appointments') updateAppointmentsTable(); if (sectionName === 'patients') updatePatientsTable(); if (sectionName === 'availability') buildAvailabilityGrid(); if (sectionName === 'specialties') { updateSpecialtiesGrid(); populateSpecialtyFilter(); } if (window.innerWidth <= 768) { sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); } }); });
+        
+        // MODALS
+        document.getElementById('closeAppointmentModal')?.addEventListener('click', () => document.getElementById('appointmentModal').classList.remove('active'));
+        document.getElementById('cancelAppointmentBtn')?.addEventListener('click', () => document.getElementById('appointmentModal').classList.remove('active'));
+        document.getElementById('addAppointmentBtn')?.addEventListener('click', () => { document.getElementById('appointmentModalTitle').textContent = 'Nouveau rendez-vous'; document.getElementById('appointmentForm').reset(); document.getElementById('appointmentId').value = ''; document.getElementById('appointmentModal').classList.add('active'); });
+        document.getElementById('viewAllAppointmentsBtn')?.addEventListener('click', () => document.querySelector('[data-section="appointments"]').click());
+        
+        // PROFILE
+        document.getElementById('editProfileBtn')?.addEventListener('click', () => { document.querySelectorAll('#profileForm input, #profileForm select, #profileForm textarea').forEach(i => i.disabled = false); document.getElementById('profileActions').style.display = 'flex'; document.getElementById('editProfileBtn').style.display = 'none'; });
+        document.getElementById('cancelProfileEdit')?.addEventListener('click', () => { document.querySelectorAll('#profileForm input, #profileForm select, #profileForm textarea').forEach(i => i.disabled = true); document.getElementById('profileActions').style.display = 'none'; document.getElementById('editProfileBtn').style.display = 'inline-flex'; });
+        document.getElementById('profileForm')?.addEventListener('submit', (e) => { e.preventDefault(); showNotification('Profil mis à jour', 'success'); document.querySelectorAll('#profileForm input, #profileForm select, #profileForm textarea').forEach(i => i.disabled = true); document.getElementById('profileActions').style.display = 'none'; document.getElementById('editProfileBtn').style.display = 'inline-flex'; });
+        
+        // SEARCH
+        document.getElementById('searchPatient')?.addEventListener('input', () => updatePatientsTable());
+        document.getElementById('searchSpecialty')?.addEventListener('input', () => updateSpecialtiesGrid());
+        document.getElementById('appointmentStatusFilter')?.addEventListener('change', () => updateAppointmentsTable());
+        
+        // MOBILE
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (menuToggle) menuToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+        if (overlay) overlay.addEventListener('click', () => sidebar.classList.remove('mobile-open'));
+        // ==================== FONCTIONS BILAN PATIENT ====================
+function searchPatientByChifa() {
+    const chifaNumber = document.getElementById('searchChifaInput').value.trim();
+    
+    if (!chifaNumber) {
+        showNotification('Entrez un numéro Carte Chifa', 'warning');
+        return;
+    }
+    
+    const patient = patientsBilan.find(p => p.chifaNumber === chifaNumber);
+    
+    if (!patient) {
+        showNotification('Patient non trouvé', 'danger');
+        document.getElementById('patientBilanResult').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('patientBilanResult').style.display = 'block';
+    document.getElementById('patientInfo').innerHTML = `
+        <div class="form-row">
+            <div class="form-group"><label>Nom</label><p><strong>${patient.nom}</strong></p></div>
+            <div class="form-group"><label>Date naissance</label><p>${patient.dateNaissance}</p></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Groupe sanguin</label><p>${patient.groupeSanguin}</p></div>
+            <div class="form-group"><label>Carte Chifa</label><p>${patient.chifaNumber}</p></div>
+        </div>
+    `;
+    
+    document.getElementById('ordonnancesList').innerHTML = patient.ordonnances.map(o => `
+        <tr><td>${o.date}</td><td>${o.medecin}</td><td>${o.medicaments}</td><td>${o.posologie}</td><td>${o.duree}</td></tr>
+    `).join('');
+    
+    document.getElementById('medicamentsList').innerHTML = patient.medicamentsPris.map(m => `
+        <tr><td>${m.nom}</td><td>${m.posologie}</td><td>${m.datePrescription}</td><td>${m.duree}</td><td>${m.statut}</td></tr>
+    `).join('');
+    
+    document.getElementById('consultationsList').innerHTML = patient.consultations.map(c => `
+        <tr><td>${c.date}</td><td>${c.motif}</td><td>${c.diagnostic}</td><td>${c.traitement}</td></tr>
+    `).join('');
+    
+    showNotification(`Patient ${patient.nom} trouvé`, 'success');
+}        // ==================== FILE D'ATTENTE DONNÉES ====================
+        let queuePatients = [
+            { id: 1, name: "Mohamed Benali", appointmentTime: "09:00", status: "waiting", phone: "0555 12 34 56", reason: "Consultation générale" },
+            { id: 2, name: "Fatima Zahra", appointmentTime: "09:30", status: "waiting", phone: "0555 23 45 67", reason: "Suivi traitement" },
+            { id: 3, name: "Karim Mansouri", appointmentTime: "10:00", status: "arrived", phone: "0555 34 56 78", reason: "Douleurs dorsales" },
+            { id: 4, name: "Sofia Kader", appointmentTime: "10:30", status: "waiting", phone: "0555 45 67 89", reason: "Résultats analyse" },
+            { id: 5, name: "Lamine Boudiaf", appointmentTime: "11:00", status: "waiting", phone: "0555 56 78 90", reason: "Toux persistante" }
+        ];
+
+        // ==================== FONCTIONS FILE D'ATTENTE ====================
+        function updateQueueDisplay() {
+            const container = document.getElementById('queueContainer');
+            if (!container) return;
+            
+            const waitingCount = queuePatients.filter(p => p.status === 'waiting' || p.status === 'arrived').length;
+            const consultingPatient = queuePatients.find(p => p.status === 'consulting');
+            
+            document.getElementById('waitingCount').textContent = `${waitingCount} en attente`;
+            
+            if (consultingPatient) {
+                document.getElementById('currentConsultationCard').style.display = 'block';
+                document.getElementById('currentConsultationName').textContent = consultingPatient.name;
+                const position = queuePatients.findIndex(p => p.id === consultingPatient.id) + 1;
+                document.getElementById('currentConsultationPosition').innerHTML = `<div style="font-size: 0.8rem; opacity: 0.8;">Position #${position}</div>`;
+            } else {
+                document.getElementById('currentConsultationCard').style.display = 'none';
+            }
+            
+            const activePatients = queuePatients.filter(p => p.status !== 'completed');
+            
+            if (activePatients.length === 0) {
+                document.getElementById('emptyQueueMessage').style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
+            
+            document.getElementById('emptyQueueMessage').style.display = 'none';
+            
+            container.innerHTML = activePatients.map((patient, index) => {
+                let statusText = '', statusClass = '', actions = '';
+                
+                if (patient.status === 'waiting') {
+                    statusText = 'En attente';
+                    statusClass = 'status-waiting';
+                    actions = `<button class="btn-primary btn-sm" onclick="markArrived(${patient.id})"><i class="bi bi-person-check"></i> Patient arrivé</button>`;
+                } else if (patient.status === 'arrived') {
+                    statusText = 'Arrivé';
+                    statusClass = 'status-arrived';
+                    actions = `<button class="btn-primary btn-sm" onclick="startConsultation(${patient.id})"><i class="bi bi-play-circle"></i> Commencer</button>`;
+                } else if (patient.status === 'consulting') {
+                    statusText = 'En consultation';
+                    statusClass = 'status-consulting';
+                    actions = `<button class="btn-secondary btn-sm" disabled><i class="bi bi-clock"></i> En cours...</button>`;
+                }
+                
+                return `
+                    <div class="queue-patient-card ${patient.status === 'consulting' ? 'consulting' : ''}">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="queue-position">${index + 1}</div>
+                                <div>
+                                    <div style="font-weight: 700; color: white; font-size: 1rem;">${patient.name}</div>
+                                    <div style="font-size: 0.75rem; color: #94a3b8;">RDV: ${patient.appointmentTime} | ${patient.reason}</div>
+                                    <div style="font-size: 0.7rem; color: #64748b;"><i class="bi bi-telephone"></i> ${patient.phone}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                                ${actions}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function markArrived(patientId) {
+            const patient = queuePatients.find(p => p.id === patientId);
+            if (patient && patient.status === 'waiting') {
+                patient.status = 'arrived';
+                updateQueueDisplay();
+                showNotification(`${patient.name} est arrivé`, 'success');
+            }
+        }
+
+        function startConsultation(patientId) {
+            const consulting = queuePatients.find(p => p.status === 'consulting');
+            if (consulting) {
+                showNotification(`Terminez d'abord avec ${consulting.name}`, 'warning');
+                return;
+            }
+            const patient = queuePatients.find(p => p.id === patientId);
+            if (patient && patient.status === 'arrived') {
+                patient.status = 'consulting';
+                updateQueueDisplay();
+                showNotification(`Consultation commencée avec ${patient.name}`, 'success');
+            }
+        }
+
+        function completeConsultation() {
+            const consultingPatient = queuePatients.find(p => p.status === 'consulting');
+            if (!consultingPatient) {
+                showNotification('Aucune consultation en cours', 'warning');
+                return;
+            }
+            consultingPatient.status = 'completed';
+            const nextPatient = queuePatients.find(p => p.status === 'arrived' || p.status === 'waiting');
+            if (nextPatient) {
+                if (nextPatient.status === 'arrived') {
+                    nextPatient.status = 'consulting';
+                    showNotification(`${nextPatient.name} - Consultation commencée`, 'success');
+                } else {
+                    nextPatient.status = 'arrived';
+                    showNotification(`${nextPatient.name} est appelé`, 'info');
+                }
+            } else {
+                showNotification(`Consultation terminée. Plus de patients.`, 'success');
+            }
+            updateQueueDisplay();
+        }
+
+        // INIT
+        function init() {
+            const doctor = { firstName: 'Ahmed', lastName: 'Benali', specialty: 'general', license: 'MED-2024-001', wilaya: 'Tlemcen', commune: 'Tlemcen Centre', phone: '043 12 34 56', email: 'ahmed.benali@clinique.dz', address: 'Rue Larbi Ben Mhidi, Tlemcen', bio: 'Médecin généraliste avec 10 ans d\'expérience' };
+            document.getElementById('userName').textContent = `Dr. ${doctor.firstName} ${doctor.lastName}`;
+            document.getElementById('welcomeName').textContent = `Dr. ${doctor.firstName} ${doctor.lastName}`;
+            document.getElementById('userAvatar').textContent = doctor.firstName.charAt(0);
+            document.getElementById('profileFirstName').value = doctor.firstName;
+            document.getElementById('profileLastName').value = doctor.lastName;
+            document.getElementById('profileLicense').value = doctor.license;
+            document.getElementById('profileCommune').value = doctor.commune;
+            document.getElementById('profilePhone').value = doctor.phone;
+            document.getElementById('profileEmail').value = doctor.email;
+            document.getElementById('profileAddress').value = doctor.address;
+            document.getElementById('profileBio').value = doctor.bio;
+            if (typeof CONFIG !== 'undefined' && CONFIG.WILAYAS) { const wilayaSelect = document.getElementById('profileWilaya'); wilayaSelect.innerHTML = ''; CONFIG.WILAYAS.forEach(w => { const option = document.createElement('option'); option.value = w; option.textContent = w; wilayaSelect.appendChild(option); }); wilayaSelect.value = doctor.wilaya; }
+            updateStats(); updateUpcomingAppointments(); updateAppointmentsTable(); updatePatientsTable(); buildAvailabilityGrid(); initChart(); updateSpecialtiesGrid(); populateSpecialtyFilter(); updateDoctorsBySpecialtyList();
+        }
+        
+        document.getElementById('logoutBtn')?.addEventListener('click', () => { if (confirm('Déconnexion ?')) { if (Auth.logout) Auth.logout(); else window.location.href = 'doctor-login.html'; } });
+        document.getElementById('searchChifaBtn')?.addEventListener('click', searchPatientByChifa);
+                    updateQueueDisplay();
+            document.getElementById('completeConsultationBtn')?.addEventListener('click', completeConsultation);
+        init();
+    </script>
+</body>
+</html>
