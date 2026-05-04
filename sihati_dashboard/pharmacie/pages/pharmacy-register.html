@@ -844,10 +844,13 @@
         </div>
     </div>
     
-    <script src="../js/config.js"></script>
-    <script src="../js/utils/api.js"></script>
-    <script src="../js/utils/auth.js"></script>
-    <script src="../js/utils/validator.js"></script>
+    
+   <script src="../js/utils/config.js"></script>
+<script src="../js/utils/mock-api.js"></script>
+<script src="../js/utils/api.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/validator.js"></script>
+<script src="../js/utils/helpers.js"></script>
     
     <script>
         // Theme Toggle
@@ -908,21 +911,37 @@
         // Steps Navigation
         let currentStep = 1;
         
-        function showStep(step) {
-            document.querySelectorAll('.step-form').forEach(f => f.classList.remove('active'));
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'completed'));
-            
-            document.getElementById(`stepForm${step}`).classList.add('active');
-            document.getElementById(`step${step}Indicator`).classList.add('active');
-            
-            for (let i = 1; i < step; i++) {
-                const indicator = document.getElementById(`step${i}Indicator`);
-                indicator.classList.add('completed');
-                indicator.querySelector('.step-number').innerHTML = '<i class="bi bi-check"></i>';
-            }
-            
-            currentStep = step;
+      function showStep(step) {
+    // Cacher toutes les étapes
+    document.querySelectorAll('.step-form').forEach(f => f.classList.remove('active'));
+    
+    // Afficher l'étape demandée
+    document.getElementById(`stepForm${step}`).classList.add('active');
+    
+    // Mettre à jour les indicateurs
+    for (let i = 1; i <= 3; i++) {
+        const indicator = document.getElementById(`step${i}Indicator`);
+        const stepNumber = indicator.querySelector('.step-number');
+        
+        if (i < step) {
+            // Étape complétée
+            indicator.classList.add('completed');
+            indicator.classList.remove('active');
+            stepNumber.innerHTML = '<i class="bi bi-check"></i>';
+        } else if (i === step) {
+            // Étape active
+            indicator.classList.add('active');
+            indicator.classList.remove('completed');
+            stepNumber.innerHTML = i;
+        } else {
+            // Étape à venir
+            indicator.classList.remove('active', 'completed');
+            stepNumber.innerHTML = i;
         }
+    }
+    
+    currentStep = step;
+}
         
         function hideMessages() {
             document.getElementById('errorMessage').style.display = 'none';
@@ -1020,55 +1039,54 @@
         document.getElementById('backStep3Btn').addEventListener('click', () => showStep(2));
         
         // Submit
-        document.getElementById('submitBtn').addEventListener('click', async () => {
-            hideMessages();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const submitBtnText = document.getElementById('submitBtnText');
-            
-            submitBtn.disabled = true;
-            submitBtnText.textContent = 'Création en cours...';
-            
-            const formData = {
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                pharmacyName: document.getElementById('pharmacyName').value,
-                licenseNumber: document.getElementById('licenseNumber').value,
-                address: document.getElementById('address').value,
-                wilaya: document.getElementById('wilaya').value,
-                commune: document.getElementById('commune').value,
-                phone: document.getElementById('phone').value,
-                whatsapp: document.getElementById('whatsapp').value,
-                openingHours: {
-                    weekdays: {
-                        open: document.getElementById('weekdayOpen').value,
-                        close: document.getElementById('weekdayClose').value
-                    },
-                    friday: {
-                        open: document.getElementById('fridayOpen').value,
-                        close: document.getElementById('fridayClose').value
-                    },
-                    is24h: document.getElementById('is24h').checked
-                }
-            };
-            
-            try {
-                const response = await API.post(CONFIG.ENDPOINTS.AUTH.REGISTER, formData);
-                
-                document.getElementById('successMessage').style.display = 'flex';
-                document.getElementById('successText').textContent = 
-                    'Compte créé avec succès ! Redirection...';
-                
-                setTimeout(() => {
-                    window.location.href = 'pharmacy-login.html';
-                }, 2000);
-                
-            } catch (error) {
-                showError(error.message || 'Erreur lors de la création du compte');
-                submitBtn.disabled = false;
-                submitBtnText.textContent = 'Créer mon compte';
-            }
-        });
+       document.getElementById('submitBtn').addEventListener('click', async () => {
+    hideMessages();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const submitBtnText = document.getElementById('submitBtnText');
+    
+    submitBtn.disabled = true;
+    submitBtnText.textContent = 'Création en cours...';
+    
+    const formData = {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        pharmacyName: document.getElementById('pharmacyName').value,
+        licenseNumber: document.getElementById('licenseNumber').value,
+        address: document.getElementById('address').value,
+        wilaya: document.getElementById('wilaya').value,
+        commune: document.getElementById('commune').value,
+        phone: document.getElementById('phone').value,
+        whatsapp: document.getElementById('whatsapp').value,
+        openingHours: {
+            weekdays: {
+                open: document.getElementById('weekdayOpen').value,
+                close: document.getElementById('weekdayClose').value
+            },
+            friday: {
+                open: document.getElementById('fridayOpen').value,
+                close: document.getElementById('fridayClose').value
+            },
+            is24h: document.getElementById('is24h').checked
+        }
+    };
+    
+    try {
+        const response = await API.post('/auth/pharmacy/register', formData);
+        
+        document.getElementById('successMessage').style.display = 'flex';
+        document.getElementById('successText').textContent = 'Compte créé avec succès ! Redirection...';
+        
+        setTimeout(() => {
+            window.location.href = 'pharmacy-login.html';
+        }, 2000);
+        
+    } catch (error) {
+        showError(error.message || 'Erreur lors de la création du compte');
+        submitBtn.disabled = false;
+        submitBtnText.textContent = 'Créer mon compte';
+    }
+});
         
         // 24h toggle
         document.getElementById('is24h').addEventListener('change', function() {

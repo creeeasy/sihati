@@ -583,90 +583,80 @@
             
         </div>
     </div>
-    
-    <script src="../js/config.js"></script>
-    <script src="../js/utils/api.js"></script>
-    <script src="../js/utils/auth.js"></script>
-    <script src="../js/utils/validator.js"></script>
-    
+
+
+<script src="../js/utils/config.js"></script>
+<script src="../js/utils/mock-api.js"></script>
+<script src="../js/utils/api.js"></script>
+<script src="../js/utils/auth.js"></script>
+<script src="../js/utils/validator.js"></script>
+<script src="../js/utils/helpers.js"></script>
     <script>
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const body = document.body;
-        
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        body.setAttribute('data-theme', savedTheme);
-        updateIcon(savedTheme);
-        
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateIcon(newTheme);
-        });
-        
-        function updateIcon(theme) {
-            themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    // Theme Toggle Logic
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const body = document.body;
+    
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    
+    function updateThemeIcon(theme) {
+        themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    }
+    updateThemeIcon(savedTheme);
+    
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    });
+    
+    // Toggle Password
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const input = document.getElementById('passwordInput');
+        const icon = this.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
+    });
+    
+    // ==================== FORMULAIRE DE CONNEXION (MODIFIÉ) ====================
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        // Toggle Password
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const input = document.getElementById('passwordInput');
-            const icon = document.getElementById('toggleIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('bi-eye', 'bi-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('bi-eye-slash', 'bi-eye');
-            }
-        });
+        const email = document.getElementById('emailInput').value;
+        const password = document.getElementById('passwordInput').value;
         
-        // Form Submit
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        const submitBtn = document.getElementById('loginButton');
+        const submitBtnText = document.getElementById('loginButtonText');
+        const originalText = submitBtnText.textContent;
+        
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'Connexion...';
+        
+        document.getElementById('errorMessage').style.display = 'none';
+        
+        try {
+            const response = await API.post('/auth/login', { email, password });
             
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
+            Auth.saveToken(response.token);
+            Auth.saveUser(response.user);
+            Auth.savePharmacy(response.pharmacy);
             
-            document.getElementById('errorMessage').style.display = 'none';
-            
-            const validation = Validator.validateLoginForm(email, password);
-            if (!validation.isValid) {
-                document.getElementById('errorMessage').style.display = 'flex';
-                document.getElementById('errorText').textContent = 
-                    validation.errors.email || validation.errors.password;
-                return;
-            }
-            
-            const loginButton = document.getElementById('loginButton');
-            const loginButtonText = document.getElementById('loginButtonText');
-            loginButton.disabled = true;
-            loginButtonText.textContent = 'Connexion...';
-            
-            try {
-                const response = await API.post(CONFIG.ENDPOINTS.AUTH.LOGIN, {
-                    email: email,
-                    password: password,
-                    userType: 'pharmacy'
-                });
-                
-                Auth.saveToken(response.token);
-                Auth.saveUser(response.user);
-                Auth.savePharmacy(response.pharmacy);
-                
-                window.location.href = 'pharmacy-dashboard.html';
-                
-            } catch (error) {
-                document.getElementById('errorMessage').style.display = 'flex';
-                document.getElementById('errorText').textContent = 
-                    error.message || 'Email ou mot de passe incorrect';
-                loginButton.disabled = false;
-                loginButtonText.textContent = 'Se connecter';
-            }
-        });
-    </script>
+            window.location.href = 'pharmacy-dashboard.html';
+        } catch (error) {
+            document.getElementById('errorMessage').style.display = 'flex';
+            document.getElementById('errorText').textContent = error.message || 'Email ou mot de passe incorrect';
+            submitBtn.disabled = false;
+            submitBtnText.textContent = originalText;
+        }
+    });
+</script>
 </body>
 </html>

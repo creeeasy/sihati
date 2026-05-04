@@ -1,77 +1,47 @@
-// Doctor Authentication Module
-const DoctorAuth = {
-  /**
-   * Handle doctor login
-   */
-  async login(email, password) {
-    try {
-      const response = await API.post(CONFIG.ENDPOINTS.AUTH.LOGIN, {
-        email: email,
-        password: password,
-        userType: 'doctor'
-      });
-      
-      // Save authentication data
-      Auth.saveToken(response.token);
-      Auth.saveUser(response.user);
-      localStorage.setItem('doctor_data', JSON.stringify(response.doctor));
-      
-      return response;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Handle doctor logout
-   */
-  logout() {
+// ==================== AUTH ====================
+const Auth = {
+    saveToken: (token) => {
+        localStorage.setItem('sihati_token', token);
+    },
+    
+    getToken: () => {
+        return localStorage.getItem('sihati_token');
+    },
+    
+    saveUser: (user) => {
+        localStorage.setItem('sihati_user', JSON.stringify(user));
+    },
+    
+    getUser: () => {
+        const user = localStorage.getItem('sihati_user');
+        return user ? JSON.parse(user) : null;
+    },
+    
+    saveDoctor: (doctor) => {
+        localStorage.setItem('doctor_data', JSON.stringify(doctor));
+    },
+    
+    getDoctor: () => {
+        const doctor = localStorage.getItem('doctor_data');
+        return doctor ? JSON.parse(doctor) : null;
+    },
+    
+    isLoggedIn: () => {
+        return !!localStorage.getItem('sihati_token');
+    },
+    
+    checkAuth: () => {
+        if (!Auth.isLoggedIn()) {
+            window.location.href = 'doctor-login.html';
+            return false;
+        }
+        return true;
+    },
+    
+    // Déconnexion
+logout: () => {
+    localStorage.removeItem('sihati_token');
+    localStorage.removeItem('sihati_user');
     localStorage.removeItem('doctor_data');
-    Auth.logout();
-  },
-  
-  /**
-   * Check if doctor is authenticated
-   */
-  isAuthenticated() {
-    return Auth.isLoggedIn() && !!localStorage.getItem('doctor_data');
-  },
-  
-  /**
-   * Get current doctor data
-   */
-  getCurrentDoctor() {
-    const data = localStorage.getItem('doctor_data');
-    return data ? JSON.parse(data) : null;
-  },
-  
-  /**
-   * Change password
-   */
-  async changePassword(currentPassword, newPassword) {
-    try {
-      const response = await API.post('/auth/change-password', {
-        currentPassword: currentPassword,
-        newPassword: newPassword
-      });
-      return response;
-    } catch (error) {
-      console.error('Change password error:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Delete doctor account
-   */
-  async deleteAccount() {
-    try {
-      await API.delete('/auth/account');
-      this.logout();
-    } catch (error) {
-      console.error('Delete account error:', error);
-      throw error;
-    }
-  }
+    window.location.href = '../../index.html';}
 };

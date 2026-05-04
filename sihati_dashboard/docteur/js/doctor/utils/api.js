@@ -1,13 +1,21 @@
+// ==================== API ====================
 const API = {
     post: async (endpoint, data) => {
         console.log(`API call to: ${endpoint}`, data);
         
-        if (endpoint === '/auth/pharmacy/register') {
-            return await MockAPI.registerPharmacy(data);
+        if (endpoint === '/auth/doctor/register') {
+            return await MockAPI.registerDoctor(data);
         }
         
         if (endpoint === '/auth/login') {
-            return await MockAPI.loginPharmacy(data.email, data.password);
+            if (data.userType === 'doctor') {
+                return await MockAPI.loginDoctor(data.email, data.password);
+            }
+        }
+        
+        if (endpoint === '/doctor/profile') {
+            const userId = Auth.getUser()?.id;
+            return await MockAPI.getDoctorProfile(userId);
         }
         
         throw new Error(`Endpoint non supporté: ${endpoint}`);
