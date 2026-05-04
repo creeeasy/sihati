@@ -20,6 +20,7 @@ export interface EnvConfig {
   DATABASE_URL_EXTERNAL?: string; // staging (external)
 
   JWT_SECRET: string;
+  JWT_REFRESH_SECRET: string;
   JWT_EXPIRES_IN: string;
 
   GEMINI_API_KEY: string;
@@ -37,9 +38,9 @@ function validateEnv(): EnvConfig {
   let requiredVars: string[] = [];
 
   if (NODE_ENV === 'production') {
-    requiredVars = ['DATABASE_URL_INTERNAL', 'JWT_SECRET', 'GEMINI_API_KEY'];
+    requiredVars = ['DATABASE_URL_INTERNAL', 'JWT_SECRET', 'GEMINI_API_KEY','JWT_REFRESH_SECRET'];
   } else if (NODE_ENV === 'staging') {
-    requiredVars = ['DATABASE_URL_EXTERNAL', 'JWT_SECRET', 'GEMINI_API_KEY'];
+    requiredVars = ['DATABASE_URL_EXTERNAL', 'JWT_SECRET', 'GEMINI_API_KEY','JWT_REFRESH_SECRET'];
   } else {
     requiredVars = [
       'DB_HOST',
@@ -47,6 +48,7 @@ function validateEnv(): EnvConfig {
       'DB_USER',
       'DB_PASSWORD',
       'JWT_SECRET',
+      'JWT_REFRESH_SECRET',
       'GEMINI_API_KEY',
     ];
   }
@@ -75,6 +77,7 @@ function validateEnv(): EnvConfig {
     DATABASE_URL_EXTERNAL: process.env.DATABASE_URL_EXTERNAL,
 
     JWT_SECRET: process.env.JWT_SECRET!,
+    JWT_REFRESH_SECRET:process.env.JWT_REFRESH_SECRET!,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
 
     GEMINI_API_KEY: process.env.GEMINI_API_KEY!,

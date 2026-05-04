@@ -1,26 +1,56 @@
+// models/index.ts
 import sequelize from '../config/database';
 
 // Import all models
 import User from './User';
 import Specialty from './Specialty';
 import Doctor from './Doctor';
+import DoctorOffice from './DoctorOffice';
+import DoctorSchedule from './DoctorSchedule';
 import Pharmacy from './Pharmacy';
 import Medication from './Medication';
 import PharmacyMedication from './PharmacyMedication';
+import Appointment from './Appointment';
+import Prescription from './Prescription';
+import PrescriptionMedication from './PrescriptionMedication';
+import Consultation from './Consultation';
+import MedicalDocument from './MedicalDocument';
+import PatientProfile from './PatientProfile';
+import PatientAllergy from './PatientAllergy';
 import Conversation from './Conversation';
 import Review from './Review';
+import RefreshToken from './RefreshToken';
+import FavoritePharmacy from './FavoritePharmacy';
+import FavoriteDoctor from './FavoriteDoctor';
+import MedicationHistory from './MedicationHistory';
+import MedicationReminder from './MedicationReminder';
+import Notification from './Notification';
 
 // Register models on the sequelize instance
-// (needed for cross-model association lookups via sequelize.models)
 const models = {
   User,
   Specialty,
   Doctor,
+  DoctorOffice,
+  DoctorSchedule,
   Pharmacy,
   Medication,
   PharmacyMedication,
+  Appointment,
+  Prescription,
+  PrescriptionMedication,
+  Consultation,
+  MedicalDocument,
+  PatientProfile,
+  PatientAllergy,
   Conversation,
   Review,
+  RefreshToken,
+  FavoritePharmacy,
+  FavoriteDoctor,
+  MedicationHistory,
+  MedicationReminder,
+  Notification,
 };
 
 // Run all associations after all models are registered
@@ -35,11 +65,26 @@ export {
   User,
   Specialty,
   Doctor,
+  DoctorOffice,
+  DoctorSchedule,
   Pharmacy,
   Medication,
   PharmacyMedication,
+  Appointment,
+  Prescription,
+  PrescriptionMedication,
+  Consultation,
+  MedicalDocument,
+  PatientProfile,
+  PatientAllergy,
   Conversation,
   Review,
+  RefreshToken,
+  FavoritePharmacy,
+  FavoriteDoctor,
+  MedicationHistory,
+  MedicationReminder,
+  Notification,
 };
 
 export default models;

@@ -1,10 +1,11 @@
+// models/PharmacyMedication.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface PharmacyMedicationAttributes {
-  id: number;
-  pharmacyId: number;
-  medicationId: number;
+  id: string;  // ✅ UUID
+  pharmacyId: string;  // ✅ UUID
+  medicationId: string;  // ✅ UUID
   inStock: boolean;
   quantity?: number;
   price?: number;
@@ -23,9 +24,9 @@ class PharmacyMedication
   >
   implements PharmacyMedicationAttributes
 {
-  public id!: number;
-  public pharmacyId!: number;
-  public medicationId!: number;
+  public id!: string;
+  public pharmacyId!: string;
+  public medicationId!: string;
   public inStock!: boolean;
   public quantity?: number;
   public price?: number;
@@ -33,7 +34,6 @@ class PharmacyMedication
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Update stock info
   public async updateStock(
     inStock: boolean,
     quantity?: number
@@ -45,7 +45,6 @@ class PharmacyMedication
     });
   }
 
-  // Associations
   public static associate(): void {
     const { Pharmacy, Medication } = sequelize.models;
     PharmacyMedication.belongsTo(Pharmacy, { foreignKey: 'pharmacyId' });
@@ -56,18 +55,18 @@ class PharmacyMedication
 PharmacyMedication.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     pharmacyId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: 'pharmacies', key: 'id' },
       onDelete: 'CASCADE',
     },
     medicationId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: 'medications', key: 'id' },
       onDelete: 'CASCADE',

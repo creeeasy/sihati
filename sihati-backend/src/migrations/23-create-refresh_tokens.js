@@ -2,30 +2,31 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("conversations", {
+    await queryInterface.createTable("refresh_tokens", {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
       user_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: "users", key: "id" },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
-      user_message: {
-        type: Sequelize.TEXT,
+      token: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
+        unique: true,
+      },
+      expires_at: {
+        type: Sequelize.DATE,
         allowNull: false,
       },
-      ai_response: {
-        type: Sequelize.TEXT,
-        allowNull: false,
-      },
-      context: {
-        type: Sequelize.JSONB,
+      revoked_at: {
+        type: Sequelize.DATE,
         allowNull: true,
       },
       created_at: {
@@ -40,11 +41,14 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex("conversations", ["user_id"]);
-    await queryInterface.addIndex("conversations", ["created_at"]);
+    await queryInterface.addIndex("refresh_tokens", ["user_id"]);
+    await queryInterface.addIndex("refresh_tokens", ["token"], {
+      unique: true,
+    });
+    await queryInterface.addIndex("refresh_tokens", ["expires_at"]);
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable("conversations");
+    await queryInterface.dropTable("refresh_tokens");
   },
 };

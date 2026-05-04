@@ -4,8 +4,8 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("medications", {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
@@ -15,6 +15,18 @@ module.exports = {
         unique: true,
       },
       generic_name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      dci: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      form: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      dosage: {
         type: Sequelize.STRING,
         allowNull: true,
       },
@@ -30,12 +42,20 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      dosage_form: {
-        type: Sequelize.STRING,
+      indications: {
+        type: Sequelize.TEXT,
         allowNull: true,
       },
-      strength: {
-        type: Sequelize.STRING,
+      contraindications: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      side_effects: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      posology: {
+        type: Sequelize.TEXT,
         allowNull: true,
       },
       requires_prescription: {
@@ -43,26 +63,10 @@ module.exports = {
         allowNull: false,
         defaultValue: false,
       },
-      price: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: true,
-      },
       barcode: {
         type: Sequelize.STRING,
         allowNull: true,
         unique: true,
-      },
-      active_ingredients: {
-        type: Sequelize.JSONB,
-        allowNull: true,
-      },
-      side_effects: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-      },
-      contraindications: {
-        type: Sequelize.TEXT,
-        allowNull: true,
       },
       created_at: {
         type: Sequelize.DATE,
@@ -79,6 +83,7 @@ module.exports = {
     await queryInterface.addIndex("medications", ["name"], { unique: true });
     await queryInterface.addIndex("medications", ["category"]);
     await queryInterface.addIndex("medications", ["requires_prescription"]);
+    await queryInterface.addIndex("medications", ["barcode"], { unique: true });
   },
 
   async down(queryInterface) {

@@ -1,11 +1,12 @@
+// models/Review.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 import Doctor from './Doctor';
 
 export interface ReviewAttributes {
-  id: number;
-  userId: number;
-  doctorId: number;
+  id: string;  // ✅ UUID
+  userId: string;  // ✅ UUID
+  doctorId: string;  // ✅ UUID
   rating: number;
   comment?: string;
   createdAt?: Date;
@@ -19,15 +20,14 @@ class Review
   extends Model<ReviewAttributes, ReviewCreationAttributes>
   implements ReviewAttributes
 {
-  public id!: number;
-  public userId!: number;
-  public doctorId!: number;
+  public id!: string;
+  public userId!: string;
+  public doctorId!: string;
   public rating!: number;
   public comment?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Associations
   public static associate(): void {
     const { User, Doctor } = sequelize.models;
     Review.belongsTo(User, { foreignKey: 'userId', as: 'user' });
@@ -38,18 +38,18 @@ class Review
 Review.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: 'users', key: 'id' },
       onDelete: 'CASCADE',
     },
     doctorId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: 'doctors', key: 'id' },
       onDelete: 'CASCADE',
@@ -75,12 +75,11 @@ Review.init(
     indexes: [
       {
         unique: true,
-        fields: ['user_id', 'doctor_id'], // One review per user per doctor
+        fields: ['user_id', 'doctor_id'],
       },
     ],
     hooks: {
       afterCreate: async (review: Review) => {
-        // Update doctor's average rating and total reviews after a new review
         const doctor = await Doctor.findByPk(review.doctorId);
         if (doctor) {
           await doctor.updateRating(review.rating);

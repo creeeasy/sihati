@@ -1,8 +1,9 @@
+// models/Specialty.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface SpecialtyAttributes {
-  id: number;
+  id: string;  // ✅ UUID
   nameFr: string;
   nameAr: string;
   icon: string;
@@ -18,7 +19,7 @@ class Specialty
   extends Model<SpecialtyAttributes, SpecialtyCreationAttributes>
   implements SpecialtyAttributes
 {
-  public id!: number;
+  public id!: string;
   public nameFr!: string;
   public nameAr!: string;
   public icon!: string;
@@ -26,7 +27,6 @@ class Specialty
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Associations
   public static associate(): void {
     const { Doctor } = sequelize.models;
     Specialty.hasMany(Doctor, { foreignKey: 'specialtyId', as: 'doctors' });
@@ -36,8 +36,8 @@ class Specialty
 Specialty.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     nameFr: {
@@ -64,49 +64,7 @@ Specialty.init(
     timestamps: true,
     underscored: true,
     indexes: [{ unique: true, fields: ['name_fr'] }],
-    scopes: {
-      withDoctorCount: {
-        include: [
-          {
-            model: sequelize.models.Doctor,
-            as: 'doctors',
-            attributes: [],
-          },
-        ],
-        attributes: {
-          include: [
-            [
-              sequelize.fn('COUNT', sequelize.col('doctors.id')),
-              'doctorCount',
-            ],
-          ],
-        },
-        group: ['Specialty.id'],
-      },
-    },
   }
 );
-
-// Seed data
-export const SPECIALTIES_SEED = [
-  { nameFr: 'Médecine Générale',    nameAr: 'الطب العام',               icon: 'stethoscope' },
-  { nameFr: 'Pédiatrie',            nameAr: 'طب الأطفال',               icon: 'baby' },
-  { nameFr: 'Cardiologie',          nameAr: 'طب القلب',                 icon: 'heart' },
-  { nameFr: 'Dermatologie',         nameAr: 'طب الجلد',                 icon: 'skin' },
-  { nameFr: 'Gynécologie',          nameAr: 'أمراض النساء',             icon: 'female' },
-  { nameFr: 'ORL',                  nameAr: 'أنف أذن حنجرة',            icon: 'ear' },
-  { nameFr: 'Ophtalmologie',        nameAr: 'طب العيون',                icon: 'eye' },
-  { nameFr: 'Dentiste',             nameAr: 'طب الأسنان',               icon: 'tooth' },
-  { nameFr: 'Psychiatrie',          nameAr: 'الطب النفسي',              icon: 'brain' },
-  { nameFr: 'Neurologie',           nameAr: 'طب الأعصاب',               icon: 'nerve' },
-  { nameFr: 'Orthopédie',           nameAr: 'جراحة العظام',             icon: 'bone' },
-  { nameFr: 'Urologie',             nameAr: 'المسالك البولية',          icon: 'kidney' },
-  { nameFr: 'Gastro-entérologie',   nameAr: 'أمراض الجهاز الهضمي',     icon: 'stomach' },
-  { nameFr: 'Pneumologie',          nameAr: 'أمراض الجهاز التنفسي',     icon: 'lungs' },
-  { nameFr: 'Chirurgie Générale',   nameAr: 'الجراحة العامة',           icon: 'scalpel' },
-  { nameFr: 'Endocrinologie',       nameAr: 'الغدد الصماء',             icon: 'hormone' },
-  { nameFr: 'Rhumatologie',         nameAr: 'أمراض الروماتيزم',         icon: 'joint' },
-  { nameFr: 'Néphrologie',          nameAr: 'أمراض الكلى',              icon: 'kidney2' },
-];
 
 export default Specialty;

@@ -2,23 +2,23 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("pharmacies", {
+    await queryInterface.createTable("doctor_offices", {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
-      user_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: { model: "users", key: "id" },
-        onDelete: "SET NULL",
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
-      pharmacy_name: {
+      office_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       address: {
         type: Sequelize.STRING,
@@ -42,26 +42,9 @@ module.exports = {
       },
       phone: {
         type: Sequelize.STRING,
-        allowNull: false,
-      },
-      whatsapp_number: {
-        type: Sequelize.STRING,
         allowNull: true,
       },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      opening_hours: {
-        type: Sequelize.JSONB,
-        allowNull: true,
-      },
-      is_on_duty_tonight: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
-      is_verified: {
+      is_primary: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false,
@@ -78,12 +61,12 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex("pharmacies", ["wilaya"]);
-    await queryInterface.addIndex("pharmacies", ["is_on_duty_tonight"]);
-    await queryInterface.addIndex("pharmacies", ["latitude", "longitude"]);
+    await queryInterface.addIndex("doctor_offices", ["doctor_id"]);
+    await queryInterface.addIndex("doctor_offices", ["wilaya"]);
+    await queryInterface.addIndex("doctor_offices", ["latitude", "longitude"]);
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable("pharmacies");
+    await queryInterface.dropTable("doctor_offices");
   },
 };

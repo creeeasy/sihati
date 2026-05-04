@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('specialties', {
+    await queryInterface.createTable("specialties", {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
@@ -29,19 +29,19 @@ module.exports = {
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.fn('NOW'),
+        defaultValue: Sequelize.fn("NOW"),
       },
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.fn('NOW'),
+        defaultValue: Sequelize.fn("NOW"),
       },
     });
 
-    await queryInterface.addIndex('specialties', ['name_fr'], { unique: true });
+    await queryInterface.addIndex("specialties", ["name_fr"], { unique: true });
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('specialties');
+    await queryInterface.dropTable("specialties");
   },
 };

@@ -1,9 +1,10 @@
+// models/Conversation.ts
 import { Model, DataTypes, Optional, Op } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface ConversationAttributes {
-  id: number;
-  userId: number;
+  id: string;  // ✅ UUID
+  userId: string;  // ✅ UUID
   userMessage: string;
   aiResponse: string;
   context?: object;
@@ -18,15 +19,14 @@ class Conversation
   extends Model<ConversationAttributes, ConversationCreationAttributes>
   implements ConversationAttributes
 {
-  public id!: number;
-  public userId!: number;
+  public id!: string;
+  public userId!: string;
   public userMessage!: string;
   public aiResponse!: string;
   public context?: object;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Associations
   public static associate(): void {
     const { User } = sequelize.models;
     Conversation.belongsTo(User, { foreignKey: 'userId', as: 'user' });
@@ -36,12 +36,12 @@ class Conversation
 Conversation.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: 'users', key: 'id' },
       onDelete: 'CASCADE',
@@ -72,11 +72,11 @@ Conversation.init(
       recent: {
         where: {
           createdAt: {
-            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // last 30 days
+            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
         },
       },
-      byUser: (userId: number) => ({
+      byUser: (userId: string) => ({
         where: { userId },
       }),
     },

@@ -1,3 +1,4 @@
+// src/server.ts
 import app from './app';
 import sequelize from './config/database';
 import logger from './utils/logger';
@@ -12,10 +13,13 @@ async function startServer(): Promise<void> {
     await sequelize.authenticate();
     logger.info('✅ Database connection established successfully.');
 
-    // 2. Sync models in development only
+    // 2. Sync models ONLY in development (but prefer migrations)
     if (env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
-      logger.info('✅ Database models synced.');
+      // Option 1: Just check connection, no sync (recommended)
+      logger.info('⚠️ Using migrations, not sync. Run: npx sequelize-cli db:migrate');
+      
+      // Option 2: If you really need sync (use with caution)
+      // await sequelize.sync({ alter: false }); // Only create missing tables
     }
 
     // 3. Start HTTP server

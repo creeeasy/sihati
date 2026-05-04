@@ -4,20 +4,20 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("pharmacy_medications", {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
       pharmacy_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: "pharmacies", key: "id" },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
       medication_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: "medications", key: "id" },
         onDelete: "CASCADE",
@@ -52,7 +52,6 @@ module.exports = {
       },
     });
 
-    // Composite unique: one entry per pharmacy-medication pair
     await queryInterface.addIndex(
       "pharmacy_medications",
       ["pharmacy_id", "medication_id"],

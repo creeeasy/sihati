@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('users', {
+    await queryInterface.createTable("users", {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
@@ -26,15 +26,24 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      chifa_number: {
+        type: Sequelize.STRING(15),
+        allowNull: true,
+      },
       role: {
-        type: Sequelize.ENUM('patient', 'pharmacy', 'doctor'),
+        type: Sequelize.ENUM("patient", "pharmacy", "doctor", "admin"),
         allowNull: false,
-        defaultValue: 'patient',
+        defaultValue: "patient",
       },
       is_active: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true,
+      },
+      is_verified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
       wilaya: {
         type: Sequelize.STRING,
@@ -48,23 +57,32 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      fcm_token: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      last_login: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.fn('NOW'),
+        defaultValue: Sequelize.fn("NOW"),
       },
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.fn('NOW'),
+        defaultValue: Sequelize.fn("NOW"),
       },
     });
 
-    await queryInterface.addIndex('users', ['email'], { unique: true });
-    await queryInterface.addIndex('users', ['role']);
+    await queryInterface.addIndex("users", ["email"], { unique: true });
+    await queryInterface.addIndex("users", ["role"]);
+    await queryInterface.addIndex("users", ["chifa_number"]);
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('users');
+    await queryInterface.dropTable("users");
   },
 };

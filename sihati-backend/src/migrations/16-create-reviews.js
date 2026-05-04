@@ -4,20 +4,20 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("reviews", {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
       user_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: "users", key: "id" },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
       doctor_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: { model: "doctors", key: "id" },
         onDelete: "CASCADE",
@@ -43,7 +43,6 @@ module.exports = {
       },
     });
 
-    // One review per user per doctor
     await queryInterface.addIndex("reviews", ["user_id", "doctor_id"], {
       unique: true,
       name: "unique_user_doctor_review",
