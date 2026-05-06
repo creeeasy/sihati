@@ -718,7 +718,7 @@
         const icon   = document.getElementById('themeIcon');
         const body   = document.body;
 
-        const saved = localStorage.getItem('sihati-theme') || 'light';
+        const saved = localStorage.getItem('sihati-theme') || 'dark';
         apply(saved);
 
         toggle.addEventListener('click', () => {
@@ -729,7 +729,7 @@
 
         function apply(theme) {
             body.setAttribute('data-theme', theme);
-            icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
         }
     </script>
 </body>
