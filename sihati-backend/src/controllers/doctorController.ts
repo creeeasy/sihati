@@ -1,180 +1,165 @@
 import { Request, Response, NextFunction } from 'express';
 import doctorService from '../services/doctorService';
-import { NotFoundError } from '../services/pharmacyService';
-import ResponseHandler from '../utils/responseHandler';
 
-// GET /api/doctors
-export const getAllDoctors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const getId = (param: string | string[] | undefined): string => {
+  if (typeof param === 'string') return param;
+  if (Array.isArray(param)) return param[0];
+  return '';
+};
+
+// 📌 GET /api/doctors
+export const getAllDoctors = async (_: Request, res: Response, next: NextFunction) => {
   try {
-    const { specialtyId, wilaya } = req.query;
-
-    const filters: any = {};
-    if (specialtyId) filters.specialtyId = parseInt(specialtyId as string);
-    if (wilaya) filters.wilaya = wilaya as string;
-
-    const doctors = await doctorService.getAllDoctors(filters);
-    ResponseHandler.success(res, { doctors, count: doctors.length });
+    const doctors = await doctorService.getAllDoctors();
+    return res.json({ success: true, data: doctors });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
-// GET /api/doctors/nearby
-export const getNearbyDoctors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// 📌 GET /api/doctors/search
+export const searchDoctors = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { lat, lng, radius, specialtyId } = req.query;
-
-    if (!lat || !lng) {
-      ResponseHandler.badRequest(
-        res,
-        'Les coordonnées GPS (lat, lng) sont requises.'
-      );
-      return;
-    }
-
-    const latitude = parseFloat(lat as string);
-    const longitude = parseFloat(lng as string);
-    const radiusKm = parseFloat((radius as string) || '10');
-    const specId = specialtyId ? parseInt(specialtyId as string) : undefined;
-
-    if (isNaN(latitude) || isNaN(longitude)) {
-      ResponseHandler.badRequest(res, 'Coordonnées GPS invalides.');
-      return;
-    }
-
-    const doctors = await doctorService.getNearbyDoctors(
-      latitude,
-      longitude,
-      radiusKm,
-      specId
-    );
-    ResponseHandler.success(res, { doctors, count: doctors.length });
+    const doctors = await doctorService.searchDoctors({
+      q: req.query.q as string,
+      specialtyId: req.query.specialtyId as string,
+      wilaya: req.query.wilaya as string,
+      minRating: req.query.minRating ? Number(req.query.minRating) : undefined,
+      maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
+      lat: req.query.lat ? Number(req.query.lat) : undefined,
+      lng: req.query.lng ? Number(req.query.lng) : undefined,
+      radius: req.query.radius ? Number(req.query.radius) : undefined
+    });
+    return res.json({ success: true, data: doctors, count: doctors.length });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
-// GET /api/doctors/top-rated
-export const getTopRatedDoctors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// 📌 GET /api/doctors/top-rated
+export const getTopRatedDoctors = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const limit = parseInt((req.query.limit as string) || '10');
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
     const doctors = await doctorService.getTopRatedDoctors(limit);
-    ResponseHandler.success(res, { doctors, count: doctors.length });
+    return res.json({ success: true, data: doctors });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
-// GET /api/doctors/:id
-export const getDoctorById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// 📌 GET /api/doctors/specialties
+export const getAllSpecialties = async (_: Request, res: Response, next: NextFunction) => {
   try {
-    // Handle both string and string[] cases
-    const idParam = req.params.id;
-    const id = typeof idParam === 'string' ? parseInt(idParam) : parseInt(idParam[0]);
-    
-    if (isNaN(id)) {
-      ResponseHandler.badRequest(res, 'ID invalide.');
-      return;
-    }
+    const specialties = await doctorService.getAllSpecialties();
+    return res.json({ success: true, data: specialties });
+  } catch (error) {
+    return next(error);
+  }
+};
 
+// 📌 GET /api/doctors/:id
+export const getDoctorById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = getId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID invalide' });
+    }
     const doctor = await doctorService.getDoctorById(id);
-    ResponseHandler.success(res, { doctor });
+    return res.json({ success: true, data: doctor });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      ResponseHandler.notFound(res, error.message);
-    } else {
-      next(error);
-    }
+    return next(error);
   }
 };
 
-// POST /api/doctors/search
-export const searchDoctors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { query, specialtyId, wilaya } = req.body;
-
-    if (!query || query.trim().length < 2) {
-      ResponseHandler.badRequest(
-        res,
-        'Le terme de recherche doit contenir au moins 2 caractères.'
-      );
-      return;
-    }
-
-    const filters: any = {};
-    if (specialtyId) filters.specialtyId = parseInt(specialtyId);
-    if (wilaya) filters.wilaya = wilaya;
-
-    const doctors = await doctorService.searchDoctors(query, filters);
-    ResponseHandler.success(res, { doctors, count: doctors.length });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// POST /api/doctors (protected)
-export const createDoctor = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// 📌 POST /api/doctors
+export const createDoctor = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const doctor = await doctorService.createDoctor(req.body);
-    ResponseHandler.created(res, { doctor }, 'Médecin créé avec succès.');
+    return res.status(201).json({ success: true, data: doctor });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      ResponseHandler.notFound(res, error.message);
-    } else {
-      next(error);
-    }
+    return next(error);
   }
-
-
-
 };
 
-  // PUT /api/doctors/:id (protected)
-export const updateDoctor = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// 📌 PUT /api/doctors/:id
+export const updateDoctor = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const idParam = req.params.id;
-    const id = typeof idParam === 'string' ? parseInt(idParam) : parseInt(idParam[0]);
-    
-    if (isNaN(id)) {
-      ResponseHandler.badRequest(res, 'ID invalide.');
-      return;
+    const id = getId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID invalide' });
+    }
+    const doctor = await doctorService.updateDoctor(id, req.body);
+    return res.json({ success: true, data: doctor });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 📌 DELETE /api/doctors/:id
+export const deleteDoctor = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = getId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID invalide' });
+    }
+    await doctorService.deleteDoctor(id);
+    return res.json({ success: true, message: 'Médecin supprimé' });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 📌 GET /api/doctors/:id/reviews
+export const getDoctorReviews = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = getId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID invalide' });
+    }
+    const reviews = await doctorService.getDoctorReviews(id);
+    return res.json({ success: true, data: reviews });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 📌 POST /api/doctors/:id/reviews
+export const addReview = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = getId(req.params.id);
+    const userId = (req as any).user.id;
+    const { rating, comment } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID invalide' });
+    }
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'La note doit être comprise entre 1 et 5' });
     }
 
-    const doctor = await doctorService.updateDoctor(id, req.body);
-    ResponseHandler.success(res, { doctor }, 'Médecin mis à jour.');
+    const review = await doctorService.addReview(id, userId, rating, comment);
+    return res.status(201).json({ success: true, data: review });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      ResponseHandler.notFound(res, error.message);
-    } else {
-      next(error);
+    return next(error);
+  }
+};
+
+// 📌 GET /api/doctors/:id/available-slots
+export const getAvailableSlots = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = getId(req.params.id);
+    const { date, officeId } = req.query;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID invalide' });
     }
+    if (!date) {
+      return res.status(400).json({ success: false, message: 'La date est requise' });
+    }
+
+    const slots = await doctorService.getAvailableSlots(id, new Date(date as string), officeId as string);
+    return res.json({ success: true, data: slots });
+  } catch (error) {
+    return next(error);
   }
 };

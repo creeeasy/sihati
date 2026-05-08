@@ -3,19 +3,19 @@ import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface MedicationAttributes {
-  id: string;  // ✅ UUID
+  id: string;
   name: string;
   genericName?: string;
-  dci?: string;  // 🆕 Dénomination Commune Internationale
-  form?: string;  // 🆕 Forme (comprimé, sirop, etc.)
-  dosage?: string;  // 🆕 Dosage
+  dci?: string;
+  form?: string;
+  dosage?: string;
   category?: string;
   manufacturer?: string;
   description?: string;
-  indications?: string;  // 🆕 Indications
-  contraindications?: string;  // 🆕 Contre-indications
-  sideEffects?: string;  // 🆕 Effets secondaires
-  posology?: string;  // 🆕 Posologie
+  indications?: string;
+  contraindications?: string;
+  sideEffects?: string;
+  posology?: string;
   requiresPrescription: boolean;
   barcode?: string;
   createdAt?: Date;
@@ -25,10 +25,7 @@ export interface MedicationAttributes {
 export interface MedicationCreationAttributes
   extends Optional<MedicationAttributes, 'id' | 'requiresPrescription'> {}
 
-class Medication
-  extends Model<MedicationAttributes, MedicationCreationAttributes>
-  implements MedicationAttributes
-{
+class Medication extends Model<MedicationAttributes, MedicationCreationAttributes> implements MedicationAttributes {
   public id!: string;
   public name!: string;
   public genericName?: string;
@@ -132,7 +129,12 @@ Medication.init(
     indexes: [
       { unique: true, fields: ['name'] },
       { fields: ['category'] },
-      { fields: ['barcode'] },
+      { fields: ['barcode'], unique: true },
+      { fields: ['dci'] },
+      { 
+        fields: ['name'],
+        type: 'FULLTEXT',
+      },
     ],
     scopes: {
       otc: { where: { requiresPrescription: false } },

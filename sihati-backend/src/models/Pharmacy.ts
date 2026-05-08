@@ -3,8 +3,8 @@ import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 export interface PharmacyAttributes {
-  id: string;  // ✅ UUID
-  userId?: string;  // ✅ UUID
+  id: string;
+  userId?: string;
   pharmacyName: string;
   address: string;
   wilaya: string;
@@ -24,10 +24,7 @@ export interface PharmacyAttributes {
 export interface PharmacyCreationAttributes
   extends Optional<PharmacyAttributes, 'id' | 'isOnDutyTonight' | 'isVerified'> {}
 
-class Pharmacy
-  extends Model<PharmacyAttributes, PharmacyCreationAttributes>
-  implements PharmacyAttributes
-{
+class Pharmacy extends Model<PharmacyAttributes, PharmacyCreationAttributes> implements PharmacyAttributes {
   public id!: string;
   public userId?: string;
   public pharmacyName!: string;
@@ -106,10 +103,18 @@ Pharmacy.init(
     latitude: {
       type: DataTypes.DECIMAL(10, 8),
       allowNull: false,
+      validate: {
+        min: -90,
+        max: 90,
+      },
     },
     longitude: {
       type: DataTypes.DECIMAL(11, 8),
       allowNull: false,
+      validate: {
+        min: -180,
+        max: 180,
+      },
     },
     phone: {
       type: DataTypes.STRING,

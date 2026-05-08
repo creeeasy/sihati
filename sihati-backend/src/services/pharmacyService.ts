@@ -1,160 +1,132 @@
 import { Op } from 'sequelize';
-import { Pharmacy, User } from '../models';
-import { PharmacyCreateDTO, PharmacyUpdateDTO } from '../types';
+import { Pharmacy, User, PharmacyMedication, Medication } from '../models';
 
-export class NotFoundError extends Error {
-  statusCode = 404;
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
-
-// Haversine formula: distance in km between two GPS points
-function haversineDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+            Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 class PharmacyService {
-  // Get all pharmacies with optional filters
-  async getAllPharmacies(filters?: {
-    wilaya?: string;
-    isOnDuty?: boolean;
-  }): Promise<Pharmacy[]> {
-    const where: any = {};
+  // 📌 Récupérer toutes les pharmacies
+  async getAllPharmacies(filters?: { wilaya?: string; isOnDuty?: boolean }) {
+    const where: any = { isVerified: true };
     if (filters?.wilaya) where.wilaya = filters.wilaya;
-    if (filters?.isOnDuty !== undefined)
-      where.isOnDutyTonight = filters.isOnDuty;
+    if (filters?.isOnDuty !== undefined) where.isOnDutyTonight = filters.isOnDuty;
 
     return Pharmacy.findAll({
       where,
-      include: [{ model: User, as: 'user', attributes: ['id', 'fullName', 'email'] }],
-      order: [['pharmacyName', 'ASC']],
+      include: [{ model: User, as: 'user', attributes: { exclude: ['password'] } }],
+      order: [['pharmacyName', 'ASC']]
     });
   }
 
-  // Get pharmacies within a given radius (km) sorted by distance
-  async getNearbyPharmacies(
-    lat: number,
-    lng: number,
-    radiusKm: number
-  ): Promise<(Pharmacy & { distance: number })[]> {
-    const pharmacies = await Pharmacy.findAll();
-
-    const withDistance = pharmacies
-      .map((p) => {
-        const distance = haversineDistance(
-          lat,
-          lng,
-          Number(p.latitude),
-          Number(p.longitude)
-        );
-        (p as any).dataValues.distance = Math.round(distance * 10) / 10;
-        return p as Pharmacy & { distance: number };
-      })
-      .filter((p) => (p as any).dataValues.distance <= radiusKm)
-      .sort(
-        (a, b) => (a as any).dataValues.distance - (b as any).dataValues.distance
-      );
-
-    return withDistance;
-  }
-
-  // Get pharmacy by ID
-  async getPharmacyById(id: number): Promise<Pharmacy> {
-    const pharmacy = await Pharmacy.findByPk(id, {
-      include: [{ model: User, as: 'user', attributes: ['id', 'fullName', 'email'] }],
-    });
-
-    if (!pharmacy) {
-      throw new NotFoundError(`Pharmacie #${id} introuvable.`);
-    }
-
-    return pharmacy;
-  }
-
-  // Get pharmacies on duty tonight
-  async getDutyPharmacies(wilaya?: string): Promise<Pharmacy[]> {
-    const where: any = { isOnDutyTonight: true };
+  // 📌 Pharmacies de garde
+  async getDutyPharmacies(wilaya?: string) {
+    const where: any = { isVerified: true, isOnDutyTonight: true };
     if (wilaya) where.wilaya = wilaya;
 
     return Pharmacy.findAll({
       where,
-      order: [
-        ['wilaya', 'ASC'],
-        ['pharmacyName', 'ASC'],
-      ],
+      include: [{ model: User, as: 'user', attributes: ['id', 'fullName', 'profileImage'] }],
+      order: [['pharmacyName', 'ASC']]
     });
   }
 
-  // Search pharmacies by name or address
-  async searchPharmacies(
-    query: string,
-    location?: { lat: number; lng: number }
-  ): Promise<Pharmacy[]> {
-    const pharmacies = await Pharmacy.findAll({
-      where: {
-        [Op.or]: [
-          { pharmacyName: { [Op.iLike]: `%${query}%` } },
-          { address: { [Op.iLike]: `%${query}%` } },
-          { wilaya: { [Op.iLike]: `%${query}%` } },
-        ],
-      },
-    });
+  // 📌 Pharmacies à proximité
+  async getNearbyPharmacies(lat: number, lng: number, radiusKm: number = 5, wilaya?: string) {
+    const where: any = { isVerified: true };
+    if (wilaya) where.wilaya = wilaya;
 
-    if (location) {
-      return pharmacies
-        .map((p) => {
-          const distance = haversineDistance(
-            location.lat,
-            location.lng,
-            Number(p.latitude),
-            Number(p.longitude)
-          );
-          (p as any).dataValues.distance = Math.round(distance * 10) / 10;
-          return p;
-        })
-        .sort(
-          (a, b) =>
-            (a as any).dataValues.distance - (b as any).dataValues.distance
-        );
-    }
+    let pharmacies = await Pharmacy.findAll({ where });
+
+    pharmacies = pharmacies
+      .map(p => {
+        const distance = haversineDistance(lat, lng, p.latitude, p.longitude);
+        (p as any).dataValues.distance = distance;
+        return p;
+      })
+      .filter(p => (p as any).dataValues.distance <= radiusKm)
+      .sort((a, b) => (a as any).dataValues.distance - (b as any).dataValues.distance);
 
     return pharmacies;
   }
 
-  // Create a new pharmacy
-  async createPharmacy(data: PharmacyCreateDTO): Promise<Pharmacy> {
-    return Pharmacy.create(data as any);
-  }
-
-  // Update an existing pharmacy
-  async updatePharmacy(
-    id: number,
-    data: PharmacyUpdateDTO
-  ): Promise<Pharmacy> {
-    const pharmacy = await this.getPharmacyById(id);
-    await pharmacy.update(data);
+  // 📌 Récupérer une pharmacie par ID
+  async getPharmacyById(id: string) {
+    const pharmacy = await Pharmacy.findByPk(id, {
+      include: [
+        { model: User, as: 'user', attributes: { exclude: ['password'] } },
+        { model: Medication, as: 'medications', through: { attributes: ['inStock', 'price', 'quantity'] } }
+      ]
+    });
+    if (!pharmacy) throw new Error('Pharmacie non trouvée');
     return pharmacy;
   }
 
-  // Delete a pharmacy
-  async deletePharmacy(id: number): Promise<void> {
+  // 📌 Créer une pharmacie
+  async createPharmacy(data: any) {
+    return Pharmacy.create(data);
+  }
+
+  // 📌 Mettre à jour une pharmacie
+  async updatePharmacy(id: string, data: any) {
+    const pharmacy = await this.getPharmacyById(id);
+    await pharmacy.update(data);
+    return this.getPharmacyById(id);
+  }
+
+  // 📌 Supprimer une pharmacie
+  async deletePharmacy(id: string) {
     const pharmacy = await this.getPharmacyById(id);
     await pharmacy.destroy();
+    return true;
+  }
+
+  // 📌 Mettre à jour le statut de garde
+  async setDutyStatus(id: string, isOnDuty: boolean) {
+    const pharmacy = await this.getPharmacyById(id);
+    await pharmacy.update({ isOnDutyTonight: isOnDuty });
+    return pharmacy;
+  }
+
+  // 📌 Rechercher des pharmacies par nom
+  async searchPharmacies(query: string, wilaya?: string) {
+    const where: any = {
+      isVerified: true,
+      pharmacyName: { [Op.iLike]: `%${query}%` }
+    };
+    if (wilaya) where.wilaya = wilaya;
+
+    return Pharmacy.findAll({
+      where,
+      include: [{ model: User, as: 'user', attributes: ['id', 'fullName', 'profileImage'] }],
+      order: [['pharmacyName', 'ASC']]
+    });
+  }
+
+  // 📌 Vérifier le stock d'un médicament
+  async getMedicationStock(pharmacyId: string, medicationId: string) {
+    const stock = await PharmacyMedication.findOne({
+      where: { pharmacyId, medicationId }
+    });
+    return stock;
+  }
+
+  // 📌 Mettre à jour le stock
+  async updateStock(pharmacyId: string, medicationId: string, data: { inStock: boolean; quantity?: number; price?: number }) {
+    const [stock, created] = await PharmacyMedication.findOrCreate({
+      where: { pharmacyId, medicationId },
+      defaults: { ...data, lastUpdated: new Date() }
+    });
+    if (!created) {
+      await stock.update({ ...data, lastUpdated: new Date() });
+    }
+    return stock;
   }
 }
 

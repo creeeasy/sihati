@@ -23,10 +23,7 @@ export interface MedicationHistoryAttributes {
 export interface MedicationHistoryCreationAttributes
   extends Optional<MedicationHistoryAttributes, 'id' | 'isActive'> {}
 
-class MedicationHistory
-  extends Model<MedicationHistoryAttributes, MedicationHistoryCreationAttributes>
-  implements MedicationHistoryAttributes
-{
+class MedicationHistory extends Model<MedicationHistoryAttributes, MedicationHistoryCreationAttributes> implements MedicationHistoryAttributes {
   public id!: string;
   public patientId!: string;
   public prescriptionId?: string;
@@ -125,7 +122,7 @@ MedicationHistory.init(
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true,
+      defaultValue: true, // ✅ Ajouté
     },
     adherenceRate: {
       type: DataTypes.DECIMAL(5, 2),

@@ -43,12 +43,17 @@ module.exports = {
       },
     });
 
+    // Index sur doctor_id pour les recherches
+    await queryInterface.addIndex("reviews", ["doctor_id"]);
+
+    // Index sur rating pour les tris
+    await queryInterface.addIndex("reviews", ["rating"]);
+
+    // ✅ Contrainte unique : un seul avis par patient par médecin
     await queryInterface.addIndex("reviews", ["user_id", "doctor_id"], {
       unique: true,
-      name: "unique_user_doctor_review",
+      name: "unique_review_per_patient_doctor",
     });
-    await queryInterface.addIndex("reviews", ["doctor_id"]);
-    await queryInterface.addIndex("reviews", ["rating"]);
   },
 
   async down(queryInterface) {

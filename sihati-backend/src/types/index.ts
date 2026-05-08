@@ -8,6 +8,7 @@ export interface RegisterDTO {
   fullName: string;
   phoneNumber: string;
   role?: 'patient' | 'pharmacy' | 'doctor';
+  chifaNumber?: string;  // ✅ Carte Chifa
 }
 
 export interface LoginDTO {
@@ -18,10 +19,15 @@ export interface LoginDTO {
 export interface UpdateProfileDTO {
   fullName?: string;
   phoneNumber?: string;
+  chifaNumber?: string;  // ✅ Carte Chifa
   address?: string;
   wilaya?: string;
   profileImage?: string;
 }
+
+// ============================================================
+// Pharmacie DTOs
+// ============================================================
 
 export interface PharmacyCreateDTO {
   pharmacyName: string;
@@ -35,7 +41,7 @@ export interface PharmacyCreateDTO {
   email?: string;
   openingHours?: object;
   isOnDutyTonight?: boolean;
-  userId?: number;
+  userId?: string;  // ✅ UUID
 }
 
 export interface PharmacyUpdateDTO {
@@ -53,9 +59,13 @@ export interface PharmacyUpdateDTO {
   isVerified?: boolean;
 }
 
+// ============================================================
+// Médecin DTOs
+// ============================================================
+
 export interface DoctorCreateDTO {
-  userId: number;
-  specialtyId: number;
+  userId: string;  // ✅ UUID
+  specialtyId: string;  // ✅ UUID
   doctorName: string;
   clinicName: string;
   clinicAddress: string;
@@ -72,7 +82,7 @@ export interface DoctorCreateDTO {
 }
 
 export interface DoctorUpdateDTO {
-  specialtyId?: number;
+  specialtyId?: string;  // ✅ UUID
   doctorName?: string;
   clinicName?: string;
   clinicAddress?: string;
@@ -89,31 +99,168 @@ export interface DoctorUpdateDTO {
   isVerified?: boolean;
 }
 
+// ============================================================
+// Médicament DTOs
+// ============================================================
+
 export interface MedicationCreateDTO {
   name: string;
   genericName?: string;
+  dci?: string;  // ✅ Dénomination Commune Internationale
+  form?: string;  // ✅ Forme (comprimé, sirop, etc.)
+  dosage?: string;  // ✅ Dosage
   category?: string;
   manufacturer?: string;
   description?: string;
+  indications?: string;  // ✅ Indications
+  contraindications?: string;  // ✅ Contre-indications
+  sideEffects?: string;  // ✅ Effets secondaires
+  posology?: string;  // ✅ Posologie
   dosageForm?: string;
   strength?: string;
   requiresPrescription?: boolean;
   price?: number;
   barcode?: string;
   activeIngredients?: object;
-  sideEffects?: string;
+}
+
+export interface MedicationUpdateDTO {
+  name?: string;
+  genericName?: string;
+  dci?: string;
+  form?: string;
+  dosage?: string;
+  category?: string;
+  manufacturer?: string;
+  description?: string;
+  indications?: string;
   contraindications?: string;
+  sideEffects?: string;
+  posology?: string;
+  requiresPrescription?: boolean;
+  price?: number;
+  barcode?: string;
 }
 
 // ============================================================
-// Response shapes
+// Rendez-vous DTOs
+// ============================================================
+
+export interface AppointmentCreateDTO {
+  patientId: string;  // ✅ UUID
+  doctorId: string;  // ✅ UUID
+  officeId?: string;  // ✅ UUID
+  appointmentDate: Date;
+  appointmentTime: string;
+  reason?: string;
+  consultationFee?: number;
+}
+
+export interface AppointmentUpdateDTO {
+  appointmentDate?: Date;
+  appointmentTime?: string;
+  reason?: string;
+  notes?: string;
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+}
+
+// ============================================================
+// Ordonnance DTOs
+// ============================================================
+
+export interface PrescriptionCreateDTO {
+  consultationId?: string;  // ✅ UUID
+  patientId: string;  // ✅ UUID
+  doctorId: string;  // ✅ UUID
+  diagnosis?: string;
+  notes?: string;
+  validityDays?: number;
+  isRenewable?: boolean;
+  medications: {
+    medicationId?: string;  // ✅ UUID
+    medicationName: string;
+    dosage?: string;
+    frequency?: string;
+    durationDays?: number;
+    quantity?: number;
+    instructions?: string;
+  }[];
+}
+
+// ============================================================
+// Avis DTOs
+// ============================================================
+
+export interface ReviewCreateDTO {
+  doctorId: string;  // ✅ UUID
+  rating: number;
+  comment?: string;
+}
+
+// ============================================================
+// Favoris DTOs
+// ============================================================
+
+export interface FavoriteDoctorDTO {
+  patientId: string;  // ✅ UUID
+  doctorId: string;  // ✅ UUID
+}
+
+export interface FavoritePharmacyDTO {
+  patientId: string;  // ✅ UUID
+  pharmacyId: string;  // ✅ UUID
+}
+
+// ============================================================
+// Consultation DTOs
+// ============================================================
+
+export interface ConsultationCreateDTO {
+  appointmentId?: string;  // ✅ UUID
+  patientId: string;  // ✅ UUID
+  doctorId: string;  // ✅ UUID
+  chiefComplaint?: string;
+  symptoms?: string;
+  diagnosis?: string;
+  treatmentPlan?: string;
+  notes?: string;
+  durationMinutes?: number;
+  feePaid?: number;
+}
+
+// ============================================================
+// Patient Profile DTOs
+// ============================================================
+
+export interface PatientProfileDTO {
+  dateOfBirth?: Date;
+  gender?: 'male' | 'female' | 'other';
+  bloodType?: string;
+  address?: string;
+  wilaya?: string;
+  commune?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+}
+
+export interface AllergyDTO {
+  allergyName: string;
+  allergyType: 'medication' | 'food' | 'environmental' | 'other';
+  severity: 'mild' | 'moderate' | 'severe';
+  reaction?: string;
+}
+
+// ============================================================
+// Réponse shapes
 // ============================================================
 
 export interface PharmacyWithStock {
   pharmacy: any;
   inStock: boolean;
   price?: number;
+  quantity?: number;
   distance?: number;
+  lastUpdated?: Date;
 }
 
 export interface MedicationSearchResult {
@@ -133,14 +280,14 @@ export interface ChatHistoryItem {
 export type UrgencyLevel = 'low' | 'medium' | 'high' | 'emergency';
 
 export interface PharmacyStock {
-  pharmacyId: number;
+  pharmacyId: string;  // ✅ UUID
   pharmacyName: string;
   wilaya: string;
   phone: string;
   isOnDutyTonight: boolean;
   inStock: boolean;
   price: number | null;
-  distance?: number; // km, only if location provided
+  distance?: number;
 }
 
 export interface AIMedicationResult {
@@ -168,23 +315,23 @@ export interface InteractionResponse {
 }
 
 export interface MedicationInfoResponse {
-  reply:             string;
-  usage:             string;
+  reply: string;
+  usage: string;
   contraindications: string;
-  dosage:            string;
-  sideEffects:       string;
-  pregnancy:         string;
-  interactions:      string;
-  warnings:          string;
-  foundInDb:         boolean;
+  dosage: string;
+  sideEffects: string;
+  pregnancy: string;
+  interactions: string;
+  warnings: string;
+  foundInDb: boolean;
   dbData?: {
-    name:                 string;
-    genericName:          string | null;
-    price:                number | null;
+    name: string;
+    genericName: string | null;
+    price: number | null;
     requiresPrescription: boolean;
-    category:             string | null;
-    dosageForm:           string | null;
-    strength:             string | null;
+    category: string | null;
+    dosageForm: string | null;
+    strength: string | null;
   };
 }
 
@@ -199,9 +346,49 @@ export interface SpecialtyResponse {
 // ============================================================
 
 export interface JwtPayload {
-  id: number;
+  id: string;  // ✅ UUID
   email: string;
-  role: 'patient' | 'pharmacy' | 'doctor';
+  role: 'patient' | 'pharmacy' | 'doctor' | 'admin';
   iat?: number;
   exp?: number;
+}
+
+// ============================================================
+// Query Parameters
+// ============================================================
+
+export interface PaginationQuery {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order?: 'ASC' | 'DESC';
+}
+
+export interface DoctorSearchQuery extends PaginationQuery {
+  specialtyId?: string;  // ✅ UUID
+  wilaya?: string;
+  q?: string;
+  minRating?: number;
+  maxPrice?: number;
+  lat?: number;
+  lng?: number;
+  radius?: number;
+}
+
+export interface PharmacySearchQuery extends PaginationQuery {
+  wilaya?: string;
+  q?: string;
+  lat?: number;
+  lng?: number;
+  radius?: number;
+  onDuty?: boolean;
+}
+
+export interface MedicationSearchQuery extends PaginationQuery {
+  q?: string;
+  category?: string;
+  requiresPrescription?: boolean;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }

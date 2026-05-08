@@ -4,22 +4,18 @@ import sequelize from '../config/database';
 import Doctor from './Doctor';
 
 export interface ReviewAttributes {
-  id: string;  // ✅ UUID
-  userId: string;  // ✅ UUID
-  doctorId: string;  // ✅ UUID
+  id: string;
+  userId: string;
+  doctorId: string;
   rating: number;
   comment?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export interface ReviewCreationAttributes
-  extends Optional<ReviewAttributes, 'id'> {}
+export interface ReviewCreationAttributes extends Optional<ReviewAttributes, 'id'> {}
 
-class Review
-  extends Model<ReviewAttributes, ReviewCreationAttributes>
-  implements ReviewAttributes
-{
+class Review extends Model<ReviewAttributes, ReviewCreationAttributes> implements ReviewAttributes {
   public id!: string;
   public userId!: string;
   public doctorId!: string;
@@ -73,9 +69,12 @@ Review.init(
     timestamps: true,
     underscored: true,
     indexes: [
+      { fields: ['doctor_id'] },
+      { fields: ['user_id'] },
       {
         unique: true,
         fields: ['user_id', 'doctor_id'],
+        name: 'unique_review_per_patient_doctor',
       },
     ],
     hooks: {

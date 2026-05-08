@@ -1,3 +1,4 @@
+// models/Appointment.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
@@ -22,10 +23,7 @@ export interface AppointmentAttributes {
 export interface AppointmentCreationAttributes
   extends Optional<AppointmentAttributes, 'id' | 'status'> {}
 
-class Appointment
-  extends Model<AppointmentAttributes, AppointmentCreationAttributes>
-  implements AppointmentAttributes
-{
+class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttributes> implements AppointmentAttributes {
   public id!: string;
   public patientId!: string;
   public doctorId!: string;
@@ -42,14 +40,12 @@ class Appointment
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Virtual: formatted date
   get formattedDate(): string {
     const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
     return `${this.appointmentDate.getDate()} ${months[this.appointmentDate.getMonth()]} ${this.appointmentDate.getFullYear()}`;
   }
 
-  // Virtual: check if appointment is upcoming
   get isUpcoming(): boolean {
     const now = new Date();
     const appointmentDateTime = new Date(
@@ -59,11 +55,9 @@ class Appointment
       parseInt(this.appointmentTime.split(':')[0]),
       parseInt(this.appointmentTime.split(':')[1])
     );
-    return appointmentDateTime > now && 
-      (this.status === 'pending' || this.status === 'confirmed');
+    return appointmentDateTime > now && (this.status === 'pending' || this.status === 'confirmed');
   }
 
-  // Virtual: check if appointment is today
   get isToday(): boolean {
     const today = new Date();
     return this.appointmentDate.getDate() === today.getDate() &&
@@ -91,7 +85,7 @@ class Appointment
   public static associate(): void {
     const { User, Doctor, DoctorOffice } = sequelize.models;
     Appointment.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
-    Appointment.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
+    Appointment.belongsTo(User, { foreignKey: 'doctorId', as: 'doctor' }); // ✅ Référence users
     Appointment.belongsTo(DoctorOffice, { foreignKey: 'officeId', as: 'office' });
   }
 }
@@ -112,7 +106,7 @@ Appointment.init(
     doctorId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: { model: 'doctors', key: 'id' },
+      references: { model: 'users', key: 'id' }, // ✅ Référence users
       onDelete: 'CASCADE',
     },
     officeId: {

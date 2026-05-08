@@ -1,36 +1,22 @@
 import { Router } from 'express';
 import * as doctorController from '../controllers/doctorController';
-import { validate } from '../middlewares/validation';
-import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware';
-import { apiLimiter } from '../middlewares/rateLimiter';
-import { validateCreate, validateUpdate } from '../validators/doctorValidator';
+import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-router.use(apiLimiter);
-
-// Public routes
+// Routes publiques
 router.get('/', doctorController.getAllDoctors);
-router.get('/nearby', doctorController.getNearbyDoctors);
+router.get('/search', doctorController.searchDoctors);
 router.get('/top-rated', doctorController.getTopRatedDoctors);
+router.get('/specialties', doctorController.getAllSpecialties);
 router.get('/:id', doctorController.getDoctorById);
-router.post('/search', doctorController.searchDoctors);
 
-// Protected routes
-router.post(
-  '/',
-  authenticateToken,
-  authorizeRoles('doctor'),
-  validate(validateCreate),
-  doctorController.createDoctor
-);
-
-router.put(
-  '/:id',
-  authenticateToken,
-  authorizeRoles('doctor'),
-  validate(validateUpdate),
-  doctorController.updateDoctor
-);
+// Routes protégées
+router.post('/', authenticateToken, doctorController.createDoctor);
+router.put('/:id', authenticateToken, doctorController.updateDoctor);
+router.delete('/:id', authenticateToken, doctorController.deleteDoctor);
+router.post('/:id/reviews', authenticateToken, doctorController.addReview);
+router.get('/:id/reviews', doctorController.getDoctorReviews);
+router.get('/:id/available-slots', doctorController.getAvailableSlots);
 
 export default router;

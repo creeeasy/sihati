@@ -18,10 +18,7 @@ export interface PatientAllergyAttributes {
 export interface PatientAllergyCreationAttributes
   extends Optional<PatientAllergyAttributes, 'id' | 'declaredAt'> {}
 
-class PatientAllergy
-  extends Model<PatientAllergyAttributes, PatientAllergyCreationAttributes>
-  implements PatientAllergyAttributes
-{
+class PatientAllergy extends Model<PatientAllergyAttributes, PatientAllergyCreationAttributes> implements PatientAllergyAttributes {
   public id!: string;
   public patientId!: string;
   public allergyName!: string;
@@ -63,8 +60,9 @@ PatientAllergy.init(
       allowNull: false,
     },
     severity: {
-      type: DataTypes.ENUM('mild', 'moderate', 'severe'),
+      type: DataTypes.ENUM('mild', 'moderate', 'severe'), // ✅ ENUM corrigé
       allowNull: false,
+      defaultValue: 'mild',
     },
     reaction: {
       type: DataTypes.TEXT,
@@ -86,9 +84,7 @@ PatientAllergy.init(
     tableName: 'patient_allergies',
     timestamps: true,
     underscored: true,
-    indexes: [
-      { fields: ['patient_id'] },
-    ],
+    indexes: [{ fields: ['patient_id'] }],
   }
 );
 

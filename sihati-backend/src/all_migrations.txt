@@ -1,0 +1,1726 @@
+========== 01-create-users.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("users", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      password: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
+      },
+      full_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      phone_number: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      chifa_number: {
+        type: Sequelize.STRING(15),
+        allowNull: true,
+      },
+      role: {
+        type: Sequelize.ENUM("patient", "pharmacy", "doctor", "admin"),
+        allowNull: false,
+        defaultValue: "patient",
+      },
+      is_active: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
+      is_verified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      wilaya: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      address: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      profile_image: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      fcm_token: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      last_login: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("users", ["email"], { unique: true });
+    await queryInterface.addIndex("users", ["role"]);
+    await queryInterface.addIndex("users", ["chifa_number"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("users");
+  },
+};
+
+========== 02-create-specialties.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("specialties", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      name_fr: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      name_ar: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      icon: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("specialties", ["name_fr"], { unique: true });
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("specialties");
+  },
+};
+
+========== 03-create-doctors.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("doctors", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        unique: true,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      specialty_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "specialties", key: "id" },
+        onDelete: "RESTRICT",
+        onUpdate: "CASCADE",
+      },
+      doctor_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      clinic_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      clinic_address: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      wilaya: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      commune: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      latitude: {
+        type: Sequelize.DECIMAL(10, 8),
+        allowNull: false,
+      },
+      longitude: {
+        type: Sequelize.DECIMAL(11, 8),
+        allowNull: false,
+      },
+      phone: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      whatsapp_number: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      consultation_fee: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      working_hours: {
+        type: Sequelize.JSONB,
+        allowNull: true,
+      },
+      bio: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      years_of_experience: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      average_rating: {
+        type: Sequelize.DECIMAL(3, 2),
+        allowNull: true,
+        defaultValue: 0.0,
+      },
+      total_reviews: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+      },
+      is_verified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("doctors", ["wilaya"]);
+    await queryInterface.addIndex("doctors", ["specialty_id"]);
+    await queryInterface.addIndex("doctors", ["latitude", "longitude"]);
+    await queryInterface.addIndex("doctors", ["average_rating"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("doctors");
+  },
+};
+
+========== 04-create-doctor_offices.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("doctor_offices", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      office_name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      address: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      wilaya: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      commune: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      latitude: {
+        type: Sequelize.DECIMAL(10, 8),
+        allowNull: false,
+      },
+      longitude: {
+        type: Sequelize.DECIMAL(11, 8),
+        allowNull: false,
+      },
+      phone: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      is_primary: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("doctor_offices", ["doctor_id"]);
+    await queryInterface.addIndex("doctor_offices", ["wilaya"]);
+    await queryInterface.addIndex("doctor_offices", ["latitude", "longitude"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("doctor_offices");
+  },
+};
+
+========== 05-create-doctor_schedules.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("doctor_schedules", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      office_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "doctor_offices", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      day_of_week: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate: { min: 0, max: 6 },
+      },
+      start_time: {
+        type: Sequelize.TIME,
+        allowNull: false,
+      },
+      end_time: {
+        type: Sequelize.TIME,
+        allowNull: false,
+      },
+      is_available: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("doctor_schedules", ["doctor_id"]);
+    await queryInterface.addIndex("doctor_schedules", ["office_id"]);
+    await queryInterface.addIndex("doctor_schedules", ["day_of_week"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("doctor_schedules");
+  },
+};
+
+========== 06-create-pharmacies.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("pharmacies", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "users", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      pharmacy_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      address: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      wilaya: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      commune: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      latitude: {
+        type: Sequelize.DECIMAL(10, 8),
+        allowNull: false,
+      },
+      longitude: {
+        type: Sequelize.DECIMAL(11, 8),
+        allowNull: false,
+      },
+      phone: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      whatsapp_number: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      opening_hours: {
+        type: Sequelize.JSONB,
+        allowNull: true,
+      },
+      is_on_duty_tonight: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      is_verified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("pharmacies", ["wilaya"]);
+    await queryInterface.addIndex("pharmacies", ["is_on_duty_tonight"]);
+    await queryInterface.addIndex("pharmacies", ["latitude", "longitude"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("pharmacies");
+  },
+};
+
+========== 07-create-medications.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("medications", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      generic_name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      dci: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      form: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      dosage: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      category: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      manufacturer: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      indications: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      contraindications: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      side_effects: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      posology: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      requires_prescription: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      barcode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        unique: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("medications", ["name"], { unique: true });
+    await queryInterface.addIndex("medications", ["category"]);
+    await queryInterface.addIndex("medications", ["requires_prescription"]);
+    await queryInterface.addIndex("medications", ["barcode"], { unique: true });
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("medications");
+  },
+};
+
+========== 08-create-pharmacy_medications.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("pharmacy_medications", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      pharmacy_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "pharmacies", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      medication_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "medications", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      in_stock: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
+      quantity: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      price: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      last_updated: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex(
+      "pharmacy_medications",
+      ["pharmacy_id", "medication_id"],
+      { unique: true, name: "unique_pharmacy_medication" },
+    );
+    await queryInterface.addIndex("pharmacy_medications", ["pharmacy_id"]);
+    await queryInterface.addIndex("pharmacy_medications", ["medication_id"]);
+    await queryInterface.addIndex("pharmacy_medications", ["in_stock"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("pharmacy_medications");
+  },
+};
+
+========== 09-create-patient_profiles.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("patient_profiles", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        unique: true,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      date_of_birth: {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+      },
+      gender: {
+        type: Sequelize.ENUM("male", "female", "other"),
+        allowNull: true,
+      },
+      blood_type: {
+        type: Sequelize.STRING(5),
+        allowNull: true,
+      },
+      address: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      wilaya: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      commune: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      emergency_contact_name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      emergency_contact_phone: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("patient_profiles", ["user_id"], {
+      unique: true,
+    });
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("patient_profiles");
+  },
+};
+
+========== 10-create-appointments.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("appointments", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      office_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "doctor_offices", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      appointment_date: {
+        type: Sequelize.DATEONLY,
+        allowNull: false,
+      },
+      appointment_time: {
+        type: Sequelize.TIME,
+        allowNull: false,
+      },
+      status: {
+        type: Sequelize.ENUM(
+          "pending",
+          "confirmed",
+          "cancelled",
+          "completed",
+          "no_show",
+        ),
+        allowNull: false,
+        defaultValue: "pending",
+      },
+      reason: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      notes: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      consultation_fee: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      cancelled_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      cancelled_by: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "users", key: "id" },
+      },
+      cancellation_reason: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("appointments", ["patient_id"]);
+    await queryInterface.addIndex("appointments", ["doctor_id"]);
+    await queryInterface.addIndex("appointments", ["appointment_date"]);
+    await queryInterface.addIndex("appointments", ["status"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("appointments");
+  },
+};
+
+========== 11-create-consultations.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("consultations", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      appointment_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "appointments", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      consultation_date: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      chief_complaint: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      symptoms: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      diagnosis: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      treatment_plan: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      notes: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      duration_minutes: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      fee_paid: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("consultations", ["patient_id"]);
+    await queryInterface.addIndex("consultations", ["doctor_id"]);
+    await queryInterface.addIndex("consultations", ["consultation_date"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("consultations");
+  },
+};
+
+========== 12-create-prescriptions.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("prescriptions", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      consultation_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "consultations", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      prescription_date: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      diagnosis: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      notes: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      validity_days: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 30,
+      },
+      is_renewable: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      file_url: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("prescriptions", ["patient_id"]);
+    await queryInterface.addIndex("prescriptions", ["doctor_id"]);
+    await queryInterface.addIndex("prescriptions", ["prescription_date"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("prescriptions");
+  },
+};
+
+========== 13-create-prescription_medications.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("prescription_medications", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      prescription_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "prescriptions", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      medication_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "medications", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      medication_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      dosage: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      frequency: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      duration_days: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      quantity: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      instructions: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("prescription_medications", [
+      "prescription_id",
+    ]);
+    await queryInterface.addIndex("prescription_medications", [
+      "medication_id",
+    ]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("prescription_medications");
+  },
+};
+
+========== 14-create-medical_documents.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("medical_documents", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "doctors", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      document_type: {
+        type: Sequelize.ENUM(
+          "lab_result",
+          "radiology",
+          "report",
+          "certificate",
+          "prescription",
+          "other",
+        ),
+        allowNull: false,
+      },
+      title: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      file_url: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+      },
+      file_type: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      file_size_bytes: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      document_date: {
+        type: Sequelize.DATEONLY,
+        allowNull: false,
+      },
+      uploaded_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("medical_documents", ["patient_id"]);
+    await queryInterface.addIndex("medical_documents", ["doctor_id"]);
+    await queryInterface.addIndex("medical_documents", ["document_type"]);
+    await queryInterface.addIndex("medical_documents", ["document_date"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("medical_documents");
+  },
+};
+
+========== 15-create-patient_allergies.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("patient_allergies", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      allergy_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      allergy_type: {
+        type: Sequelize.ENUM("medication", "food", "environmental", "other"),
+        allowNull: false,
+      },
+      severity: {
+        type: Sequelize.ENUM("mild", "moderate", "severe"),
+        allowNull: false,
+      },
+      reaction: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      declared_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      declared_by: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "doctors", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("patient_allergies", ["patient_id"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("patient_allergies");
+  },
+};
+
+========== 16-create-reviews.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("reviews", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      rating: {
+        type: Sequelize.DECIMAL(2, 1),
+        allowNull: false,
+      },
+      comment: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("reviews", ["user_id", "doctor_id"], {
+      unique: true,
+      name: "unique_user_doctor_review",
+    });
+    await queryInterface.addIndex("reviews", ["doctor_id"]);
+    await queryInterface.addIndex("reviews", ["rating"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("reviews");
+  },
+};
+
+========== 17-create-conversations.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("conversations", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      user_message: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+      },
+      ai_response: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+      },
+      context: {
+        type: Sequelize.JSONB,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("conversations", ["user_id"]);
+    await queryInterface.addIndex("conversations", ["created_at"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("conversations");
+  },
+};
+
+========== 18-create-favorite_pharmacies.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("favorite_pharmacies", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      pharmacy_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "pharmacies", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex(
+      "favorite_pharmacies",
+      ["patient_id", "pharmacy_id"],
+      {
+        unique: true,
+        name: "unique_patient_pharmacy_favorite",
+      },
+    );
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("favorite_pharmacies");
+  },
+};
+
+========== 19-create-favorite_doctors.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("favorite_doctors", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      doctor_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "doctors", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex(
+      "favorite_doctors",
+      ["patient_id", "doctor_id"],
+      {
+        unique: true,
+        name: "unique_patient_doctor_favorite",
+      },
+    );
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("favorite_doctors");
+  },
+};
+
+========== 20-create-medication_histories.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("medication_histories", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      prescription_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "prescriptions", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      medication_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "medications", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      medication_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      dosage: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      frequency: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      start_date: {
+        type: Sequelize.DATEONLY,
+        allowNull: false,
+      },
+      end_date: {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+      },
+      prescribed_by: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: "doctors", key: "id" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      },
+      reason: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      is_active: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
+      adherence_rate: {
+        type: Sequelize.DECIMAL(5, 2),
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("medication_histories", ["patient_id"]);
+    await queryInterface.addIndex("medication_histories", ["is_active"]);
+    await queryInterface.addIndex("medication_histories", ["start_date"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("medication_histories");
+  },
+};
+
+========== 21-create-medication_reminders.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("medication_reminders", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      patient_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      medication_history_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "medication_histories", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      reminder_time: {
+        type: Sequelize.TIME,
+        allowNull: false,
+      },
+      days_of_week: {
+        type: Sequelize.ARRAY(Sequelize.INTEGER),
+        allowNull: false,
+      },
+      is_active: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("medication_reminders", ["patient_id"]);
+    await queryInterface.addIndex("medication_reminders", ["is_active"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("medication_reminders");
+  },
+};
+
+========== 22-create-notifications.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("notifications", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      title: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      body: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+      },
+      type: {
+        type: Sequelize.ENUM(
+          "appointment",
+          "medication",
+          "system",
+          "reminder",
+          "message",
+        ),
+        allowNull: false,
+      },
+      data: {
+        type: Sequelize.JSONB,
+        allowNull: true,
+      },
+      is_read: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      read_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("notifications", ["user_id"]);
+    await queryInterface.addIndex("notifications", ["is_read"]);
+    await queryInterface.addIndex("notifications", ["created_at"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("notifications");
+  },
+};
+
+========== 23-create-refresh_tokens.js ==========
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("refresh_tokens", {
+      id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false,
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: "users", key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      },
+      token: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
+        unique: true,
+      },
+      expires_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
+      revoked_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn("NOW"),
+      },
+    });
+
+    await queryInterface.addIndex("refresh_tokens", ["user_id"]);
+    await queryInterface.addIndex("refresh_tokens", ["token"], {
+      unique: true,
+    });
+    await queryInterface.addIndex("refresh_tokens", ["expires_at"]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable("refresh_tokens");
+  },
+};
+

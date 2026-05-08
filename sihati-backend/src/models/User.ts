@@ -1,28 +1,24 @@
 // models/User.ts
-import {
-  Model,
-  DataTypes,
-  Optional,
-} from 'sequelize';
+import { Model, DataTypes, Optional } from 'sequelize';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import env from '../config/env';
 import sequelize from '../config/database';
 
 export interface UserAttributes {
-  id: string;  // ✅ UUID au lieu de number
+  id: string;
   email: string;
   password: string;
   fullName: string;
   phoneNumber: string;
   role: 'patient' | 'pharmacy' | 'doctor' | 'admin';
-  chifaNumber?: string;  // 🆕 Carte Chifa
+  chifaNumber?: string;
   isActive: boolean;
-  isVerified: boolean;  // 🆕 Email vérifié
+  isVerified: boolean;
   wilaya?: string;
   address?: string;
   profileImage?: string;
-  fcmToken?: string;  // 🆕 Push notifications
+  fcmToken?: string;
   lastLogin?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -31,10 +27,7 @@ export interface UserAttributes {
 export interface UserCreationAttributes
   extends Optional<UserAttributes, 'id' | 'isActive' | 'isVerified' | 'role'> {}
 
-class User
-  extends Model<UserAttributes, UserCreationAttributes>
-  implements UserAttributes
-{
+class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string;
   public email!: string;
   public password!: string;
@@ -60,7 +53,7 @@ class User
     return jwt.sign(
       { id: this.id, email: this.email, role: this.role },
       env.JWT_SECRET!,
-      { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] }
+      { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
     );
   }
 
@@ -113,7 +106,7 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        is: /^(0[5-7][0-9]{8}|(\+213)[5-7][0-9]{8})$/, // Algerian format
+        is: /^(\+213|0)[5-7][0-9]{8}$/, // ✅ Accepte +213 ou 0
       },
     },
     chifaNumber: {

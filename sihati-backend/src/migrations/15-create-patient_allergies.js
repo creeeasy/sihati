@@ -24,9 +24,11 @@ module.exports = {
         type: Sequelize.ENUM("medication", "food", "environmental", "other"),
         allowNull: false,
       },
+      // Changer le type de severity
       severity: {
         type: Sequelize.ENUM("mild", "moderate", "severe"),
         allowNull: false,
+        defaultValue: "mild",
       },
       reaction: {
         type: Sequelize.TEXT,

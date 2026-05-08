@@ -16,12 +16,12 @@ module.exports = {
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
+      // Changer la référence de doctor_id
       doctor_id: {
         type: Sequelize.UUID,
         allowNull: false,
-        references: { model: "doctors", key: "id" },
+        references: { model: "users", key: "id" }, // ← au lieu de 'doctors'
         onDelete: "CASCADE",
-        onUpdate: "CASCADE",
       },
       office_id: {
         type: Sequelize.UUID,

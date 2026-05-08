@@ -19,13 +19,9 @@ export interface ConsultationAttributes {
   updatedAt?: Date;
 }
 
-export interface ConsultationCreationAttributes
-  extends Optional<ConsultationAttributes, 'id'> {}
+export interface ConsultationCreationAttributes extends Optional<ConsultationAttributes, 'id'> {}
 
-class Consultation
-  extends Model<ConsultationAttributes, ConsultationCreationAttributes>
-  implements ConsultationAttributes
-{
+class Consultation extends Model<ConsultationAttributes, ConsultationCreationAttributes> implements ConsultationAttributes {
   public id!: string;
   public appointmentId?: string;
   public patientId!: string;
@@ -42,9 +38,9 @@ class Consultation
   public readonly updatedAt!: Date;
 
   public static associate(): void {
-    const { User, Doctor, Appointment, Prescription } = sequelize.models;
+    const { User, Appointment, Prescription } = sequelize.models;
     Consultation.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
-    Consultation.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
+    Consultation.belongsTo(User, { foreignKey: 'doctorId', as: 'doctor' }); // ✅ Référence users
     Consultation.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
     Consultation.hasMany(Prescription, { foreignKey: 'consultationId', as: 'prescriptions' });
   }
@@ -71,7 +67,8 @@ Consultation.init(
     doctorId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: { model: 'doctors', key: 'id' },
+      references: { model: 'users', key: 'id' }, // ✅ Référence users
+      onDelete: 'CASCADE',
     },
     consultationDate: {
       type: DataTypes.DATE,
