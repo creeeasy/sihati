@@ -25,7 +25,7 @@ import FavoriteDoctor from './FavoriteDoctor';
 import MedicationHistory from './MedicationHistory';
 import MedicationReminder from './MedicationReminder';
 import Notification from './Notification';
-
+import WaitingQueue from './WaitingQueue';
 // Register models on the sequelize instance
 const models = {
   User,
@@ -51,6 +51,7 @@ const models = {
   MedicationHistory,
   MedicationReminder,
   Notification,
+  WaitingQueue
 };
 
 // Run all associations after all models are registered
@@ -85,6 +86,7 @@ export {
   MedicationHistory,
   MedicationReminder,
   Notification,
+  WaitingQueue
 };
 
 export default models;

@@ -1,32 +1,31 @@
-const CONFIG = {
-  API_BASE_URL: 'http://localhost:3000/api',
+// doctor/js/config.js
+const API_CONFIG = {
+  BASE_URL: "http://localhost:7500/api",
   ENDPOINTS: {
-    AUTH: {
-      LOGIN: '/auth/login',
-      REGISTER: '/auth/pharmacy/register',
-      PROFILE: '/auth/profile'
-    },
-    PHARMACY: {
-      PROFILE: '/pharmacy/profile',
-      STOCK: '/pharmacy/stock',
-      DUTY: '/pharmacy/duty'
-    }
+    LOGIN: "/auth/login",
+    REGISTER: "/auth/register",
+    PROFILE: "/auth/profile",
+    DOCTORS: "/doctors",
+    APPOINTMENTS: "/appointments",
+    REVIEWS: "/reviews",
+    AVAILABLE_SLOTS: "/doctors/:id/available-slots",
   },
-  STORAGE_KEYS: {
-    TOKEN: 'auth_token',
-    USER: 'user_data',
-    PHARMACY: 'pharmacy_data'
+};
+
+// Stockage local
+const STORAGE = {
+  getToken: () => localStorage.getItem("accessToken"),
+  setToken: (token) => localStorage.setItem("accessToken", token),
+  getRefreshToken: () => localStorage.getItem("refreshToken"),
+  setRefreshToken: (token) => localStorage.setItem("refreshToken", token),
+  getUser: () => {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
   },
-  WILAYAS: [
-    'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna',
-    'Béjaïa', 'Biskra', 'Béchar', 'Blida', 'Bouira',
-    'Tamanrasset', 'Tébessa', 'Tlemcen', 'Tiaret', 'Tizi Ouzou',
-    'Alger', 'Djelfa', 'Jijel', 'Sétif', 'Saïda',
-    'Skikda', 'Sidi Bel Abbès', 'Annaba', 'Guelma', 'Constantine',
-    'Médéa', 'Mostaganem', 'M\'Sila', 'Mascara', 'Ouargla',
-    'Oran', 'El Bayadh', 'Illizi', 'Bordj Bou Arréridj', 'Boumerdès',
-    'El Tarf', 'Tindouf', 'Tissemsilt', 'El Oued', 'Khenchela',
-    'Souk Ahras', 'Tipaza', 'Mila', 'Aïn Defla', 'Naâma',
-    'Aïn Témouchent', 'Ghardaïa', 'Relizane'
-  ]
+  setUser: (user) => localStorage.setItem("user", JSON.stringify(user)),
+  clear: () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+  },
 };

@@ -23,11 +23,12 @@ class FavoritePharmacy
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public static associate(): void {
+// models/FavoritePharmacy.ts
+public static associate(): void {
     const { User, Pharmacy } = sequelize.models;
     FavoritePharmacy.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
     FavoritePharmacy.belongsTo(Pharmacy, { foreignKey: 'pharmacyId', as: 'pharmacy' });
-  }
+}
 }
 
 FavoritePharmacy.init(

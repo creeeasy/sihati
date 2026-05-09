@@ -80,13 +80,15 @@ class Doctor
     });
   }
 
-  public static associate(): void {
-    const { User, Specialty, Appointment, Review } = sequelize.models;
+// models/Doctor.ts
+public static associate(): void {
+    const { User, Specialty, Appointment, Review, DoctorOffice } = sequelize.models;
     Doctor.belongsTo(User, { foreignKey: 'userId', as: 'user' });
     Doctor.belongsTo(Specialty, { foreignKey: 'specialtyId', as: 'specialty' });
     Doctor.hasMany(Appointment, { foreignKey: 'doctorId', as: 'appointments' });
     Doctor.hasMany(Review, { foreignKey: 'doctorId', as: 'reviews' });
-  }
+    Doctor.hasMany(DoctorOffice, { foreignKey: 'doctorId', as: 'offices' }); 
+}
 }
 
 Doctor.init(

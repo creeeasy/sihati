@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sihati - Inscription Médecin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 550px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-register:disabled {
+            opacity: 0.7;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .invalid-feedback {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .test-credentials {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        .test-credentials code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <div class="logo">
+            <h1>🏥 Sihati</h1>
+            <p>Inscription - Espace Médecin</p>
+        </div>
+
+        <div id="alert" class="alert alert-danger"></div>
+        <div id="successAlert" class="alert alert-success"></div>
+
+        <form id="registerForm">
+            <!-- Section Compte -->
+            <div class="form-section">
+                <div class="form-section-title">📧 Informations de connexion</div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email *</label>
+                    <input type="email" class="form-control" id="email" required placeholder="votre.email@example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Mot de passe *</label>
+                    <input type="password" class="form-control" id="password" required placeholder="Au moins 8 caractères">
+                    <small class="text-muted">Doit contenir au moins 8 caractères</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Confirmer le mot de passe *</label>
+                    <input type="password" class="form-control" id="confirmPassword" required placeholder="Retapez votre mot de passe">
+                </div>
+            </div>
+
+            <!-- Section Informations personnelles -->
+            <div class="form-section">
+                <div class="form-section-title">👨‍⚕️ Informations personnelles</div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nom complet *</label>
+                    <input type="text" class="form-control" id="fullName" required placeholder="Dr. Nom Prénom">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Téléphone *</label>
+                    <input type="tel" class="form-control" id="phoneNumber" required placeholder="0555123456">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Spécialité *</label>
+                    <select class="form-select" id="specialtyId" required>
+                        <option value="">Sélectionnez une spécialité</option>
+                        <option value="11111111-1111-1111-1111-111111111101">Médecine Générale</option>
+                        <option value="11111111-1111-1111-1111-111111111102">Cardiologie</option>
+                        <option value="11111111-1111-1111-1111-111111111103">Dermatologie</option>
+                        <option value="11111111-1111-1111-1111-111111111104">Pédiatrie</option>
+                        <option value="11111111-1111-1111-1111-111111111105">Gynécologie</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section Cabinet -->
+            <div class="form-section">
+                <div class="form-section-title">🏥 Cabinet médical</div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nom du cabinet *</label>
+                    <input type="text" class="form-control" id="clinicName" required placeholder="Clinique El Djazair">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Adresse du cabinet *</label>
+                    <input type="text" class="form-control" id="clinicAddress" required placeholder="15 Rue Larbi Ben Mhidi">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Wilaya *</label>
+                        <select class="form-select" id="wilaya" required>
+                            <option value="">Sélectionnez</option>
+                            <option value="Alger">Alger</option>
+                            <option value="Oran">Oran</option>
+                            <option value="Constantine">Constantine</option>
+                            <option value="Annaba">Annaba</option>
+                            <option value="Blida">Blida</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Commune</label>
+                        <input type="text" class="form-control" id="commune" placeholder="Sidi M'hamed">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">N° téléphone cabinet</label>
+                    <input type="tel" class="form-control" id="clinicPhone" placeholder="05551234567">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Frais de consultation (DA)</label>
+                    <input type="number" class="form-control" id="consultationFee" placeholder="2500">
+                </div>
+            </div>
+
+            <!-- Section Localisation -->
+            <div class="form-section">
+                <div class="form-section-title">📍 Localisation GPS</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Latitude</label>
+                        <input type="text" class="form-control" id="latitude" placeholder="36.7638">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Longitude</label>
+                        <input type="text" class="form-control" id="longitude" placeholder="3.0488">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="getLocationBtn">
+                    📍 Utiliser ma position actuelle
+                </button>
+            </div>
+
+            <button type="submit" class="btn btn-register w-100 text-white mt-3" id="registerBtn">
+                S'inscrire
+            </button>
+        </form>
+
+        <div class="test-credentials">
+            <small class="d-block mb-2">ℹ️ Après inscription, votre compte devra être vérifié par un administrateur.</small>
+            <small class="d-block">Déjà inscrit ? <a href="doctor-login.html">Se connecter</a></small>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        const alertDiv = document.getElementById('alert');
+        const successAlert = document.getElementById('successAlert');
+        const registerBtn = document.getElementById('registerBtn');
+
+        function showError(message) {
+            alertDiv.textContent = message;
+            alertDiv.classList.add('show');
+            successAlert.classList.remove('show');
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            successAlert.textContent = message;
+            successAlert.classList.add('show');
+            alertDiv.classList.remove('show');
+            setTimeout(() => {
+                successAlert.classList.remove('show');
+            }, 3000);
+        }
+
+        function hideAlerts() {
+            alertDiv.classList.remove('show');
+            successAlert.classList.remove('show');
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                registerBtn.disabled = true;
+                registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Inscription en cours...';
+            } else {
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = "S'inscrire";
+            }
+        }
+
+        function validateForm() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const specialtyId = document.getElementById('specialtyId').value;
+            const clinicName = document.getElementById('clinicName').value.trim();
+            const clinicAddress = document.getElementById('clinicAddress').value.trim();
+            const wilaya = document.getElementById('wilaya').value;
+
+            if (!email) { showError('Email requis'); return false; }
+            if (!email.includes('@')) { showError('Email invalide'); return false; }
+            
+            if (!password) { showError('Mot de passe requis'); return false; }
+            if (password.length < 8) { showError('Le mot de passe doit contenir au moins 8 caractères'); return false; }
+            
+            if (password !== confirmPassword) { showError('Les mots de passe ne correspondent pas'); return false; }
+            
+            if (!fullName) { showError('Nom complet requis'); return false; }
+            if (fullName.length < 3) { showError('Nom complet trop court'); return false; }
+            
+            if (!phoneNumber) { showError('Téléphone requis'); return false; }
+            if (!/^0[5-7][0-9]{8}$/.test(phoneNumber)) { showError('Téléphone invalide (ex: 0555123456)'); return false; }
+            
+            if (!specialtyId) { showError('Spécialité requise'); return false; }
+            if (!clinicName) { showError('Nom du cabinet requis'); return false; }
+            if (!clinicAddress) { showError('Adresse du cabinet requise'); return false; }
+            if (!wilaya) { showError('Wilaya requise'); return false; }
+
+            return true;
+        }
+
+        // Géolocalisation
+        document.getElementById('getLocationBtn').addEventListener('click', () => {
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+                        document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+                        showSuccess('Position GPS récupérée !');
+                    },
+                    (error) => {
+                        showError('Impossible de récupérer la position: ' + error.message);
+                    }
+                );
+            } else {
+                showError('Géolocalisation non supportée');
+            }
+        });
+
+        // Soumission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlerts();
+
+            if (!validateForm()) return;
+
+            const registerData = {
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                fullName: document.getElementById('fullName').value.trim(),
+                phoneNumber: document.getElementById('phoneNumber').value.trim(),
+                role: 'doctor',
+                doctorProfile: {
+                    specialtyId: document.getElementById('specialtyId').value,
+                    doctorName: document.getElementById('fullName').value.trim(),
+                    clinicName: document.getElementById('clinicName').value.trim(),
+                    clinicAddress: document.getElementById('clinicAddress').value.trim(),
+                    wilaya: document.getElementById('wilaya').value,
+                    commune: document.getElementById('commune').value.trim() || null,
+                    latitude: parseFloat(document.getElementById('latitude').value) || 36.7638,
+                    longitude: parseFloat(document.getElementById('longitude').value) || 3.0488,
+                    phone: document.getElementById('clinicPhone').value.trim() || document.getElementById('phoneNumber').value.trim(),
+                    consultationFee: parseInt(document.getElementById('consultationFee').value) || null,
+                }
+            };
+
+            setLoading(true);
+
+            try {
+                const response = await api.request('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify(registerData)
+                });
+
+                if (response.success) {
+                    showSuccess('Inscription réussie ! Redirection vers la connexion...');
+                    setTimeout(() => {
+                        window.location.href = 'doctor-login.html';
+                    }, 2000);
+                } else {
+                    showError(response.message || 'Erreur lors de l\'inscription');
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError(error.message || 'Erreur de connexion au serveur');
+                setLoading(false);
+            }
+        });
+
+        // Valeurs par défaut pour faciliter les tests
+        document.getElementById('latitude').value = '36.7638';
+        document.getElementById('longitude').value = '3.0488';
+    </script>
+</body>
+</html>

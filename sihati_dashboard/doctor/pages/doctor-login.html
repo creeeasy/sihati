@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sihati - Connexion Médecin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
+        }
+
+        .test-credentials {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        .test-credentials small {
+            color: #6c757d;
+        }
+
+        .test-credentials code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">
+            <h1>🏥 Sihati</h1>
+            <p>Espace Médecin</p>
+        </div>
+
+        <div id="alert" class="alert alert-danger"></div>
+        <div id="successAlert" class="alert alert-success"></div>
+
+        <form id="loginForm">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Email professionnel</label>
+                <input type="email" class="form-control" id="email" required 
+                       placeholder="dr.benali@test.com" autocomplete="email">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Mot de passe</label>
+                <input type="password" class="form-control" id="password" required 
+                       placeholder="Password123" autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-login w-100 text-white" id="loginBtn">
+                Se connecter
+            </button>
+        </form>
+
+        <div class="test-credentials">
+            <small class="d-block mb-2">🔐 Comptes de test :</small>
+            <div class="d-flex justify-content-between">
+                <div><code>dr.benali@test.com</code></div>
+                <div><code>dr.zeroual@test.com</code></div>
+                <div><code>dr.mansouri@test.com</code></div>
+            </div>
+            <div class="text-center mt-2"><code>Mot de passe: Password123</code></div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="/doctor/pages/doctor-register.html" class="text-decoration-none small">Créer un compte médecin</a>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        const alertDiv = document.getElementById('alert');
+        const successAlert = document.getElementById('successAlert');
+        const loginBtn = document.getElementById('loginBtn');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        // Fonction pour afficher une erreur
+        function showError(message) {
+            alertDiv.textContent = message;
+            alertDiv.classList.add('show');
+            successAlert.classList.remove('show');
+            
+            // Auto masquer après 5 secondes
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Fonction pour afficher un succès
+        function showSuccess(message) {
+            successAlert.textContent = message;
+            successAlert.classList.add('show');
+            alertDiv.classList.remove('show');
+            
+            setTimeout(() => {
+                successAlert.classList.remove('show');
+            }, 3000);
+        }
+
+        // Masquer les alertes au début
+        function hideAlerts() {
+            alertDiv.classList.remove('show');
+            successAlert.classList.remove('show');
+        }
+
+        // Désactiver/activer le bouton
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Connexion en cours...';
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Se connecter';
+            }
+        }
+
+        // Validation des champs
+        function validateForm() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email) {
+                showError('Veuillez saisir votre email');
+                emailInput.focus();
+                return false;
+            }
+
+            if (!email.includes('@')) {
+                showError('Email invalide');
+                emailInput.focus();
+                return false;
+            }
+
+            if (!password) {
+                showError('Veuillez saisir votre mot de passe');
+                passwordInput.focus();
+                return false;
+            }
+
+            if (password.length < 6) {
+                showError('Le mot de passe doit contenir au moins 6 caractères');
+                passwordInput.focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        // Soumission du formulaire
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlerts();
+
+            if (!validateForm()) return;
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            setLoading(true);
+
+            try {
+                console.log('Tentative de connexion avec:', email);
+                
+                const response = await api.login(email, password);
+                
+                console.log('Réponse API:', response);
+
+                if (response.success) {
+                    const user = response.data.user;
+                    
+                    // Vérifier que c'est bien un médecin
+                    if (user.role !== 'doctor') {
+                        showError('Accès réservé aux médecins. Ce compte est de type: ' + user.role);
+                        STORAGE.clear();
+                        setLoading(false);
+                        return;
+                    }
+
+                    showSuccess('Connexion réussie ! Redirection...');
+                    
+                    // Redirection après un court délai pour voir le message
+                    setTimeout(() => {
+                        window.location.href = 'doctor-dashboard.html';
+                    }, 1500);
+                } else {
+                    showError(response.message || 'Erreur de connexion');
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('Erreur détaillée:', error);
+                let errorMessage = 'Erreur de connexion au serveur';
+                
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                if (error.message === 'Failed to fetch') {
+                    errorMessage = 'Impossible de contacter le serveur. Vérifiez que l\'API est démarrée sur http://localhost:7500';
+                }
+                
+                showError(errorMessage);
+                setLoading(false);
+            }
+        });
+
+        // Auto-remplissage pour les tests
+        const urlParams = new URLSearchParams(window.location.search);
+        const testEmail = urlParams.get('email');
+        if (testEmail) {
+            emailInput.value = testEmail;
+            passwordInput.value = 'Password123';
+        }
+
+        // Focus sur le premier champ
+        emailInput.focus();
+    </script>
+</body>
+</html>

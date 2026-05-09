@@ -37,13 +37,13 @@ class Consultation extends Model<ConsultationAttributes, ConsultationCreationAtt
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public static associate(): void {
-    const { User, Appointment, Prescription } = sequelize.models;
-    Consultation.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
-    Consultation.belongsTo(User, { foreignKey: 'doctorId', as: 'doctor' }); // ✅ Référence users
-    Consultation.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
-    Consultation.hasMany(Prescription, { foreignKey: 'consultationId', as: 'prescriptions' });
-  }
+public static associate(): void {
+  const { User, Doctor, Appointment, Prescription } = sequelize.models;
+  Consultation.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
+  Consultation.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
+  Consultation.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
+  Consultation.hasMany(Prescription, { foreignKey: 'consultationId', as: 'prescriptions' });
+}
 }
 
 Consultation.init(

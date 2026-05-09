@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import doctorService from '../services/doctorService';
+import { DoctorSchedule, Doctor } from '../models';
 
 const getId = (param: string | string[] | undefined): string => {
   if (typeof param === 'string') return param;
@@ -162,4 +163,82 @@ export const getAvailableSlots = async (req: Request, res: Response, next: NextF
   } catch (error) {
     return next(error);
   }
+};
+// src/controllers/doctorController.ts (ajouter ces méthodes)
+
+// ============================================
+// GESTION DES DISPONIBILITÉS
+// ============================================
+
+// GET /api/doctors/:id/schedule
+export const getSchedule = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const doctorId = getId(req.params.id);
+    const schedules = await DoctorSchedule.findAll({
+      where: { doctorId },
+      order: [['dayOfWeek', 'ASC'], ['startTime', 'ASC']]
+    });
+    return res.json({ success: true, data: schedules });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// POST /api/doctors/:id/schedule
+export const updateSchedule = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const doctorId = getId(req.params.id);
+    const { schedules } = req.body; // Tableau des disponibilités
+    
+    // Supprimer les anciennes disponibilités
+    await DoctorSchedule.destroy({ where: { doctorId } });
+    
+    // Ajouter les nouvelles
+    const newSchedules = await DoctorSchedule.bulkCreate(
+      schedules.map((s: any) => ({ ...s, doctorId }))
+    );
+    
+    return res.json({ success: true, data: newSchedules });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// PUT /api/doctors/:id/profile
+export const updateDoctorProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const doctorId = getId(req.params.id);
+    const allowedFields = [
+      'doctorName', 'clinicName', 'clinicAddress', 'phone', 
+      'whatsappNumber', 'consultationFee', 'bio', 'yearsOfExperience'
+    ];
+    
+    const updateData: any = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+    
+    const doctor = await Doctor.findByPk(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Médecin non trouvé' });
+    }
+    
+    await doctor.update(updateData);
+    return res.json({ success: true, data: doctor });
+  } catch (error) {
+    return next(error);
+  }
+  
+};
+// GET /api/doctors/by-user/:userId
+export const getDoctorByUserId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = getId(req.params.userId);
+        const doctor = await doctorService.getDoctorByUserId(userId);
+        return res.json({ success: true, data: doctor });
+    } catch (error) {
+        return next(error);
+    }
 };

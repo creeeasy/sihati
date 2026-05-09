@@ -23,11 +23,12 @@ class FavoriteDoctor
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public static associate(): void {
+// models/FavoriteDoctor.ts
+public static associate(): void {
     const { User, Doctor } = sequelize.models;
     FavoriteDoctor.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
-    FavoriteDoctor.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
-  }
+    FavoriteDoctor.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' }); 
+}
 }
 
 FavoriteDoctor.init(

@@ -1,165 +1,105 @@
+// src/services/medicationService.ts
 import { Op } from 'sequelize';
 import { Medication, Pharmacy, PharmacyMedication } from '../models';
-import { MedicationCreateDTO, MedicationSearchResult } from '../types';
-import { NotFoundError } from './pharmacyService';
-
-// Haversine formula: distance in km between two GPS points
-function haversineDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 class MedicationService {
-  // Search medications and return which pharmacies stock them
-  async searchMedications(
-    query: string,
-    location?: { lat: number; lng: number }
-  ): Promise<MedicationSearchResult[]> {
-    const medications = await Medication.findAll({
-      where: {
-        [Op.or]: [
-          { name: { [Op.iLike]: `%${query}%` } },
-          { genericName: { [Op.iLike]: `%${query}%` } },
-        ],
-      },
-      include: [
-        {
-          model: Pharmacy,
-          as: 'pharmacies',
-          through: {
-            attributes: ['inStock', 'price', 'lastUpdated'],
-          },
-        },
-      ],
-    });
-
-    return medications.map((medication) => {
-      const pharmacies = ((medication as any).pharmacies || []).map(
-        (pharmacy: any) => {
-          const junction = pharmacy.PharmacyMedication || pharmacy.pharmacy_medications;
-          let distance: number | undefined;
-
-          if (location) {
-            distance =
-              Math.round(
-                haversineDistance(
-                  location.lat,
-                  location.lng,
-                  Number(pharmacy.latitude),
-                  Number(pharmacy.longitude)
-                ) * 10
-              ) / 10;
-          }
-
-          return {
-            pharmacy,
-            inStock: junction?.inStock ?? false,
-            price: junction?.price,
-            distance,
-          };
-        }
-      );
-
-      // Sort pharmacies by distance if location provided
-      if (location) {
-        pharmacies.sort(
-          (a: any, b: any) => (a.distance ?? Infinity) - (b.distance ?? Infinity)
-        );
-      }
-
-      return { medication, pharmacies };
-    });
-  }
-
-  // Get a single medication by ID with stocking pharmacies
-  async getMedicationById(id: number): Promise<Medication> {
-    const medication = await Medication.findByPk(id, {
-      include: [
-        {
-          model: Pharmacy,
-          as: 'pharmacies',
-          through: { attributes: ['inStock', 'price', 'lastUpdated'] },
-        },
-      ],
-    });
-
-    if (!medication) {
-      throw new NotFoundError(`Médicament #${id} introuvable.`);
-    }
-
-    return medication;
-  }
-
-  // Get all medications with optional filters
-  async getAllMedications(filters?: {
-    category?: string;
-    requiresPrescription?: boolean;
-  }): Promise<Medication[]> {
+  // 📌 Rechercher des médicaments
+  async searchMedications(query: string, category?: string, requiresPrescription?: boolean) {
     const where: any = {};
-    if (filters?.category) where.category = filters.category;
-    if (filters?.requiresPrescription !== undefined)
-      where.requiresPrescription = filters.requiresPrescription;
-
+    
+    if (query && query.length >= 2) {
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${query}%` } },
+        { genericName: { [Op.iLike]: `%${query}%` } },
+        { dci: { [Op.iLike]: `%${query}%` } }
+      ];
+    }
+    
+    if (category) where.category = category;
+    if (requiresPrescription !== undefined) where.requiresPrescription = requiresPrescription;
+    
     return Medication.findAll({
       where,
       order: [['name', 'ASC']],
+      limit: 50
     });
   }
 
-  // Get most widely stocked medications
-  async getPopularMedications(limit: number = 20): Promise<Medication[]> {
-    return Medication.findAll({
+  // 📌 Récupérer un médicament par ID
+  async getMedicationById(id: string) {
+    const medication = await Medication.findByPk(id);
+    if (!medication) throw new Error('Médicament non trouvé');
+    return medication;
+  }
+
+  // 📌 Récupérer les pharmacies qui ont un médicament en stock (CORRIGÉ)
+  async getPharmaciesWithStock(medicationId: string, lat?: number, lng?: number, radius: number = 10) {
+    // ✅ Inclure directement la pharmacie dans la requête
+    const pharmacyMedications = await PharmacyMedication.findAll({
+      where: { 
+        medicationId, 
+        inStock: true 
+      },
       include: [
-        {
-          model: Pharmacy,
-          as: 'pharmacies',
-          through: { attributes: [] },
-        },
-      ],
-      order: [[{ model: Pharmacy, as: 'pharmacies' }, 'id', 'ASC']],
+        { 
+          model: Pharmacy, 
+          as: 'pharmacy',  // ✅ Utiliser l'alias correct
+          required: true 
+        }
+      ]
+    });
+    
+    // Transformer les résultats
+    let pharmacies = pharmacyMedications.map(pm => {
+      const pharmacyData = (pm as any).pharmacy;
+      return {
+        pharmacy: pharmacyData,
+        inStock: pm.inStock,
+        price: pm.price,
+        quantity: pm.quantity,
+        lastUpdated: pm.lastUpdated
+      };
+    });
+    
+    // Filtrage par distance si coordonnées fournies
+    if (lat && lng && pharmacies.length > 0) {
+      pharmacies = pharmacies.filter(p => {
+        if (!p.pharmacy) return false;
+        const distance = this.calculateDistance(lat, lng, p.pharmacy.latitude, p.pharmacy.longitude);
+        (p as any).distance = distance;
+        return distance <= radius;
+      });
+      
+      pharmacies.sort((a, b) => ((a as any).distance || 0) - ((b as any).distance || 0));
+    }
+    
+    return pharmacies;
+  }
+
+  // 📌 Rechercher par code-barres
+  async searchByBarcode(barcode: string) {
+    const medication = await Medication.findOne({ where: { barcode } });
+    return medication;
+  }
+
+  // 📌 Obtenir les médicaments populaires
+  async getPopularMedications(limit: number = 10) {
+    return Medication.findAll({
       limit,
+      order: [['name', 'ASC']]
     });
   }
 
-  // Create a new medication
-  async createMedication(data: MedicationCreateDTO): Promise<Medication> {
-    const existing = await Medication.findOne({ where: { name: data.name } });
-    if (existing) {
-      throw new Error(`Un médicament avec le nom "${data.name}" existe déjà.`);
-    }
-    return Medication.create(data as any);
-  }
-
-  // Update stock info in junction table
-  async updateMedicationStock(
-    medicationId: number,
-    pharmacyId: number,
-    inStock: boolean,
-    quantity?: number
-  ): Promise<void> {
-    const record = await PharmacyMedication.findOne({
-      where: { medicationId, pharmacyId },
-    });
-
-    if (!record) {
-      throw new NotFoundError(
-        `Association médicament/pharmacie introuvable.`
-      );
-    }
-
-    await record.updateStock(inStock, quantity);
+  // 📌 Calculer la distance
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const earthRadius = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadius * c;
   }
 }
 

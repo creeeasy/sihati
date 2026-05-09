@@ -1,36 +1,25 @@
+// src/routes/medicationRoutes.ts
 import { Router } from 'express';
 import * as medicationController from '../controllers/medicationController';
-import { validate } from '../middlewares/validation';
-import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware';
-import { apiLimiter } from '../middlewares/rateLimiter';
-import { validateCreate, validateSearch, validateStockUpdate } from '../validators/medicationValidator';
+//import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-router.use(apiLimiter);
-
-// Public routes
-// IMPORTANT: /popular must be before /:id to avoid being caught as an id param
+// Routes publiques
+router.get('/search', medicationController.searchMedications);
 router.get('/popular', medicationController.getPopularMedications);
-router.get('/', medicationController.getAllMedications);
 router.get('/:id', medicationController.getMedicationById);
-router.post('/search', validate(validateSearch), medicationController.searchMedications);
-
-// Protected routes
-router.post(
-  '/',
-  authenticateToken,
-  authorizeRoles('doctor'),
-  validate(validateCreate),
-  medicationController.createMedication
-);
-
-router.put(
-  '/:id/stock',
-  authenticateToken,
-  authorizeRoles('pharmacy'),
-  validate(validateStockUpdate),
-  medicationController.updateMedicationStock
-);
+router.get('/:id/pharmacies', medicationController.getPharmaciesWithStock);
+router.post('/barcode', medicationController.searchByBarcode);
+/*
+// Routes protégées (admin uniquement)
+router.post('/', authenticateToken, (req, res, next) => {
+  // TODO: Vérifier que l'utilisateur est admin
+  next();
+}, async (req, res, next) => {
+  // À implémenter: création d'un médicament
+  return res.status(501).json({ success: false, message: 'Non implémenté' });
+});
+*/
 
 export default router;

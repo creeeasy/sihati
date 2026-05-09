@@ -73,18 +73,17 @@ class DoctorService {
   }
 
   // 📌 Récupérer un médecin par ID
-  async getDoctorById(id: string) {
+async getDoctorById(id: string) {
     const doctor = await Doctor.findByPk(id, {
-      include: [
-        { model: Specialty, as: 'specialty' },
-        { model: User, as: 'user', attributes: { exclude: ['password'] } },
-        { model: DoctorOffice, as: 'offices' },
-        { model: DoctorSchedule, as: 'schedules' }
-      ]
+        include: [
+            { model: Specialty, as: 'specialty' },
+            { model: User, as: 'user', attributes: { exclude: ['password'] } }
+            // ❌ RETIRER DoctorOffice si l'association n'existe pas
+        ]
     });
     if (!doctor) throw new Error('Médecin non trouvé');
     return doctor;
-  }
+}
 
   // 📌 Créer un médecin
   async createDoctor(data: any) {
@@ -159,6 +158,46 @@ class DoctorService {
     }
     return slots;
   }
+  // src/services/doctorService.ts (ajouter ces méthodes)
+
+// Récupérer les disponibilités d'un médecin
+async getSchedule(doctorId: string) {
+  const schedules = await DoctorSchedule.findAll({
+    where: { doctorId },
+    order: [['dayOfWeek', 'ASC'], ['startTime', 'ASC']]
+  });
+  return schedules;
 }
+
+// Mettre à jour les disponibilités
+async updateSchedule(doctorId: string, schedules: any[]) {
+  await DoctorSchedule.destroy({ where: { doctorId } });
+  const newSchedules = await DoctorSchedule.bulkCreate(
+    schedules.map(s => ({ ...s, doctorId }))
+  );
+  return newSchedules;
+}
+
+// Mettre à jour le profil médecin
+async updateDoctorProfile(doctorId: string, data: any) {
+  const doctor = await Doctor.findByPk(doctorId);
+  if (!doctor) throw new Error('Médecin non trouvé');
+  await doctor.update(data);
+  return doctor;
+}
+// src/services/doctorService.ts
+async getDoctorByUserId(userId: string) {
+    const doctor = await Doctor.findOne({
+        where: { userId },
+        include: [
+            { model: Specialty, as: 'specialty' },
+            { model: User, as: 'user', attributes: { exclude: ['password'] } }
+        ]
+    });
+    if (!doctor) throw new Error('Médecin non trouvé');
+    return doctor;
+}
+}
+
 
 export default new DoctorService();

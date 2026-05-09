@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sihati - Dashboard Médecin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/doctor-dashboard.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🏥 Sihati</h2>
+            <p>Espace Médecin</p>
+        </div>
+        <nav>
+            <a href="#" class="nav-link active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt"></i> <span>Tableau de bord</span>
+            </a>
+            <a href="#" class="nav-link" data-page="waiting-queue">
+                <i class="fas fa-clock"></i> <span>File d'attente</span>
+            </a>
+            <a href="#" class="nav-link" data-page="appointments">
+                <i class="fas fa-calendar-alt"></i> <span>Rendez-vous</span>
+            </a>
+            <a href="#" class="nav-link" data-page="patients">
+                <i class="fas fa-users"></i> <span>Patients</span>
+            </a>
+            <a href="#" class="nav-link" data-page="availability">
+                <i class="fas fa-clock"></i> <span>Disponibilités</span>
+            </a>
+            <a href="#" class="nav-link" data-page="reviews">
+                <i class="fas fa-star"></i> <span>Avis patients</span>
+            </a>
+            <a href="#" class="nav-link" data-page="profile">
+                <i class="fas fa-user"></i> <span>Mon profil</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1 id="pageTitle">Tableau de bord</h1>
+                <p id="pageSubtitle">Bienvenue dans votre espace professionnel</p>
+            </div>
+            <div class="header-right">
+                <div class="doctor-info">
+                    <div class="doctor-avatar" id="doctorAvatar">D</div>
+                    <div>
+                        <div class="doctor-name" id="doctorName">Dr. Nom</div>
+                        <div class="doctor-name" id="doctorSpecialty" style="font-size: 12px;">Spécialité</div>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn" title="Déconnexion">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic Content -->
+        <div id="pageContent">
+            <!-- Dashboard Content -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon primary"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total rendez-vous</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="stat-value" id="statPending">0</div>
+                    <div class="stat-label">En attente</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value" id="statConfirmed">0</div>
+                    <div class="stat-label">Confirmés</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon info"><i class="fas fa-star"></i></div>
+                    <div class="stat-value" id="statRating">0</div>
+                    <div class="stat-label">Note moyenne</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value" id="statCompleted">0</div>
+                    <div class="stat-label">Terminés</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>📅 Rendez-vous à venir</h3>
+                    <p>Consultez et gérez vos prochains rendez-vous</p>
+                </div>
+                <div class="card-body" id="appointmentsContainer">
+                    <div class="loading"><div class="spinner"></div><p>Chargement des rendez-vous...</p></div>
+                </div>
+            </div>
+
+            <!-- Reviews Section (Hidden initially) -->
+            <div id="reviewsContainer" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="patientModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>➕ Nouveau patient</h3>
+            <input type="text" id="newFullName" placeholder="Nom complet" class="modal-input">
+            <input type="email" id="newEmail" placeholder="Email" class="modal-input">
+            <input type="tel" id="newPhone" placeholder="Téléphone" class="modal-input">
+            <input type="text" id="newChifa" placeholder="Numéro Carte Chifa (optionnel)" class="modal-input">
+            <input type="password" id="newPassword" placeholder="Mot de passe" class="modal-input">
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelModalBtn">Annuler</button>
+                <button class="btn-save" id="savePatientBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="consultationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>📋 Nouvelle consultation</h3>
+            <input type="text" id="consultationChiefComplaint" placeholder="Motif principal" class="modal-input">
+            <textarea id="consultationDiagnosis" placeholder="Diagnostic" rows="3" class="modal-input"></textarea>
+            <textarea id="consultationTreatment" placeholder="Traitement" rows="3" class="modal-input"></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelConsultModal">Annuler</button>
+                <button class="btn-save" id="saveConsultationBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="prescriptionModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>💊 Nouvelle ordonnance</h3>
+            <div id="prescriptionMedications">
+                <div class="medication-row">
+                    <input type="text" placeholder="Médicament" class="med-name">
+                    <input type="text" placeholder="Dosage" class="med-dosage">
+                    <input type="text" placeholder="Fréquence" class="med-frequency">
+                    <button class="btn-remove-med" onclick="this.closest('.medication-row').remove()">🗑️</button>
+                </div>
+            </div>
+            <button class="btn-add-med" id="addMedicationBtn">+ Ajouter un médicament</button>
+            <textarea id="prescriptionInstructions" placeholder="Instructions" rows="2" class="modal-input"></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelPrescModal">Annuler</button>
+                <button class="btn-save" id="savePrescriptionBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+<div id="modalOverlay" class="modal-overlay" style="display: none;">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 id="modalTitle">Titre</h3>
+      <button id="modalCloseBtn" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/doctor-auth.js"></script>
+    <script src="../js/doctor-dashboard.js"></script>
+</body>
+</html>

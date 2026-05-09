@@ -44,12 +44,11 @@ class PharmacyMedication
       lastUpdated: new Date(),
     });
   }
-
-  public static associate(): void {
+public static associate(): void {
     const { Pharmacy, Medication } = sequelize.models;
-    PharmacyMedication.belongsTo(Pharmacy, { foreignKey: 'pharmacyId' });
-    PharmacyMedication.belongsTo(Medication, { foreignKey: 'medicationId' });
-  }
+    PharmacyMedication.belongsTo(Pharmacy, { foreignKey: 'pharmacyId', as: 'pharmacy' }); 
+    PharmacyMedication.belongsTo(Medication, { foreignKey: 'medicationId', as: 'medication' });  
+}
 }
 
 PharmacyMedication.init(

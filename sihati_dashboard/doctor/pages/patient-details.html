@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sihati - Détails Patient</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/doctor-dashboard.css">
+    <style>
+        .patient-details-page { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: none; color: var(--primary); cursor: pointer; margin-bottom: 20px; font-size: 14px; }
+        .patient-header-card { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; border-radius: 24px; padding: 30px; margin-bottom: 30px; }
+        .patient-avatar-large { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin-bottom: 16px; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .info-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }
+        .info-card h3 { font-size: 14px; color: #6b7280; margin-bottom: 8px; }
+        .info-card .value { font-size: 18px; font-weight: 600; color: #1f2937; }
+        .section-card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb; }
+        .section-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .consultation-item, .prescription-item, .allergy-item { padding: 16px; border-bottom: 1px solid #f3f4f6; }
+        .consultation-item:last-child, .prescription-item:last-child, .allergy-item:last-child { border-bottom: none; }
+        .badge-severe { background: #fee2e2; color: #dc2626; }
+        .badge-moderate { background: #fef3c7; color: #d97706; }
+        .badge-mild { background: #d1fae5; color: #059669; }
+        .badge-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .btn-icon { background: none; border: none; cursor: pointer; color: #ef4444; font-size: 16px; }
+        .btn-icon:hover { color: #dc2626; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; margin-top: 16px; }
+        .btn-action-secondary { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; margin-left: 10px; }
+        .loading-spinner { text-align: center; padding: 50px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="patient-details-page" id="patientDetailsContainer">
+        <div class="loading-spinner"><div class="spinner"></div><p>Chargement...</p></div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const patientId = urlParams.get('id');
+        let currentPatient = {};
+
+        if (!patientId) {
+            document.getElementById('patientDetailsContainer').innerHTML = '<div class="error-state">ID patient manquant</div>';
+        } else {
+            loadPatientDetails();
+        }
+
+        async function loadPatientDetails() {
+            const container = document.getElementById('patientDetailsContainer');
+            try {
+                const [patientRes, consultationsRes, prescriptionsRes, allergiesRes] = await Promise.all([
+                    api.getPatientById(patientId).catch(() => ({ data: {} })),
+                    api.getPatientConsultations(patientId).catch(() => ({ data: [] })),
+                    api.getPatientPrescriptions(patientId).catch(() => ({ data: [] })),
+                    api.getPatientAllergies(patientId).catch(() => ({ data: [] }))
+                ]);
+                currentPatient = patientRes.data || {};
+                renderPatientDetails(container, currentPatient, consultationsRes.data || [], prescriptionsRes.data || [], allergiesRes.data || []);
+            } catch (error) {
+                container.innerHTML = `<div class="error-state">Erreur: ${error.message}</div>`;
+            }
+        }
+
+        function renderPatientDetails(container, patient, consultations, prescriptions, allergies) {
+            const initials = (patient.fullName || 'P').slice(0, 2).toUpperCase();
+            container.innerHTML = `
+                <button class="back-btn" onclick="window.location.href='doctor-dashboard.html'"><i class="fas fa-arrow-left"></i> Retour</button>
+                <div class="patient-header-card">
+                    <div class="patient-avatar-large">${initials}</div>
+                    <h1 style="font-size: 28px;">${patient.fullName || 'Patient'}</h1>
+                    <p>${patient.email || ''}</p>
+                </div>
+                <div class="info-grid">
+                    <div class="info-card"><h3><i class="fas fa-id-card"></i> Carte Chifa</h3><div class="value">${patient.chifaNumber || 'Non renseigné'}</div></div>
+                    <div class="info-card"><h3><i class="fas fa-phone"></i> Téléphone</h3><div class="value">${patient.phoneNumber || 'Non renseigné'}</div></div>
+                    <div class="info-card"><h3><i class="fas fa-calendar-alt"></i> Inscription</h3><div class="value">${patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : 'N/A'}</div></div>
+                </div>
+
+                <!-- Allergies -->
+                <div class="section-card">
+                    <div class="section-title"><i class="fas fa-allergies" style="color:#ef4444;"></i> Allergies <button class="btn-icon" style="margin-left:auto;" onclick="addAllergyFromDetails('${patient.id}')"><i class="fas fa-plus-circle"></i></button></div>
+                    ${allergies.length > 0 ? allergies.map(a => `
+                        <div class="allergy-item">
+                            <div style="display:flex;justify-content:space-between;">
+                                <div><strong>${a.allergyName}</strong> <span class="badge-pill badge-${a.severity}">${a.severity}</span></div>
+                                <button class="btn-icon" onclick="deleteAllergyFromDetails('${a.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                            <div style="font-size:13px;color:#6b7280;margin-top:8px;">${a.reaction || ''}</div>
+                        </div>
+                    `).join('') : '<div style="color:#6b7280;">Aucune allergie</div>'}
+                </div>
+
+                <!-- Consultations -->
+                <div class="section-card">
+                    <div class="section-title"><i class="fas fa-stethoscope" style="color:var(--primary);"></i> Consultations (${consultations.length}) <button class="btn-icon" style="margin-left:auto;" onclick="addConsultationFromDetails('${patient.id}','${patient.fullName}')"><i class="fas fa-plus-circle"></i></button></div>
+                    ${consultations.length > 0 ? consultations.map(c => `
+                        <div class="consultation-item">
+                            <div style="display:flex;justify-content:space-between;"><strong>📅 ${new Date(c.consultationDate).toLocaleDateString()}</strong><span>${c.feePaid ? c.feePaid + ' DA' : ''}</span></div>
+                            <div><strong>Motif:</strong> ${c.chiefComplaint || '-'}</div>
+                            <div><strong>Diagnostic:</strong> ${c.diagnosis || '-'}</div>
+                            <div><strong>Traitement:</strong> ${c.treatmentPlan || '-'}</div>
+                            ${c.notes ? `<div style="margin-top:8px;padding:8px;background:#f9fafb;border-radius:8px;"><strong>Notes:</strong> ${c.notes}</div>` : ''}
+                        </div>
+                    `).join('') : '<div>Aucune consultation</div>'}
+                </div>
+
+                <!-- Prescriptions -->
+                <div class="section-card">
+                    <div class="section-title"><i class="fas fa-pills" style="color:var(--success);"></i> Ordonnances (${prescriptions.length}) <button class="btn-icon" style="margin-left:auto;" onclick="addPrescriptionFromDetails('${patient.id}','${patient.fullName}')"><i class="fas fa-plus-circle"></i></button></div>
+                    ${prescriptions.length > 0 ? prescriptions.map(p => `
+                        <div class="prescription-item">
+                            <div style="display:flex;justify-content:space-between;"><strong>📅 ${new Date(p.prescriptionDate).toLocaleDateString()}</strong><span class="badge-pill ${p.isRenewable ? 'badge-mild' : 'badge-moderate'}">${p.isRenewable ? 'Renouvelable' : ''}</span></div>
+                            <div><strong>Diagnostic:</strong> ${p.diagnosis || '-'}</div>
+                            ${p.medications && p.medications.length > 0 ? `<div style="margin-top:8px;"><strong>Médicaments:</strong><ul>${p.medications.map(m => `<li>${m.medicationName} - ${m.dosage || ''} ${m.frequency ? '(' + m.frequency + ')' : ''}</li>`).join('')}</ul></div>` : ''}
+                            ${p.instructions ? `<div style="margin-top:8px;color:#6b7280;"><strong>Instructions:</strong> ${p.instructions}</div>` : ''}
+                        </div>
+                    `).join('') : '<div>Aucune ordonnance</div>'}
+                </div>
+            `;
+        }
+
+        // Fonctions appelées depuis les boutons
+        function addConsultationFromDetails(patientId, patientName) {
+            openModal(`📋 Nouvelle consultation`, `
+                <div id="consultAlert"></div>
+                <div class="form-group"><label>Motif principal *</label><input class="modal-input" type="text" id="c_complaint" placeholder="Ex: Douleurs abdominales"></div>
+                <div class="form-group"><label>Diagnostic</label><textarea class="modal-input" id="c_diagnosis" rows="3"></textarea></div>
+                <div class="form-group"><label>Traitement</label><textarea class="modal-input" id="c_treatment" rows="3"></textarea></div>
+                <div class="form-group"><label>Notes</label><textarea class="modal-input" id="c_notes" rows="2"></textarea></div>
+                <div class="form-group"><label>Honoraires (DA)</label><input class="modal-input" type="number" id="c_fee" placeholder="3000"></div>
+                <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="saveConsultationFromDetails('${patientId}')">Enregistrer</button></div>
+            `);
+        }
+
+        async function saveConsultationFromDetails(patientId) {
+            const alertEl = document.getElementById("consultAlert");
+            const chiefComplaint = document.getElementById("c_complaint").value.trim();
+            if (!chiefComplaint) { alertEl.innerHTML = `<div class="alert-error">Motif obligatoire</div>`; return; }
+            try {
+                await api.createConsultation({ patientId, chiefComplaint, diagnosis: document.getElementById("c_diagnosis").value.trim(), treatmentPlan: document.getElementById("c_treatment").value.trim(), notes: document.getElementById("c_notes").value.trim(), feePaid: parseFloat(document.getElementById("c_fee").value) || null });
+                closeModal(); showToast("Consultation ajoutée !", "success"); setTimeout(() => location.reload(), 1000);
+            } catch(e) { alertEl.innerHTML = `<div class="alert-error">❌ ${e.message}</div>`; }
+        }
+
+        function addPrescriptionFromDetails(patientId, patientName) {
+            openModal(`💊 Nouvelle ordonnance`, `
+                <div id="prescAlert"></div>
+                <div class="form-group"><label>Diagnostic</label><input class="modal-input" type="text" id="p_diagnosis"></div>
+                <div id="medicationsList">${medicationRow()}</div>
+                <button class="btn-add-med" onclick="document.getElementById('medicationsList').insertAdjacentHTML('beforeend', '${medicationRow().replace(/'/g, "\\'")}')">+ Ajouter médicament</button>
+                <div class="form-group"><label>Instructions</label><textarea class="modal-input" id="p_instructions" rows="2"></textarea></div>
+                <div class="form-group"><label>Renouvelable</label><select class="modal-input" id="p_renewable"><option value="false">Non</option><option value="true">Oui</option></select></div>
+                <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="savePrescriptionFromDetails('${patientId}')">Enregistrer</button></div>
+            `);
+        }
+
+        async function savePrescriptionFromDetails(patientId) {
+            const alertEl = document.getElementById("prescAlert");
+            const rows = document.querySelectorAll(".medication-row");
+            const medications = [];
+            rows.forEach(row => { const name = row.querySelector(".med-name")?.value.trim(); if(name) medications.push({ name, dosage: row.querySelector(".med-dosage")?.value, frequency: row.querySelector(".med-frequency")?.value, duration: row.querySelector(".med-duration")?.value }); });
+            if(!medications.length) { alertEl.innerHTML = `<div class="alert-error">Ajoutez au moins un médicament</div>`; return; }
+            try {
+                await api.createPrescription({ patientId, diagnosis: document.getElementById("p_diagnosis").value.trim(), medications, instructions: document.getElementById("p_instructions").value.trim(), isRenewable: document.getElementById("p_renewable").value === 'true' });
+                closeModal(); showToast("Ordonnance ajoutée !", "success"); setTimeout(() => location.reload(), 1000);
+            } catch(e) { alertEl.innerHTML = `<div class="alert-error">❌ ${e.message}</div>`; }
+        }
+
+        function addAllergyFromDetails(patientId) {
+            openModal(`⚠️ Ajouter allergie`, `
+                <div id="allergyAlert"></div>
+                <div class="form-group"><label>Nom *</label><input class="modal-input" type="text" id="a_name"></div>
+                <div class="form-group"><label>Type</label><select class="modal-input" id="a_type"><option value="medication">Médicament</option><option value="food">Aliment</option><option value="environmental">Environnemental</option></select></div>
+                <div class="form-group"><label>Sévérité</label><select class="modal-input" id="a_severity"><option value="mild">Légère</option><option value="moderate">Modérée</option><option value="severe">Sévère</option></select></div>
+                <div class="form-group"><label>Réaction</label><textarea class="modal-input" id="a_reaction" rows="2"></textarea></div>
+                <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="saveAllergyFromDetails('${patientId}')">Enregistrer</button></div>
+            `);
+        }
+
+        async function saveAllergyFromDetails(patientId) {
+            const alertEl = document.getElementById("allergyAlert");
+            const name = document.getElementById("a_name").value.trim();
+            if(!name) { alertEl.innerHTML = `<div class="alert-error">Nom obligatoire</div>`; return; }
+            try {
+                await api.createAllergy(patientId, { allergyName: name, allergyType: document.getElementById("a_type").value, severity: document.getElementById("a_severity").value, reaction: document.getElementById("a_reaction").value.trim() });
+                closeModal(); showToast("Allergie ajoutée !", "success"); setTimeout(() => location.reload(), 1000);
+            } catch(e) { alertEl.innerHTML = `<div class="alert-error">❌ ${e.message}</div>`; }
+        }
+
+        async function deleteAllergyFromDetails(allergyId) {
+            if(!confirm("Supprimer cette allergie ?")) return;
+            try { await api.deleteAllergy(allergyId); showToast("Allergie supprimée", "success"); setTimeout(() => location.reload(), 1000); }
+            catch(e) { showToast("Erreur", "error"); }
+        }
+
+        function medicationRow() {
+            return `<div class="medication-row"><input class="med-input med-name" placeholder="Médicament *"><input class="med-input med-dosage" placeholder="Dosage"><input class="med-input med-frequency" placeholder="Fréquence"><input class="med-input med-duration" placeholder="Durée"><button class="btn-remove-med" onclick="this.closest('.medication-row').remove()">🗑</button></div>`;
+        }
+    </script>
+</body>
+</html>
