@@ -7,7 +7,7 @@ export const validate = (schema: Joi.Schema) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,   // Return all errors, not just the first
-      stripUnknown: true,  // Remove unknown fields from body
+      //stripUnknown: true,  // Remove unknown fields from body
     });
 
     if (error) {

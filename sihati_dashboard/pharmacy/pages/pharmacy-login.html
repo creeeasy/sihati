@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sihati - Connexion Médecin</title>
+    <title>Sihati - Connexion Pharmacie</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0b0f1a;
@@ -14,15 +14,13 @@
             --surface2: #243552;
             --border: rgba(99,179,237,0.10);
             --border2: rgba(99,179,237,0.18);
-            --violet: #a78bfa;
-            --violet-dim: rgba(167,139,250,0.12);
-            --violet-glow: rgba(167,139,250,0.22);
-            --violet-border: rgba(167,139,250,0.28);
-            --violet-deep: #7c3aed;
-            --gold: #f0a354;
-            --gold-dim: rgba(240,163,84,0.12);
-            --gold-glow: rgba(240,163,84,0.22);
-            --gold-border: rgba(240,163,84,0.28);
+            --teal: #2dd4bf;
+            --teal-dim: rgba(45,212,191,0.12);
+            --teal-glow: rgba(45,212,191,0.25);
+            --blue: #60a5fa;
+            --blue-dim: rgba(96,165,250,0.12);
+            --amber: #fbbf24;
+            --amber-dim: rgba(251,191,36,0.12);
             --rose: #f87171;
             --rose-dim: rgba(248,113,113,0.12);
             --green: #34d399;
@@ -30,10 +28,9 @@
             --text: #e2e8f0;
             --text-muted: #94a3b8;
             --text-dim: #64748b;
-            --radius: 16px;
-            --radius-sm: 10px;
-            --radius-xs: 6px;
-            --font: 'Plus Jakarta Sans', sans-serif;
+            --radius: 14px;
+            --radius-sm: 8px;
+            --font: 'Sora', sans-serif;
             --mono: 'JetBrains Mono', monospace;
             --shadow: 0 4px 24px rgba(0,0,0,0.4);
             --shadow-lg: 0 8px 40px rgba(0,0,0,0.55);
@@ -61,7 +58,9 @@
             z-index: 0;
             background: linear-gradient(135deg, #0b0f1a 0%, #111827 50%, #0b0f1a 100%);
         }
-        .bg-animated::before, .bg-animated::after {
+
+        .bg-animated::before,
+        .bg-animated::after {
             content: '';
             position: absolute;
             border-radius: 50%;
@@ -69,17 +68,24 @@
             opacity: 0.3;
             animation: float 20s infinite ease-in-out;
         }
+
         .bg-animated::before {
-            width: 600px; height: 600px;
-            background: var(--violet);
-            top: -300px; right: -250px;
+            width: 600px;
+            height: 600px;
+            background: var(--teal);
+            top: -300px;
+            right: -250px;
         }
+
         .bg-animated::after {
-            width: 500px; height: 500px;
-            background: var(--gold);
-            bottom: -250px; left: -200px;
+            width: 500px;
+            height: 500px;
+            background: var(--blue);
+            bottom: -250px;
+            left: -200px;
             animation-delay: -10s;
         }
+
         @keyframes float {
             0%, 100% { transform: translate(0, 0) scale(1); }
             33% { transform: translate(60px, -60px) scale(1.1); }
@@ -90,10 +96,11 @@
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 460px;
+            max-width: 480px;
             padding: 20px;
             animation: slideUp 0.8s ease-out;
         }
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -103,29 +110,35 @@
             text-align: center;
             margin-bottom: 32px;
         }
+
         .logo {
-            width: 70px; height: 70px;
-            background: linear-gradient(135deg, var(--violet-deep), var(--violet));
+            width: 70px;
+            height: 70px;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 18px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
-            box-shadow: 0 0 30px var(--violet-glow);
         }
-        .logo i { font-size: 36px; color: #fff; }
+
+        .logo i {
+            font-size: 36px;
+            color: var(--teal);
+        }
+
         .login-title {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(90deg, var(--violet), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text);
+            margin-bottom: 6px;
         }
+
         .login-subtitle {
             font-size: 13px;
             color: var(--text-muted);
-            margin-top: 6px;
         }
 
         .form-card {
@@ -148,20 +161,29 @@
             align-items: center;
             gap: 10px;
         }
-        .error-box i { font-size: 16px; }
-        .error-box.show { display: flex; }
 
-        .form-group { margin-bottom: 20px; }
+        .error-box i {
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
         .form-label {
             display: block;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: var(--text-dim);
             margin-bottom: 8px;
         }
-        .input-wrapper { position: relative; }
+
+        .input-wrapper {
+            position: relative;
+        }
+
         .form-input {
             width: 100%;
             height: 52px;
@@ -174,20 +196,26 @@
             font-size: 14px;
             transition: all 0.2s ease;
         }
+
         .form-input:focus {
             outline: none;
-            border-color: var(--violet);
-            box-shadow: 0 0 0 3px var(--violet-dim);
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px var(--teal-dim);
         }
-        .form-input::placeholder { color: var(--text-dim); }
+
+        .form-input::placeholder {
+            color: var(--text-dim);
+        }
+
         .input-icon {
             position: absolute;
             left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--violet);
+            color: var(--teal);
             font-size: 16px;
         }
+
         .toggle-password {
             position: absolute;
             right: 16px;
@@ -200,7 +228,10 @@
             font-size: 16px;
             transition: color 0.2s;
         }
-        .toggle-password:hover { color: var(--violet); }
+
+        .toggle-password:hover {
+            color: var(--teal);
+        }
 
         .options-row {
             display: flex;
@@ -208,6 +239,7 @@
             align-items: center;
             margin-bottom: 24px;
         }
+
         .remember-me {
             display: flex;
             align-items: center;
@@ -216,27 +248,33 @@
             font-size: 13px;
             cursor: pointer;
         }
+
         .remember-me input {
-            width: 16px; height: 16px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
-            accent-color: var(--violet);
+            accent-color: var(--teal);
         }
+
         .forgot-link {
-            color: var(--violet);
+            color: var(--teal);
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 500;
             text-decoration: none;
             transition: color 0.2s;
         }
-        .forgot-link:hover { color: var(--gold); }
+
+        .forgot-link:hover {
+            color: var(--blue);
+        }
 
         .submit-btn {
             width: 100%;
             height: 52px;
-            background: linear-gradient(135deg, var(--violet-deep), var(--violet));
+            background: linear-gradient(135deg, var(--teal), var(--blue));
             border: none;
             border-radius: var(--radius-sm);
-            color: #fff;
+            color: #0b0f1a;
             font-size: 14px;
             font-weight: 700;
             font-family: var(--font);
@@ -247,10 +285,16 @@
             justify-content: center;
             gap: 8px;
         }
+
         .submit-btn:hover {
             filter: brightness(1.08);
             transform: translateY(-1px);
         }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
         .submit-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -263,11 +307,13 @@
             gap: 16px;
             margin: 28px 0 20px;
         }
+
         .divider-line {
             flex: 1;
             height: 1px;
             background: var(--border);
         }
+
         .divider-text {
             color: var(--text-dim);
             font-size: 11px;
@@ -285,46 +331,14 @@
             color: var(--text-muted);
             text-decoration: none;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 500;
             transition: all 0.2s ease;
         }
+
         .register-link:hover {
-            border-color: var(--violet);
-            color: var(--violet);
-            background: var(--violet-dim);
-        }
-
-        .test-credentials {
-            margin-top: 20px;
-            padding: 16px;
-            background: var(--surface);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-        }
-        .test-credentials small {
-            color: var(--text-dim);
-            font-size: 11px;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .test-credentials code {
-            background: var(--surface2);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            color: var(--violet);
-            font-family: var(--mono);
-        }
-        .test-grid {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        @media (max-width: 480px) {
-            .form-card { padding: 24px; }
-            .test-grid { flex-direction: column; }
+            border-color: var(--teal);
+            color: var(--teal);
+            background: var(--teal-dim);
         }
     </style>
 </head>
@@ -335,9 +349,9 @@
 <div class="login-container">
     <div class="logo-section">
         <div class="logo">
-            <i class="fas fa-stethoscope"></i>
+            <i class="fas fa-hospital"></i>
         </div>
-        <h1 class="login-title">Sihati Médecin</h1>
+        <h1 class="login-title">Sihati Pharmacie</h1>
         <p class="login-subtitle">Connectez-vous à votre espace professionnel</p>
     </div>
 
@@ -348,10 +362,10 @@
         </div>
 
         <div class="form-group">
-            <label class="form-label">Email professionnel</label>
+            <label class="form-label">Email</label>
             <div class="input-wrapper">
                 <i class="fas fa-envelope input-icon"></i>
-                <input type="email" id="email" class="form-input" value="dr.benali@test.com" placeholder="dr.benali@test.com">
+                <input type="email" id="email" class="form-input" value="pharmacie.ennour@sihati.dz" placeholder="pharmacie@exemple.dz">
             </div>
         </div>
 
@@ -359,7 +373,7 @@
             <label class="form-label">Mot de passe</label>
             <div class="input-wrapper">
                 <i class="fas fa-lock input-icon"></i>
-                <input type="password" id="password" class="form-input" value="Password123" placeholder="Mot de passe">
+                <input type="password" id="password" class="form-input" value="password123" placeholder="••••••••">
                 <button type="button" class="toggle-password" id="togglePassword">
                     <i class="fas fa-eye" id="toggleIcon"></i>
                 </button>
@@ -385,19 +399,9 @@
             <div class="divider-line"></div>
         </div>
 
-        <a href="doctor-register.html" class="register-link">
-            <i class="fas fa-user-plus"></i> Creer un compte medecin
+        <a href="pharmacy-register.html" class="register-link">
+            <i class="fas fa-user-plus"></i> Creer un compte pharmacie
         </a>
-
-        <div class="test-credentials">
-            <small>Comptes de test</small>
-            <div class="test-grid">
-                <code>dr.benali@test.com</code>
-                <code>dr.zeroual@test.com</code>
-                <code>dr.mansouri@test.com</code>
-            </div>
-            <small class="mt-2" style="margin-top: 8px;">Mot de passe: <code>Password123</code></small>
-        </div>
     </div>
 </div>
 
@@ -413,29 +417,29 @@
 
     function showError(message) {
         errorText.textContent = message;
-        errorDiv.classList.add('show');
+        errorDiv.style.display = 'flex';
         setTimeout(() => {
-            errorDiv.classList.remove('show');
+            errorDiv.style.display = 'none';
         }, 5000);
     }
 
     function hideError() {
-        errorDiv.classList.remove('show');
+        errorDiv.style.display = 'none';
     }
 
     function saveCredentials(email, password) {
         if (rememberCheckbox.checked) {
-            localStorage.setItem('doctorEmail', email);
-            localStorage.setItem('doctorPassword', password);
+            localStorage.setItem('savedEmail', email);
+            localStorage.setItem('savedPassword', password);
         } else {
-            localStorage.removeItem('doctorEmail');
-            localStorage.removeItem('doctorPassword');
+            localStorage.removeItem('savedEmail');
+            localStorage.removeItem('savedPassword');
         }
     }
 
     function loadSavedCredentials() {
-        const savedEmail = localStorage.getItem('doctorEmail');
-        const savedPassword = localStorage.getItem('doctorPassword');
+        const savedEmail = localStorage.getItem('savedEmail');
+        const savedPassword = localStorage.getItem('savedPassword');
         if (savedEmail) {
             emailInput.value = savedEmail;
             rememberCheckbox.checked = true;
@@ -472,23 +476,31 @@
             const res = await api.login(email, password);
             const user = STORAGE.getUser();
             
-            if (user && user.role !== 'doctor') {
-                showError('Acces reserve aux medecins');
+            console.log("Utilisateur connecte:", user);
+            
+            const pharmacies = await api.getPharmacyByUserId(user.id);
+            console.log("Pharmacies recues:", pharmacies);
+            
+            if (pharmacies.data && pharmacies.data.length > 0) {
+                const pharmacy = pharmacies.data.find(p => p.userId === user.id);
+                
+                if (pharmacy) {
+                    api.setPharmacyId(pharmacy.id);
+                    saveCredentials(email, password);
+                    console.log("Pharmacie selectionnee:", pharmacy.pharmacyName);
+                    window.location.href = 'pharmacy-dashboard.html';
+                } else {
+                    showError('Aucune pharmacie associee a ce compte');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalText;
+                }
+            } else {
+                showError('Aucune pharmacie trouvee pour ce compte');
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = originalText;
-                return;
-            }
-            
-            if (res.success) {
-                saveCredentials(email, password);
-                showError('Connexion reussie');
-                setTimeout(() => {
-                    window.location.href = 'doctor-dashboard.html';
-                }, 1000);
-            } else {
-                throw new Error(res.message || 'Email ou mot de passe incorrect');
             }
         } catch (err) {
+            console.error("Erreur:", err);
             showError(err.message || 'Email ou mot de passe incorrect');
             loginBtn.disabled = false;
             loginBtn.innerHTML = originalText;

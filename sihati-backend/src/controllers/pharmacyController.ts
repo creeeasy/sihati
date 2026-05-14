@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import pharmacyService from '../services/pharmacyService';
+import {PharmacyMedication,Medication,Pharmacy} from "../models"
 
 const getId = (param: string | string[] | undefined): string => {
   if (typeof param === 'string') return param;
@@ -10,11 +11,19 @@ const getId = (param: string | string[] | undefined): string => {
 // 📌 GET /api/pharmacies
 export const getAllPharmacies = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { wilaya, onDuty } = req.query;
-    const pharmacies = await pharmacyService.getAllPharmacies({
-      wilaya: wilaya as string,
-      isOnDuty: onDuty === 'true'
-    });
+    const { wilaya, onDuty, userId } = req.query;
+    const whereClause: any = {};
+    
+    if (wilaya) whereClause.wilaya = wilaya;
+    if (onDuty === 'true') whereClause.isOnDutyTonight = true;
+    if (userId) whereClause.userId = userId;  // ✅ Sequelize convertit automatiquement en user_id
+    
+    console.log("Where clause:", whereClause);
+    console.log("UserId reçu:", userId);
+    
+    const pharmacies = await Pharmacy.findAll({ where: whereClause });
+    console.log("Pharmacies trouvées:", pharmacies.length);
+    
     return res.json({ success: true, data: pharmacies, count: pharmacies.length });
   } catch (error) {
     return next(error);
@@ -158,6 +167,30 @@ export const updateStock = async (req: Request, res: Response, next: NextFunctio
     }
     const stock = await pharmacyService.updateStock(pharmacyId, medicationId, { inStock, quantity, price });
     return res.json({ success: true, data: stock });
+  } catch (error) {
+    return next(error);
+  }
+
+};
+export const getPharmacyStock = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const pharmacyId = req.params.id;
+    const stock = await PharmacyMedication.findAll({
+      where: { pharmacyId },
+      include: [{ model: Medication, as: 'medication' }]  // 'medication' est l'alias
+    });
+    const formattedStock = stock.map(item => {
+      // Accéder à medication via l'alias 'medication'
+      const medication = (item as any).medication;
+      return {
+        medication_id: item.medicationId,
+        medication_name: medication?.name || 'Médicament',
+        quantity: item.quantity || 0,
+        price: item.price,
+        inStock: item.inStock
+      };
+    });
+    return res.json({ success: true, data: formattedStock });
   } catch (error) {
     return next(error);
   }

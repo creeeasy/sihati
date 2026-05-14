@@ -4,410 +4,592 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sihati - Inscription Médecin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg: #0b0f1a;
+            --bg2: #111827;
+            --surface: #1e2d45;
+            --surface2: #243552;
+            --border: rgba(99,179,237,0.10);
+            --border2: rgba(99,179,237,0.18);
+            --violet: #a78bfa;
+            --violet-dim: rgba(167,139,250,0.12);
+            --violet-glow: rgba(167,139,250,0.22);
+            --violet-border: rgba(167,139,250,0.28);
+            --violet-deep: #7c3aed;
+            --gold: #f0a354;
+            --gold-dim: rgba(240,163,84,0.12);
+            --rose: #f87171;
+            --rose-dim: rgba(248,113,113,0.12);
+            --green: #34d399;
+            --green-dim: rgba(52,211,153,0.12);
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --font: 'Plus Jakarta Sans', sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.55);
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0b0f1a 0%, #111827 50%, #0b0f1a 100%);
+        }
+        .bg-animated::before, .bg-animated::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+            animation: float 20s infinite ease-in-out;
+        }
+        .bg-animated::before {
+            width: 600px; height: 600px;
+            background: var(--violet);
+            top: -300px; right: -250px;
+        }
+        .bg-animated::after {
+            width: 500px; height: 500px;
+            background: var(--gold);
+            bottom: -250px; left: -200px;
+            animation-delay: -10s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(60px, -60px) scale(1.1); }
+            66% { transform: translate(-40px, 40px) scale(0.9); }
+        }
+
+        .register-container {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            animation: slideUp 0.8s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .logo {
+            width: 70px; height: 70px;
+            background: linear-gradient(135deg, var(--violet-deep), var(--violet));
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px var(--violet-glow);
+        }
+        .logo i { font-size: 36px; color: #fff; }
+        .register-title {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--violet), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .register-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .form-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+        }
+
+        .error-box, .success-box {
+            display: none;
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            align-items: center;
+            gap: 10px;
+        }
+        .error-box { background: var(--rose-dim); border: 1px solid var(--rose); color: var(--rose); }
+        .success-box { background: var(--green-dim); border: 1px solid var(--green); color: var(--green); }
+        .error-box i, .success-box i { font-size: 16px; }
+        .error-box.show, .success-box.show { display: flex; }
+
+        .form-section {
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: var(--violet);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13.5px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--violet);
+            box-shadow: 0 0 0 3px var(--violet-dim);
+        }
+        .form-input::placeholder { color: var(--text-dim); }
+        .form-input.is-invalid, .form-select.is-invalid {
+            border-color: var(--rose);
+        }
+        .invalid-feedback {
+            font-size: 11px;
+            color: var(--rose);
+            margin-top: 5px;
+            display: none;
+        }
+        .invalid-feedback.show { display: block; }
+
+        .btn-outline {
+            padding: 10px 16px;
+            background: var(--surface);
+            border: 1px solid var(--violet-border);
+            border-radius: var(--radius-sm);
+            color: var(--violet);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-outline:hover {
+            background: var(--violet-dim);
+            border-color: var(--violet);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--violet-deep), var(--violet));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 20px;
+            gap: 8px;
         }
-
-        .register-card {
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 550px;
-            animation: fadeIn 0.5s ease;
+        .submit-btn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .logo h1 {
-            font-size: 32px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .logo p {
-            color: #6c757d;
-            font-size: 14px;
-        }
-
-        .form-control, .form-select {
-            border-radius: 12px;
-            padding: 12px 16px;
-            border: 1px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn-register {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 12px;
-            font-weight: 600;
-            font-size: 16px;
-            border-radius: 12px;
-            transition: transform 0.2s ease;
-        }
-
-        .btn-register:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-register:disabled {
-            opacity: 0.7;
-            transform: none;
+        .submit-btn:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
-        .alert {
-            border-radius: 12px;
-            margin-bottom: 20px;
-            padding: 12px 16px;
-            display: none;
+        .footer-links {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--text-muted);
         }
-
-        .alert.show {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-section {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .form-section-title {
-            font-size: 16px;
+        .footer-links a {
+            color: var(--violet);
+            text-decoration: none;
             font-weight: 600;
-            margin-bottom: 15px;
-            color: #667eea;
         }
+        .footer-links a:hover { color: var(--gold); }
 
-        .invalid-feedback {
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .is-invalid {
-            border-color: #dc3545 !important;
-        }
-
-        .test-credentials {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 20px;
-            font-size: 12px;
-        }
-
-        .test-credentials code {
-            background: #e9ecef;
-            padding: 2px 6px;
-            border-radius: 6px;
+        .small-text {
             font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        @media (max-width: 640px) {
+            .form-card { padding: 24px; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .register-container { padding: 0 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="register-card">
+
+<div class="bg-animated"></div>
+
+<div class="register-container">
+    <div class="logo-section">
         <div class="logo">
-            <h1>🏥 Sihati</h1>
-            <p>Inscription - Espace Médecin</p>
+            <i class="fas fa-stethoscope"></i>
+        </div>
+        <h1 class="register-title">Sihati Médecin</h1>
+        <p class="register-subtitle">Creez votre espace professionnel</p>
+    </div>
+
+    <div class="form-card">
+        <div id="errorMsg" class="error-box">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText"></span>
+        </div>
+        <div id="successMsg" class="success-box">
+            <i class="fas fa-check-circle"></i>
+            <span id="successText"></span>
         </div>
 
-        <div id="alert" class="alert alert-danger"></div>
-        <div id="successAlert" class="alert alert-success"></div>
-
         <form id="registerForm">
-            <!-- Section Compte -->
             <div class="form-section">
-                <div class="form-section-title">📧 Informations de connexion</div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Email *</label>
-                    <input type="email" class="form-control" id="email" required placeholder="votre.email@example.com">
+                <div class="form-section-title">
+                    <i class="fas fa-envelope"></i> Informations de connexion
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Mot de passe *</label>
-                    <input type="password" class="form-control" id="password" required placeholder="Au moins 8 caractères">
-                    <small class="text-muted">Doit contenir au moins 8 caractères</small>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="votre.email@example.com">
+                    <div class="invalid-feedback" id="emailError"></div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Confirmer le mot de passe *</label>
-                    <input type="password" class="form-control" id="confirmPassword" required placeholder="Retapez votre mot de passe">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" id="password" class="form-input" placeholder="8 caracteres minimum">
+                        <div class="invalid-feedback" id="passwordError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirmer mot de passe</label>
+                        <input type="password" id="confirmPassword" class="form-input" placeholder="Retapez votre mot de passe">
+                        <div class="invalid-feedback" id="confirmError"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Section Informations personnelles -->
             <div class="form-section">
-                <div class="form-section-title">👨‍⚕️ Informations personnelles</div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Nom complet *</label>
-                    <input type="text" class="form-control" id="fullName" required placeholder="Dr. Nom Prénom">
+                <div class="form-section-title">
+                    <i class="fas fa-user-md"></i> Informations personnelles
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Téléphone *</label>
-                    <input type="tel" class="form-control" id="phoneNumber" required placeholder="0555123456">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nom complet</label>
+                        <input type="text" id="fullName" class="form-input" placeholder="Dr. Nom Prenom">
+                        <div class="invalid-feedback" id="fullNameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telephone</label>
+                        <input type="tel" id="phoneNumber" class="form-input" placeholder="0555123456">
+                        <div class="invalid-feedback" id="phoneError"></div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Spécialité *</label>
-                    <select class="form-select" id="specialtyId" required>
-                        <option value="">Sélectionnez une spécialité</option>
-                        <option value="11111111-1111-1111-1111-111111111101">Médecine Générale</option>
+                <div class="form-group">
+                    <label class="form-label">Specialite</label>
+                    <select id="specialtyId" class="form-select">
+                        <option value="">Selectionnez une specialite</option>
+                        <option value="11111111-1111-1111-1111-111111111101">Medecine Generale</option>
                         <option value="11111111-1111-1111-1111-111111111102">Cardiologie</option>
                         <option value="11111111-1111-1111-1111-111111111103">Dermatologie</option>
-                        <option value="11111111-1111-1111-1111-111111111104">Pédiatrie</option>
-                        <option value="11111111-1111-1111-1111-111111111105">Gynécologie</option>
+                        <option value="11111111-1111-1111-1111-111111111104">Pediatrie</option>
+                        <option value="11111111-1111-1111-1111-111111111105">Gynecologie</option>
                     </select>
+                    <div class="invalid-feedback" id="specialtyError"></div>
                 </div>
             </div>
 
-            <!-- Section Cabinet -->
             <div class="form-section">
-                <div class="form-section-title">🏥 Cabinet médical</div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Nom du cabinet *</label>
-                    <input type="text" class="form-control" id="clinicName" required placeholder="Clinique El Djazair">
+                <div class="form-section-title">
+                    <i class="fas fa-hospital-user"></i> Cabinet medical
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Adresse du cabinet *</label>
-                    <input type="text" class="form-control" id="clinicAddress" required placeholder="15 Rue Larbi Ben Mhidi">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nom du cabinet</label>
+                        <input type="text" id="clinicName" class="form-input" placeholder="Clinique El Djazair">
+                        <div class="invalid-feedback" id="clinicNameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telephone cabinet</label>
+                        <input type="tel" id="clinicPhone" class="form-input" placeholder="Optionnel">
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Wilaya *</label>
-                        <select class="form-select" id="wilaya" required>
-                            <option value="">Sélectionnez</option>
+                <div class="form-group">
+                    <label class="form-label">Adresse du cabinet</label>
+                    <input type="text" id="clinicAddress" class="form-input" placeholder="15 Rue Larbi Ben Mhidi">
+                    <div class="invalid-feedback" id="addressError"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Wilaya</label>
+                        <select id="wilaya" class="form-select">
+                            <option value="">Selectionnez</option>
                             <option value="Alger">Alger</option>
                             <option value="Oran">Oran</option>
                             <option value="Constantine">Constantine</option>
                             <option value="Annaba">Annaba</option>
                             <option value="Blida">Blida</option>
+                            <option value="Setif">Setif</option>
+                            <option value="Tizi Ouzou">Tizi Ouzou</option>
                         </select>
+                        <div class="invalid-feedback" id="wilayaError"></div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Commune</label>
-                        <input type="text" class="form-control" id="commune" placeholder="Sidi M'hamed">
+                    <div class="form-group">
+                        <label class="form-label">Commune</label>
+                        <input type="text" id="commune" class="form-input" placeholder="Sidi M'hamed">
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">N° téléphone cabinet</label>
-                    <input type="tel" class="form-control" id="clinicPhone" placeholder="05551234567">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Frais de consultation (DA)</label>
-                    <input type="number" class="form-control" id="consultationFee" placeholder="2500">
+                <div class="form-group">
+                    <label class="form-label">Frais de consultation (DA)</label>
+                    <input type="number" id="consultationFee" class="form-input" placeholder="2500">
                 </div>
             </div>
 
-            <!-- Section Localisation -->
             <div class="form-section">
-                <div class="form-section-title">📍 Localisation GPS</div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Latitude</label>
-                        <input type="text" class="form-control" id="latitude" placeholder="36.7638">
+                <div class="form-section-title">
+                    <i class="fas fa-location-dot"></i> Localisation GPS
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Latitude</label>
+                        <input type="text" id="latitude" class="form-input" placeholder="36.7638">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Longitude</label>
-                        <input type="text" class="form-control" id="longitude" placeholder="3.0488">
+                    <div class="form-group">
+                        <label class="form-label">Longitude</label>
+                        <input type="text" id="longitude" class="form-input" placeholder="3.0488">
                     </div>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="getLocationBtn">
-                    📍 Utiliser ma position actuelle
+                <button type="button" class="btn-outline" id="getLocationBtn">
+                    <i class="fas fa-crosshairs"></i> Utiliser ma position actuelle
                 </button>
             </div>
 
-            <button type="submit" class="btn btn-register w-100 text-white mt-3" id="registerBtn">
-                S'inscrire
+            <button type="submit" class="submit-btn" id="registerBtn">
+                <i class="fas fa-user-plus"></i> Creer mon compte medecin
             </button>
         </form>
 
-        <div class="test-credentials">
-            <small class="d-block mb-2">ℹ️ Après inscription, votre compte devra être vérifié par un administrateur.</small>
-            <small class="d-block">Déjà inscrit ? <a href="doctor-login.html">Se connecter</a></small>
+        <div class="footer-links">
+            <p>Apres inscription, votre compte devra etre verifie par un administrateur.</p>
+            <p>Deja inscrit ? <a href="doctor-login.html">Se connecter</a></p>
         </div>
     </div>
+</div>
 
-    <script src="../js/config.js"></script>
-    <script src="../js/api.js"></script>
-    <script>
-        const alertDiv = document.getElementById('alert');
-        const successAlert = document.getElementById('successAlert');
-        const registerBtn = document.getElementById('registerBtn');
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script>
+    const errorDiv = document.getElementById('errorMsg');
+    const errorText = document.getElementById('errorText');
+    const successDiv = document.getElementById('successMsg');
+    const successText = document.getElementById('successText');
+    const registerBtn = document.getElementById('registerBtn');
+    const registerForm = document.getElementById('registerForm');
 
-        function showError(message) {
-            alertDiv.textContent = message;
-            alertDiv.classList.add('show');
-            successAlert.classList.remove('show');
-            setTimeout(() => {
-                alertDiv.classList.remove('show');
-            }, 5000);
+    function hideAlerts() {
+        errorDiv.classList.remove('show');
+        successDiv.classList.remove('show');
+    }
+
+    function showError(message) {
+        errorText.textContent = message;
+        errorDiv.classList.add('show');
+        setTimeout(() => errorDiv.classList.remove('show'), 5000);
+    }
+
+    function showSuccess(message) {
+        successText.textContent = message;
+        successDiv.classList.add('show');
+        setTimeout(() => successDiv.classList.remove('show'), 3000);
+    }
+
+    function clearFieldErrors() {
+        ['email', 'password', 'confirmPassword', 'fullName', 'phoneNumber', 'specialtyId', 'clinicName', 'clinicAddress', 'wilaya'].forEach(field => {
+            const input = document.getElementById(field);
+            const errorEl = document.getElementById(field + 'Error');
+            if (input) input.classList.remove('is-invalid');
+            if (errorEl) errorEl.classList.remove('show');
+        });
+    }
+
+    function markInvalid(fieldId, message) {
+        const input = document.getElementById(fieldId);
+        const errorEl = document.getElementById(fieldId + 'Error');
+        if (input) input.classList.add('is-invalid');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
         }
+    }
 
-        function showSuccess(message) {
-            successAlert.textContent = message;
-            successAlert.classList.add('show');
-            alertDiv.classList.remove('show');
-            setTimeout(() => {
-                successAlert.classList.remove('show');
-            }, 3000);
+    function validateForm() {
+        clearFieldErrors();
+        let isValid = true;
+
+        const email = document.getElementById('email').value.trim();
+        if (!email) { markInvalid('email', 'Email requis'); isValid = false; }
+        else if (!email.includes('@')) { markInvalid('email', 'Email invalide'); isValid = false; }
+
+        const password = document.getElementById('password').value;
+        if (!password) { markInvalid('password', 'Mot de passe requis'); isValid = false; }
+        else if (password.length < 8) { markInvalid('password', 'Minimum 8 caracteres'); isValid = false; }
+
+        const confirm = document.getElementById('confirmPassword').value;
+        if (password !== confirm) { markInvalid('confirmPassword', 'Les mots de passe ne correspondent pas'); isValid = false; }
+
+        const fullName = document.getElementById('fullName').value.trim();
+        if (!fullName) { markInvalid('fullName', 'Nom complet requis'); isValid = false; }
+        else if (fullName.length < 3) { markInvalid('fullName', 'Nom trop court'); isValid = false; }
+
+        const phone = document.getElementById('phoneNumber').value.trim();
+        if (!phone) { markInvalid('phoneNumber', 'Telephone requis'); isValid = false; }
+        else if (!/^0[5-7][0-9]{8}$/.test(phone)) { markInvalid('phoneNumber', 'Format: 0555123456'); isValid = false; }
+
+        const specialty = document.getElementById('specialtyId').value;
+        if (!specialty) { markInvalid('specialtyId', 'Specialite requise'); isValid = false; }
+
+        const clinicName = document.getElementById('clinicName').value.trim();
+        if (!clinicName) { markInvalid('clinicName', 'Nom du cabinet requis'); isValid = false; }
+
+        const clinicAddress = document.getElementById('clinicAddress').value.trim();
+        if (!clinicAddress) { markInvalid('clinicAddress', 'Adresse requise'); isValid = false; }
+
+        const wilaya = document.getElementById('wilaya').value;
+        if (!wilaya) { markInvalid('wilaya', 'Wilaya requise'); isValid = false; }
+
+        return isValid;
+    }
+
+    document.getElementById('getLocationBtn').addEventListener('click', () => {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+                    document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+                    showSuccess('Position GPS recuperee');
+                },
+                (error) => {
+                    showError('Impossible de recuperer la position: ' + error.message);
+                }
+            );
+        } else {
+            showError('Geolocalisation non supportee');
         }
+    });
 
-        function hideAlerts() {
-            alertDiv.classList.remove('show');
-            successAlert.classList.remove('show');
-        }
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlerts();
 
-        function setLoading(isLoading) {
-            if (isLoading) {
-                registerBtn.disabled = true;
-                registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Inscription en cours...';
+        if (!validateForm()) return;
+
+        registerBtn.disabled = true;
+        registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inscription en cours...';
+
+        const registerData = {
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value,
+            fullName: document.getElementById('fullName').value.trim(),
+            phoneNumber: document.getElementById('phoneNumber').value.trim(),
+            role: 'doctor',
+            doctorProfile: {
+                specialtyId: document.getElementById('specialtyId').value,
+                doctorName: document.getElementById('fullName').value.trim(),
+                clinicName: document.getElementById('clinicName').value.trim(),
+                clinicAddress: document.getElementById('clinicAddress').value.trim(),
+                wilaya: document.getElementById('wilaya').value,
+                commune: document.getElementById('commune').value.trim() || null,
+                latitude: parseFloat(document.getElementById('latitude').value) || 36.7638,
+                longitude: parseFloat(document.getElementById('longitude').value) || 3.0488,
+                phone: document.getElementById('clinicPhone').value.trim() || document.getElementById('phoneNumber').value.trim(),
+                consultationFee: parseInt(document.getElementById('consultationFee').value) || null,
+            }
+        };
+
+        try {
+            const response = await api.request('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify(registerData)
+            });
+
+            if (response.success) {
+                showSuccess('Inscription reussie ! Redirection vers la connexion...');
+                setTimeout(() => {
+                    window.location.href = 'doctor-login.html';
+                }, 2000);
             } else {
+                showError(response.message || 'Erreur lors de l\'inscription');
                 registerBtn.disabled = false;
-                registerBtn.innerHTML = "S'inscrire";
+                registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> Creer mon compte medecin';
             }
+        } catch (error) {
+            console.error('Erreur:', error);
+            showError(error.message || 'Erreur de connexion au serveur');
+            registerBtn.disabled = false;
+            registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> Creer mon compte medecin';
         }
+    });
 
-        function validateForm() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const fullName = document.getElementById('fullName').value.trim();
-            const phoneNumber = document.getElementById('phoneNumber').value.trim();
-            const specialtyId = document.getElementById('specialtyId').value;
-            const clinicName = document.getElementById('clinicName').value.trim();
-            const clinicAddress = document.getElementById('clinicAddress').value.trim();
-            const wilaya = document.getElementById('wilaya').value;
-
-            if (!email) { showError('Email requis'); return false; }
-            if (!email.includes('@')) { showError('Email invalide'); return false; }
-            
-            if (!password) { showError('Mot de passe requis'); return false; }
-            if (password.length < 8) { showError('Le mot de passe doit contenir au moins 8 caractères'); return false; }
-            
-            if (password !== confirmPassword) { showError('Les mots de passe ne correspondent pas'); return false; }
-            
-            if (!fullName) { showError('Nom complet requis'); return false; }
-            if (fullName.length < 3) { showError('Nom complet trop court'); return false; }
-            
-            if (!phoneNumber) { showError('Téléphone requis'); return false; }
-            if (!/^0[5-7][0-9]{8}$/.test(phoneNumber)) { showError('Téléphone invalide (ex: 0555123456)'); return false; }
-            
-            if (!specialtyId) { showError('Spécialité requise'); return false; }
-            if (!clinicName) { showError('Nom du cabinet requis'); return false; }
-            if (!clinicAddress) { showError('Adresse du cabinet requise'); return false; }
-            if (!wilaya) { showError('Wilaya requise'); return false; }
-
-            return true;
-        }
-
-        // Géolocalisation
-        document.getElementById('getLocationBtn').addEventListener('click', () => {
-            if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
-                        document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
-                        showSuccess('Position GPS récupérée !');
-                    },
-                    (error) => {
-                        showError('Impossible de récupérer la position: ' + error.message);
-                    }
-                );
-            } else {
-                showError('Géolocalisation non supportée');
-            }
-        });
-
-        // Soumission
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideAlerts();
-
-            if (!validateForm()) return;
-
-            const registerData = {
-                email: document.getElementById('email').value.trim(),
-                password: document.getElementById('password').value,
-                fullName: document.getElementById('fullName').value.trim(),
-                phoneNumber: document.getElementById('phoneNumber').value.trim(),
-                role: 'doctor',
-                doctorProfile: {
-                    specialtyId: document.getElementById('specialtyId').value,
-                    doctorName: document.getElementById('fullName').value.trim(),
-                    clinicName: document.getElementById('clinicName').value.trim(),
-                    clinicAddress: document.getElementById('clinicAddress').value.trim(),
-                    wilaya: document.getElementById('wilaya').value,
-                    commune: document.getElementById('commune').value.trim() || null,
-                    latitude: parseFloat(document.getElementById('latitude').value) || 36.7638,
-                    longitude: parseFloat(document.getElementById('longitude').value) || 3.0488,
-                    phone: document.getElementById('clinicPhone').value.trim() || document.getElementById('phoneNumber').value.trim(),
-                    consultationFee: parseInt(document.getElementById('consultationFee').value) || null,
-                }
-            };
-
-            setLoading(true);
-
-            try {
-                const response = await api.request('/auth/register', {
-                    method: 'POST',
-                    body: JSON.stringify(registerData)
-                });
-
-                if (response.success) {
-                    showSuccess('Inscription réussie ! Redirection vers la connexion...');
-                    setTimeout(() => {
-                        window.location.href = 'doctor-login.html';
-                    }, 2000);
-                } else {
-                    showError(response.message || 'Erreur lors de l\'inscription');
-                    setLoading(false);
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError(error.message || 'Erreur de connexion au serveur');
-                setLoading(false);
-            }
-        });
-
-        // Valeurs par défaut pour faciliter les tests
-        document.getElementById('latitude').value = '36.7638';
-        document.getElementById('longitude').value = '3.0488';
-    </script>
+    document.getElementById('latitude').value = '36.7638';
+    document.getElementById('longitude').value = '3.0488';
+</script>
 </body>
 </html>

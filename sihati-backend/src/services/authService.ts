@@ -34,27 +34,47 @@ export class NotFoundError extends Error {
 class AuthService {
   // ─── Register ────────────────────────────────────────────────────
   async register(
-    data: RegisterDTO & { chifaNumber?: string }
-  ): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
-    const existing = await User.findOne({ where: { email: data.email } });
-    if (existing) {
-      throw new ConflictError('Un compte avec cet email existe déjà.');
-    }
-
-    const user = await User.create({
-      email: data.email,
-      password: data.password,
-      fullName: data.fullName,
-      phoneNumber: data.phoneNumber,
-      chifaNumber: data.chifaNumber,
-      role: (data.role as any) || 'patient',
-    });
-
-    const accessToken = user.generateToken();
-    const refreshToken = await this.createRefreshToken(user.id);
-
-    return { user: user.toJSON() as any, accessToken, refreshToken };
+  data: RegisterDTO & { chifaNumber?: string; pharmacyData?: any }
+): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
+  const existing = await User.findOne({ where: { email: data.email } });
+  if (existing) {
+    throw new ConflictError('Un compte avec cet email existe déjà.');
   }
+console.log("data:")
+console.log(data)
+  const user = await User.create({
+    email: data.email,
+    password: data.password,
+    fullName: data.fullName,
+    phoneNumber: data.phoneNumber,
+    chifaNumber: data.chifaNumber,
+    role: (data.role as any) || 'patient',
+  });
+
+  // ✅ SI LE RÔLE EST PHARMACY, CRÉER LA PHARMACIE
+  if (data.role === 'pharmacy' && data.pharmacyData) {
+    const { Pharmacy } = await import('../models');
+    await Pharmacy.create({
+      userId: user.id,
+      pharmacyName: data.pharmacyData.pharmacyName,
+      address: data.pharmacyData.address,
+      wilaya: data.pharmacyData.wilaya,
+      commune: data.pharmacyData.commune,
+      latitude: data.pharmacyData.latitude,
+      longitude: data.pharmacyData.longitude,
+      phone: data.pharmacyData.phone,
+      whatsappNumber: data.pharmacyData.whatsappNumber,
+      email: data.email,
+      isOnDutyTonight: false,
+      isVerified: false,
+    });
+  }
+
+  const accessToken = user.generateToken();
+  const refreshToken = await this.createRefreshToken(user.id);
+
+  return { user: user.toJSON() as any, accessToken, refreshToken };
+}
 
   // ─── Login ───────────────────────────────────────────────────────
   async login(
@@ -65,11 +85,10 @@ class AuthService {
       where: { email },
       attributes: { include: ['password'] },
     });
-
+     
     if (!user) {
       throw new AuthenticationError('Email ou mot de passe incorrect.');
     }
-
     if (!user.isActive) {
       throw new AuthenticationError('Ce compte a été désactivé.');
     }

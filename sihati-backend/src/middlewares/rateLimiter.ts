@@ -28,7 +28,7 @@ export const aiLimiter = rateLimit({
 // Limiter for auth endpoints (login / register)
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 5,
+  max: 10005,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
