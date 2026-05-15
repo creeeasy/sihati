@@ -1,547 +1,316 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sihati - Votre Santé Digitale</title>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/design-system.css">
-    
-    <style>
-        body {
-            min-height: 100vh;
-            background: #0f172a;
-            overflow-x: hidden;
-            position: relative;
-        }
-        
-        /* Animated Background */
-        .bg-animated {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        }
-        
-        .bg-animated::before,
-        .bg-animated::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.3;
-            animation: float 20s infinite ease-in-out;
-        }
-        
-        .bg-animated::before {
-            width: 500px;
-            height: 500px;
-            background: #2E7BF6;
-            top: -250px;
-            right: -200px;
-        }
-        
-        .bg-animated::after {
-            width: 400px;
-            height: 400px;
-            background: #00BFA5;
-            bottom: -200px;
-            left: -150px;
-            animation-delay: -10s;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(50px, -50px) scale(1.1); }
-            66% { transform: translate(-30px, 30px) scale(0.9); }
-        }
-        
-        /* Container */
-        .main-container {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-        }
-        
-        .content-wrapper {
-            max-width: 1200px;
-            width: 100%;
-        }
-        
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 80px;
-            animation: fadeInDown 0.8s ease-out;
-        }
-        
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .logo {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 32px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(46, 123, 246, 0.3);
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-            position: relative;
-        }
-        
-        .logo::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
-            border-radius: 30px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: -1;
-        }
-        
-        .logo:hover::before {
-            opacity: 0.3;
-        }
-        
-        .logo i {
-            font-size: 60px;
-            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .main-title {
-            font-size: 4rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #ffffff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 16px;
-            letter-spacing: -2px;
-        }
-        
-        .subtitle {
-            font-size: 1.25rem;
-            color: #94a3b8;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.8;
-        }
-        
-        /* Cards Grid */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 32px;
-            margin-bottom: 60px;
-        }
-        
-        .portal-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 48px 40px;
-            text-decoration: none;
-            display: block;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-            animation: fadeInUp 0.8s ease-out;
-            animation-fill-mode: both;
-        }
-        
-        .portal-card:nth-child(1) { animation-delay: 0.1s; }
-        .portal-card:nth-child(2) { animation-delay: 0.2s; }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .portal-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #2E7BF6, #00BFA5);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s ease;
-        }
-        
-        .portal-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .portal-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(46, 123, 246, 0.3);
-            transform: translateY(-8px);
-        }
-        
-        .card-icon {
-            width: 80px;
-            height: 80px;
-            background: rgba(46, 123, 246, 0.1);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
-            transition: all 0.4s ease;
-        }
-        
-        .portal-card:hover .card-icon {
-            background: linear-gradient(135deg, #2E7BF6, #00BFA5);
-            transform: scale(1.05) rotate(5deg);
-        }
-        
-        .card-icon i {
-            font-size: 40px;
-            color: #2E7BF6;
-            transition: color 0.4s ease;
-        }
-        
-        .portal-card:hover .card-icon i {
-            color: white;
-        }
-        
-        .card-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 12px;
-        }
-        
-        .card-description {
-            color: #94a3b8;
-            line-height: 1.6;
-            margin-bottom: 24px;
-            font-size: 1rem;
-        }
-        
-        .card-features {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .feature {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #cbd5e1;
-            font-size: 0.9rem;
-        }
-        
-        .feature i {
-            color: #00BFA5;
-            font-size: 16px;
-        }
-        
-        .card-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #2E7BF6;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: gap 0.3s ease;
-        }
-        
-        .portal-card:hover .card-cta {
-            gap: 16px;
-        }
-        
-        /* Footer */
-        .footer {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9rem;
-            animation: fadeIn 1s ease-out 0.5s both;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-title {
-                font-size: 2.5rem;
-            }
-            
-            .cards-grid {
-                grid-template-columns: 1fr;
-                gap: 24px;
-            }
-            
-            .portal-card {
-                padding: 32px 24px;
-            }
-        }/* ===== THEME TOGGLE BUTTON ===== */
-.theme-toggle {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 1000;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.theme-toggle:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.05);
-}
-
-.theme-toggle i {
-    font-size: 24px;
-    color: #fbbf24;
-    transition: transform 0.3s ease;
-}
-
-.theme-toggle:hover i {
-    transform: rotate(15deg);
-}
-
-/* ===== LIGHT THEME ===== */
-body[data-theme="light"] {
-    background: #F9FAFB;
-}
-
-body[data-theme="light"] .bg-animated {
-    background: linear-gradient(135deg, #F9FAFB 0%, #E8F2FF 50%, #F9FAFB 100%);
-}
-
-body[data-theme="light"] .bg-animated::before {
-    background: #2E7BF6;
-    opacity: 0.08;
-}
-
-body[data-theme="light"] .bg-animated::after {
-    background: #00BFA5;
-    opacity: 0.08;
-}
-
-body[data-theme="light"] .logo {
-    background: rgba(46, 123, 246, 0.05);
-    border-color: rgba(46, 123, 246, 0.2);
-}
-
-body[data-theme="light"] .main-title {
-    background: linear-gradient(135deg, #0f172a, #475569);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-body[data-theme="light"] .subtitle {
-    color: #64748b;
-}
-
-body[data-theme="light"] .portal-card {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(46, 123, 246, 0.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-body[data-theme="light"] .portal-card:hover {
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(46, 123, 246, 0.3);
-}
-
-body[data-theme="light"] .card-title {
-    color: #0f172a;
-}
-
-body[data-theme="light"] .card-description {
-    color: #475569;
-}
-
-body[data-theme="light"] .feature {
-    color: #64748b;
-}
-
-body[data-theme="light"] .footer {
-    color: #94a3b8;
-}
-
-body[data-theme="light"] .theme-toggle {
-    background: rgba(46, 123, 246, 0.1);
-    border-color: rgba(46, 123, 246, 0.2);
-}
-
-body[data-theme="light"] .theme-toggle:hover {
-    background: rgba(46, 123, 246, 0.15);
-}
-
-body[data-theme="light"] .theme-toggle i {
-    color: #1e40af;
-}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>(function(){var t=localStorage.getItem('sihati_theme')||'dark';document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('sihati_land_lang')||'fr';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';})()</script>
+<title>Sihati — Votre santé digitale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
-    <!-- Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-        <i class="bi bi-moon-fill" id="themeIcon"></i>
-    </button>
-    
-    <!-- Animated Background -->
-    <div class="bg-animated"></div>
-    
-    <!-- Main Container -->
-    <div class="main-container">
-        <div class="content-wrapper">
-            
-            <!-- Header -->
-            <header class="header">
-                <div class="logo">
-                    <img src="./pharmacie/assets/icons/sihati_icon_transparent.svg" alt="Sihati" style="width: 70px; height: 70px;">
-                </div>
-                <h1 class="main-title">Sihati</h1>
-                <p class="subtitle">
-                    Votre plateforme de santé digitale en Algérie. 
-                    Pharmacies, médecins, tout en un seul endroit.
-                </p>
-            </header>
-            
-            <!-- Portal Cards -->
-            <div class="cards-grid">
-                
-                <!-- Pharmacy Card -->
-                <a href="pharmacie/pages/pharmacy-login.html" class="portal-card">
-                    <div class="card-icon">
-                        <i class="bi bi-capsule-pill"></i>
-                    </div>
-                    <h2 class="card-title">Pharmacie</h2>
-                    <p class="card-description">
-                        Gérez votre pharmacie, stock et horaires de garde en toute simplicité.
-                    </p>
-                    <div class="card-features">
-                        <div class="feature">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>Gestion du stock en temps réel</span>
-                        </div>
-                        <div class="feature">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>Calendrier de garde automatisé</span>
-                        </div>
-                        <div class="feature">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>Profil professionnel complet</span>
-                        </div>
-                    </div>
-                    <div class="card-cta">
-                        Accéder au portail
-                        <i class="bi bi-arrow-right"></i>
-                    </div>
-                </a>
-                
-                <!-- Doctor Card -->
-                <a href="doctor/pages/doctor-login.html" class="portal-card">
-                    <div class="card-icon">
-                        <i class="bi bi-heart-pulse"></i>
-                    </div>
-                    <h2 class="card-title">Médecin</h2>
-                    <p class="card-description">
-                        Gérez vos consultations, disponibilités et profil médical professionnel.
-                    </p>
-                    <div class="card-features">
-                        <div class="feature">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>Gestion des disponibilités</span>
-                        </div>
-                        <div class="feature">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>Rendez-vous en ligne</span>
-                        </div>
-                        <div class="feature">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>Profil sécurisé et vérifié</span>
-                        </div>
-                    </div>
-                    <div class="card-cta">
-                        Accéder au portail
-                        <i class="bi bi-arrow-right"></i>
-                    </div>
-                </a>
-                
-            </div>
-            
-            <!-- Footer -->
-            <footer class="footer">
-                <p>&copy; 2024 Sihati - Plateforme de santé digitale en Algérie</p>
-            </footer>
-            
-        </div>
+
+<!-- BG -->
+<div class="bg-mesh"><span></span><span></span><span></span></div>
+
+<!-- NAV -->
+<nav class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="topbar-logo">
+      <img src="icons/sihati_icon_transparent.svg" alt="Sihati">
+      <span class="logo-name">Sihati</span>
+    </a>
+    <div class="topbar-actions">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()"></button>
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Thème"><i class="fas fa-sun"></i></button>
+      <a href="doctor/pages/doctor-dashboard.html" class="topbar-btn ghost"><i class="fas fa-stethoscope"></i> <span data-i18n="nav_doctor">Médecin</span></a>
+      <a href="pharmacy/pages/pharmacy-dashboard.html" class="topbar-btn primary"><i class="fas fa-pills"></i> <span data-i18n="nav_pharmacy">Pharmacie</span></a>
     </div>
-    
-    <script>
-        // Theme Toggle Logic
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const body = document.body;
-        
-        // Check saved theme
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        body.setAttribute('data-theme', savedTheme);
-        updateIcon(savedTheme);
-        
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateIcon(newTheme);
-        });
-        
-        function updateIcon(theme) {
-            if (theme === 'dark') {
-                themeIcon.className = 'bi bi-sun-fill';
-            } else {
-                themeIcon.className = 'bi bi-moon-fill';
-            }
-        }
-    </script>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-badge fade-up"><span></span><span data-i18n="badge">Plateforme médicale algérienne</span></div>
+        <h1 class="hero-title fade-up"><span data-i18n="hero_title_1">La santé</span><br><span class="gradient-text" data-i18n="hero_title_2">numérique</span><br><span data-i18n="hero_title_3">pour tous</span></h1>
+        <p class="hero-sub fade-up" data-i18n="hero_sub">Connectez médecins et pharmacies sur une seule plateforme intuitive. Gérez rendez-vous, ordonnances et stocks en temps réel.</p>
+        <div class="hero-ctas fade-up">
+          <a href="doctor/pages/doctor-dashboard.html" class="btn-cta doctor"><i class="fas fa-user-md"></i> <span data-i18n="cta_doctor">Espace Médecin</span></a>
+          <a href="pharmacy/pages/pharmacy-dashboard.html" class="btn-cta pharmacy"><i class="fas fa-store"></i> <span data-i18n="cta_pharmacy">Espace Pharmacie</span></a>
+        </div>
+        <div class="hero-stats fade-up">
+          <div class="hero-stat"><div class="val">1200+</div><div class="lbl" data-i18n="stat_doctors">Médecins</div></div>
+          <div class="hero-stat"><div class="val">340+</div><div class="lbl" data-i18n="stat_pharmacies">Pharmacies</div></div>
+          <div class="hero-stat"><div class="val">48</div><div class="lbl" data-i18n="stat_wilayas">Wilayas</div></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card fade-up">
+          <div class="card-top"><h4 data-i18n="card_appt">Rendez-vous du jour</h4><span class="badge-pill teal">Live</span></div>
+          <div class="card-row"><span data-i18n="confirmed">Confirmés</span><span class="val">24</span></div>
+          <div class="card-row"><span data-i18n="pending">En attente</span><span class="val">7</span></div>
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:77%"></div></div>
+        </div>
+        <div class="hero-card fade-up">
+          <div class="card-top"><h4 data-i18n="card_stock">Stock pharmacie</h4><span class="badge-pill green" data-i18n="ok">OK</span></div>
+          <div class="card-row"><span data-i18n="available">Disponibles</span><span class="val">142</span></div>
+          <div class="card-row"><span data-i18n="low">Stock faible</span><span class="val">8</span></div>
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:94%;background:linear-gradient(90deg,#34d399,#059669)"></div></div>
+        </div>
+        <div class="hero-card fade-up">
+          <div class="card-top"><h4 data-i18n="card_queue">File d'attente</h4><span class="badge-pill amber" data-i18n="active">Actif</span></div>
+          <div class="card-row"><span data-i18n="waiting">Patients en attente</span><span class="val">3</span></div>
+          <div class="card-row"><span data-i18n="avg_wait">Temps moyen</span><span class="val">12 min</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO -->
+<section class="section">
+  <div class="container">
+    <div class="section-label fade-up" data-i18n="who_label">Pour qui</div>
+    <h2 class="section-title fade-up"><span data-i18n="who_title">Deux espaces,</span> <span class="gradient-text" data-i18n="who_title2">une mission</span></h2>
+    <p class="section-sub fade-up" data-i18n="who_sub">Une plateforme pensée séparément pour les professionnels de santé et les pharmaciens.</p>
+    <div class="who-grid">
+      <div class="who-card doctor fade-up">
+        <div class="who-icon teal"><i class="fas fa-user-md"></i></div>
+        <h3 data-i18n="doctor_title">Espace Médecin</h3>
+        <p data-i18n="doctor_desc">Gérez votre cabinet médical entièrement en ligne. Patients, rendez-vous, consultations et disponibilités depuis un seul tableau de bord.</p>
+        <div class="who-features">
+          <div class="who-feature"><i class="fas fa-check-circle teal"></i><span data-i18n="feat_d1">Tableau de bord en temps réel</span></div>
+          <div class="who-feature"><i class="fas fa-check-circle teal"></i><span data-i18n="feat_d2">Gestion des rendez-vous</span></div>
+          <div class="who-feature"><i class="fas fa-check-circle teal"></i><span data-i18n="feat_d3">Ordonnances & consultations</span></div>
+          <div class="who-feature"><i class="fas fa-check-circle teal"></i><span data-i18n="feat_d4">File d'attente intelligente</span></div>
+        </div>
+        <a href="doctor/pages/doctor-dashboard.html" class="who-link teal" data-i18n="access_doctor">Accéder à l'espace médecin <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="who-card pharmacy fade-up">
+        <div class="who-icon green"><i class="fas fa-prescription-bottle-alt"></i></div>
+        <h3 data-i18n="pharmacy_title">Espace Pharmacie</h3>
+        <p data-i18n="pharmacy_desc">Gérez votre stock, activez la garde de nuit et consultez les médicaments disponibles en Algérie en quelques clics.</p>
+        <div class="who-features">
+          <div class="who-feature"><i class="fas fa-check-circle green"></i><span data-i18n="feat_p1">Gestion du stock en temps réel</span></div>
+          <div class="who-feature"><i class="fas fa-check-circle green"></i><span data-i18n="feat_p2">Catalogue national des médicaments</span></div>
+          <div class="who-feature"><i class="fas fa-check-circle green"></i><span data-i18n="feat_p3">Pharmacie de garde</span></div>
+          <div class="who-feature"><i class="fas fa-check-circle green"></i><span data-i18n="feat_p4">Scan code-barres</span></div>
+        </div>
+        <a href="pharmacy/pages/pharmacy-dashboard.html" class="who-link green" data-i18n="access_pharmacy">Accéder à l'espace pharmacie <i class="fas fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section steps-bg">
+  <div class="container">
+    <div class="section-label fade-up" data-i18n="feat_label">Fonctionnalités</div>
+    <h2 class="section-title fade-up" data-i18n="feat_title">Tout ce dont vous avez besoin</h2>
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-icon" style="background:var(--teal-dim);color:var(--teal)"><i class="fas fa-calendar-check"></i></div>
+        <h4 data-i18n="f1_title">Rendez-vous</h4>
+        <p data-i18n="f1_desc">Planifiez, confirmez et gérez tous vos rendez-vous avec notifications en temps réel.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon" style="background:var(--violet-dim);color:var(--violet)"><i class="fas fa-file-medical"></i></div>
+        <h4 data-i18n="f2_title">Ordonnances</h4>
+        <p data-i18n="f2_desc">Créez des ordonnances numériques vérifiables par les pharmacies partenaires.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon" style="background:var(--emerald-dim);color:var(--emerald)"><i class="fas fa-boxes"></i></div>
+        <h4 data-i18n="f3_title">Stock</h4>
+        <p data-i18n="f3_desc">Visualisez et mettez à jour le stock de médicaments en temps réel avec alertes.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon" style="background:rgba(251,191,36,0.12);color:var(--amber)"><i class="fas fa-clock"></i></div>
+        <h4 data-i18n="f4_title">File d'attente</h4>
+        <p data-i18n="f4_desc">Système de gestion intelligente de la file d'attente avec priorité urgence.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon" style="background:rgba(251,113,133,0.12);color:var(--rose)"><i class="fas fa-shield-alt"></i></div>
+        <h4 data-i18n="f5_title">Sécurisé</h4>
+        <p data-i18n="f5_desc">Données médicales chiffrées avec authentification JWT et rôles séparés.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon" style="background:var(--teal-dim);color:var(--teal)"><i class="fas fa-moon"></i></div>
+        <h4 data-i18n="f6_title">Pharmacie de garde</h4>
+        <p data-i18n="f6_desc">Activez votre statut de garde et soyez visible par les patients de nuit.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="section">
+  <div class="container">
+    <div class="section-label fade-up" data-i18n="steps_label">Démarrer</div>
+    <h2 class="section-title fade-up" data-i18n="steps_title">En 4 étapes simples</h2>
+    <div class="steps-grid">
+      <div class="step-card fade-up"><div class="step-num">01</div><h4 data-i18n="s1">Inscription</h4><p data-i18n="s1d">Créez votre compte médecin ou pharmacie en quelques minutes.</p></div>
+      <div class="step-card fade-up"><div class="step-num">02</div><h4 data-i18n="s2">Vérification</h4><p data-i18n="s2d">Notre équipe vérifie vos informations professionnelles.</p></div>
+      <div class="step-card fade-up"><div class="step-num">03</div><h4 data-i18n="s3">Configuration</h4><p data-i18n="s3d">Personnalisez votre profil, horaires et paramètres.</p></div>
+      <div class="step-card fade-up"><div class="step-num">04</div><h4 data-i18n="s4">En ligne !</h4><p data-i18n="s4d">Commencez à recevoir des patients et gérer votre activité.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card fade-up">
+      <h2 class="cta-title"><span data-i18n="cta_title">Prêt à moderniser</span><br><span class="gradient-text" data-i18n="cta_title2">votre pratique ?</span></h2>
+      <p class="cta-sub" data-i18n="cta_sub">Rejoignez les professionnels de santé qui font confiance à Sihati.</p>
+      <div class="cta-btns">
+        <a href="doctor/pages/doctor-dashboard.html" class="btn-cta doctor"><i class="fas fa-user-md"></i> <span data-i18n="cta_doctor">Espace Médecin</span></a>
+        <a href="pharmacy/pages/pharmacy-dashboard.html" class="btn-cta pharmacy"><i class="fas fa-store"></i> <span data-i18n="cta_pharmacy">Espace Pharmacie</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="icons/sihati_icon_transparent.svg" alt="Sihati">
+        <span>Sihati</span>
+      </div>
+      <p class="footer-copy" data-i18n="footer_copy">© 2025 Sihati. Tous droits réservés.</p>
+      <div class="footer-links">
+        <a href="doctor/pages/doctor-login.html" data-i18n="nav_doctor">Médecin</a>
+        <a href="pharmacy/pages/pharmacy-login.html" data-i18n="nav_pharmacy">Pharmacie</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const STRINGS = {
+  fr: {
+    badge:'Plateforme médicale algérienne', hero_title_1:'La santé', hero_title_2:'numérique', hero_title_3:'pour tous',
+    hero_sub:'Connectez médecins et pharmacies sur une seule plateforme intuitive. Gérez rendez-vous, ordonnances et stocks en temps réel.',
+    cta_doctor:'Espace Médecin', cta_pharmacy:'Espace Pharmacie', nav_doctor:'Médecin', nav_pharmacy:'Pharmacie',
+    stat_doctors:'Médecins', stat_pharmacies:'Pharmacies', stat_wilayas:'Wilayas',
+    card_appt:'Rendez-vous du jour', confirmed:'Confirmés', pending:'En attente',
+    card_stock:'Stock pharmacie', ok:'OK', available:'Disponibles', low:'Stock faible',
+    card_queue:"File d'attente", active:'Actif', waiting:'Patients en attente', avg_wait:'Temps moyen',
+    who_label:'Pour qui', who_title:'Deux espaces,', who_title2:'une mission',
+    who_sub:'Une plateforme pensée séparément pour les professionnels de santé et les pharmaciens.',
+    doctor_title:'Espace Médecin', doctor_desc:"Gérez votre cabinet médical entièrement en ligne. Patients, rendez-vous, consultations et disponibilités depuis un seul tableau de bord.",
+    feat_d1:'Tableau de bord en temps réel', feat_d2:'Gestion des rendez-vous', feat_d3:'Ordonnances & consultations', feat_d4:"File d'attente intelligente",
+    access_doctor:"Accéder à l'espace médecin →",
+    pharmacy_title:'Espace Pharmacie', pharmacy_desc:"Gérez votre stock, activez la garde de nuit et consultez les médicaments disponibles en Algérie.",
+    feat_p1:'Gestion du stock en temps réel', feat_p2:'Catalogue national des médicaments', feat_p3:'Pharmacie de garde', feat_p4:'Scan code-barres',
+    access_pharmacy:"Accéder à l'espace pharmacie →",
+    feat_label:'Fonctionnalités', feat_title:'Tout ce dont vous avez besoin',
+    f1_title:'Rendez-vous', f1_desc:'Planifiez, confirmez et gérez tous vos rendez-vous avec notifications en temps réel.',
+    f2_title:'Ordonnances', f2_desc:'Créez des ordonnances numériques vérifiables par les pharmacies partenaires.',
+    f3_title:'Stock', f3_desc:'Visualisez et mettez à jour le stock de médicaments en temps réel avec alertes.',
+    f4_title:"File d'attente", f4_desc:"Système de gestion intelligente de la file d'attente avec priorité urgence.",
+    f5_title:'Sécurisé', f5_desc:'Données médicales chiffrées avec authentification JWT et rôles séparés.',
+    f6_title:'Pharmacie de garde', f6_desc:'Activez votre statut de garde et soyez visible par les patients de nuit.',
+    steps_label:'Démarrer', steps_title:'En 4 étapes simples',
+    s1:'Inscription', s1d:'Créez votre compte médecin ou pharmacie en quelques minutes.',
+    s2:'Vérification', s2d:'Notre équipe vérifie vos informations professionnelles.',
+    s3:'Configuration', s3d:'Personnalisez votre profil, horaires et paramètres.',
+    s4:'En ligne !', s4d:'Commencez à recevoir des patients et gérer votre activité.',
+    cta_title:'Prêt à moderniser', cta_title2:'votre pratique ?', cta_sub:'Rejoignez les professionnels de santé qui font confiance à Sihati.',
+    footer_copy:'© 2025 Sihati. Tous droits réservés.'
+  },
+  ar: {
+    badge:'منصة طبية جزائرية', hero_title_1:'الصحة', hero_title_2:'الرقمية', hero_title_3:'للجميع',
+    hero_sub:'اربط الأطباء والصيدليات على منصة واحدة سهلة الاستخدام. أدر المواعيد والوصفات الطبية والمخزون في الوقت الفعلي.',
+    cta_doctor:'فضاء الطبيب', cta_pharmacy:'فضاء الصيدلية', nav_doctor:'الطبيب', nav_pharmacy:'الصيدلية',
+    stat_doctors:'طبيب', stat_pharmacies:'صيدلية', stat_wilayas:'ولاية',
+    card_appt:'مواعيد اليوم', confirmed:'مؤكدة', pending:'في الانتظار',
+    card_stock:'مخزون الصيدلية', ok:'جيد', available:'متوفر', low:'مخزون منخفض',
+    card_queue:'طابور الانتظار', active:'نشط', waiting:'مرضى في الانتظار', avg_wait:'متوسط الوقت',
+    who_label:'لمن', who_title:'فضاءان،', who_title2:'مهمة واحدة',
+    who_sub:'منصة مصممة بشكل منفصل للأطباء والصيادلة.',
+    doctor_title:'فضاء الطبيب', doctor_desc:'أدر عيادتك الطبية بالكامل عبر الإنترنت. المرضى والمواعيد والاستشارات من لوحة تحكم واحدة.',
+    feat_d1:'لوحة تحكم في الوقت الفعلي', feat_d2:'إدارة المواعيد', feat_d3:'الوصفات والاستشارات', feat_d4:'طابور انتظار ذكي',
+    access_doctor:'الدخول إلى فضاء الطبيب ←',
+    pharmacy_title:'فضاء الصيدلية', pharmacy_desc:'أدر مخزونك وفعّل خدمة الحراسة الليلية واستعرض الأدوية المتاحة في الجزائر.',
+    feat_p1:'إدارة المخزون في الوقت الفعلي', feat_p2:'الكتالوج الوطني للأدوية', feat_p3:'صيدلية الحراسة', feat_p4:'مسح الباركود',
+    access_pharmacy:'الدخول إلى فضاء الصيدلية ←',
+    feat_label:'الميزات', feat_title:'كل ما تحتاجه',
+    f1_title:'المواعيد', f1_desc:'خطط وأكد وأدر جميع مواعيدك مع إشعارات فورية.',
+    f2_title:'الوصفات الطبية', f2_desc:'أنشئ وصفات طبية رقمية قابلة للتحقق من قبل الصيدليات.',
+    f3_title:'المخزون', f3_desc:'اعرض وحدّث مخزون الأدوية في الوقت الفعلي مع تنبيهات.',
+    f4_title:'طابور الانتظار', f4_desc:'نظام ذكي لإدارة طابور الانتظار مع أولوية الطوارئ.',
+    f5_title:'آمن', f5_desc:'بيانات طبية مشفرة مع مصادقة JWT وأدوار منفصلة.',
+    f6_title:'صيدلية الحراسة', f6_desc:'فعّل حالة الحراسة وكن مرئياً للمرضى ليلاً.',
+    steps_label:'البدء', steps_title:'في 4 خطوات بسيطة',
+    s1:'التسجيل', s1d:'أنشئ حسابك كطبيب أو صيدلي في دقائق.',
+    s2:'التحقق', s2d:'يتحقق فريقنا من معلوماتك المهنية.',
+    s3:'الإعداد', s3d:'خصص ملفك وأوقاتك وإعداداتك.',
+    s4:'أنت جاهز!', s4d:'ابدأ باستقبال المرضى وإدارة نشاطك.',
+    cta_title:'مستعد لتحديث', cta_title2:'ممارستك؟', cta_sub:'انضم إلى المهنيين الصحيين الذين يثقون بسيحاتي.',
+    footer_copy:'© 2025 Sihati. جميع الحقوق محفوظة.'
+  }
+};
+
+let lang = localStorage.getItem('sihati_land_lang') || 'fr';
+
+function applyLang() {
+  const s = STRINGS[lang] || STRINGS.fr;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (s[k]) el.textContent = s[k];
+  });
+  document.documentElement.lang = lang;
+  document.documentElement.dir  = lang === 'ar' ? 'rtl' : 'ltr';
+  const btn = document.getElementById('langBtn');
+  if (btn) btn.innerHTML = lang === 'fr' ? flagDZ() : flagFR();
+}
+
+function toggleLang() {
+  lang = lang === 'fr' ? 'ar' : 'fr';
+  localStorage.setItem('sihati_land_lang', lang);
+  applyLang();
+}
+
+function flagDZ() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="22" height="14" style="border-radius:2px"><rect width="1.5" height="2" fill="#006233"/><rect x="1.5" width="1.5" height="2" fill="#fff"/><circle cx="1.65" cy="1" r="0.42" fill="#d21034"/><circle cx="1.73" cy="1" r="0.42" fill="#fff"/><polygon points="1.73,0.62 1.78,0.77 1.93,0.77 1.81,0.86 1.86,1.01 1.73,0.92 1.6,1.01 1.65,0.86 1.53,0.77 1.68,0.77" fill="#d21034"/></svg> AR';
+}
+function flagFR() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="22" height="14" style="border-radius:2px"><rect width="1" height="2" fill="#002395"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ed2939"/></svg> FR';
+}
+
+function toggleTheme() {
+  const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sihati_theme', next);
+  updateThemeBtn(next);
+}
+function updateThemeBtn(t) {
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.innerHTML = t === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}
+
+// Scroll nav
+window.addEventListener('scroll', () => {
+  document.getElementById('topbar').classList.toggle('scrolled', scrollY > 40);
+});
+
+// Intersection Observer for fade-up
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+// Init
+applyLang();
+updateThemeBtn(document.documentElement.getAttribute('data-theme') || 'dark');
+</script>
 </body>
 </html>

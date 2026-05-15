@@ -30,6 +30,93 @@
   --shadow-lg:   0 8px 40px rgba(0,0,0,0.55);
 }
 
+/* ── Light Mode ──────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:       #f0fafa;
+  --bg2:      #ffffff;
+  --bg3:      #e4f7f7;
+  --surface:  #e0f5f3;
+  --surface2: #d0eeec;
+  --border:   rgba(14,116,144,0.12);
+  --border2:  rgba(14,116,144,0.24);
+  --teal:     #0d9488;
+  --teal-dim: rgba(13,148,136,0.10);
+  --teal-glow:rgba(13,148,136,0.20);
+  --blue:     #2563eb;
+  --blue-dim: rgba(37,99,235,0.10);
+  --amber:    #b45309;
+  --amber-dim:rgba(180,83,9,0.10);
+  --rose:     #e11d48;
+  --rose-dim: rgba(225,29,72,0.10);
+  --green:    #16a34a;
+  --green-dim:rgba(22,163,74,0.10);
+  --text:     #0f2d2a;
+  --text-muted:#3d7a74;
+  --text-dim: #7aada8;
+  --shadow:   0 4px 24px rgba(13,148,136,0.08);
+  --shadow-lg:0 8px 40px rgba(13,148,136,0.14);
+}
+[data-theme="light"] body     { background: var(--bg); }
+[data-theme="light"] .sidebar { background: var(--bg2); }
+[data-theme="light"] .topbar  { background: var(--bg2); }
+[data-theme="light"] .sidebar-profile { background: var(--bg2); }
+
+/* ── Skeleton Loading ────────────────────────────────────────────────────── */
+@keyframes ph-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: ph-shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+.skeleton-stat { height: 90px; }
+.skeleton-row  { height: 52px; margin-bottom: 8px; }
+.skeleton-text { height: 13px; margin-bottom: 8px; border-radius: 6px; }
+.skeleton-text.short { width: 55%; }
+
+/* ── Inline btn loading ──────────────────────────────────────────────────── */
+.btn-loading { position: relative; pointer-events: none; opacity: 0.72; }
+.btn-loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ── Topbar Toggles ──────────────────────────────────────────────────────── */
+.topbar-toggle {
+  width: 36px; height: 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.topbar-toggle:hover { color: var(--teal); border-color: var(--teal); background: var(--teal-dim); }
+.lang-toggle { padding: 0 8px; width: auto; gap: 4px; font-size: 11px; font-weight: 700; }
+
+/* ── Brand logo ──────────────────────────────────────────────────────────── */
+.brand-logo { width: 26px; height: 26px; object-fit: contain; display: block; }
+
+/* ── RTL overrides ───────────────────────────────────────────────────────── */
+[dir="rtl"] .sidebar { border-right: none; border-left: 1px solid var(--border); }
+[dir="rtl"] .nav-link.active::before { left: auto; right: 0; border-radius: 3px 0 0 3px; }
+[dir="rtl"] .toast { right: auto; left: 24px; }
+
+
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body {

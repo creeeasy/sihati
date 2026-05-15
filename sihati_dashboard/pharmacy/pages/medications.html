@@ -4,86 +4,58 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>(function(){var t=localStorage.getItem('sihati_ph_theme')||'dark';document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('sihati_ph_lang')||'fr';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';})()</script>
-  <title>Sihati - Dashboard Pharmacie</title>
+  <title>Sihati - Médicaments</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/pharmacy-dashboard.css">
 </head>
 <body>
-
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="brand">
-      <div class="brand-icon">
-        <img src="../../icons/sihati_icon_transparent.svg" alt="Sihati" class="brand-logo">
-      </div>
-      <div>
-        <div class="brand-text">Sihati</div>
-        <div class="brand-sub">Espace Pharmacie</div>
-      </div>
+      <div class="brand-icon"><img src="../../icons/sihati_icon_transparent.svg" alt="Sihati" class="brand-logo"></div>
+      <div><div class="brand-text">Sihati</div><div class="brand-sub">Espace Pharmacie</div></div>
     </div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Navigation</div>
-    <a href="pharmacy-dashboard.html" class="nav-link" data-file="pharmacy-dashboard.html">
-      <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span><span>Tableau de bord</span>
-    </a>
-    <a href="inventory.html" class="nav-link" data-file="inventory.html">
-      <span class="nav-icon"><i class="fas fa-boxes"></i></span><span>Gestion du stock</span>
-    </a>
-    <a href="medications.html" class="nav-link" data-file="medications.html">
-      <span class="nav-icon"><i class="fas fa-pills"></i></span><span>Médicaments</span>
-    </a>
-    <a href="profile.html" class="nav-link" data-file="profile.html">
-      <span class="nav-icon"><i class="fas fa-store"></i></span><span>Ma pharmacie</span>
-    </a>
+    <a href="pharmacy-dashboard.html" class="nav-link" data-file="pharmacy-dashboard.html"><span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span><span>Tableau de bord</span></a>
+    <a href="inventory.html" class="nav-link" data-file="inventory.html"><span class="nav-icon"><i class="fas fa-boxes"></i></span><span>Gestion du stock</span></a>
+    <a href="medications.html" class="nav-link" data-file="medications.html"><span class="nav-icon"><i class="fas fa-pills"></i></span><span>Médicaments</span></a>
+    <a href="profile.html" class="nav-link" data-file="profile.html"><span class="nav-icon"><i class="fas fa-store"></i></span><span>Ma pharmacie</span></a>
   </nav>
   <div class="sidebar-profile">
     <div class="sidebar-profile-inner">
       <div class="ph-avatar" id="pharmacyAvatar">PH</div>
-      <div class="ph-meta">
-        <div class="ph-name" id="pharmacyName">Chargement...</div>
-        <div class="ph-addr" id="pharmacyAddress"></div>
-      </div>
+      <div class="ph-meta"><div class="ph-name" id="pharmacyName">Chargement...</div><div class="ph-addr" id="pharmacyAddress"></div></div>
       <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
 </aside>
-
 <div class="main-content">
   <header class="topbar">
     <div class="topbar-left">
       <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
-      <div>
-        <h1 id="pageTitle">Tableau de bord</h1>
-        <p id="pageSubtitle">Gérez votre pharmacie</p>
-      </div>
+      <div><h1 id="pageTitle">Médicaments</h1><p id="pageSubtitle">Recherchez et consultez les médicaments</p></div>
     </div>
     <div class="topbar-right">
-      <div class="duty-pill inactive" id="dutyBadge">
-        <span class="duty-dot"></span><span>Hors garde</span>
-      </div>
+      <div class="duty-pill inactive" id="dutyBadge"><span class="duty-dot"></span><span>Hors garde</span></div>
       <button class="topbar-toggle lang-toggle" id="langToggleBtn"></button>
       <button class="topbar-toggle" id="themeToggleBtn"><i class="fas fa-sun"></i></button>
     </div>
   </header>
   <div id="pageContent"><div class="loading"><div class="spinner"></div><p>Chargement...</p></div></div>
 </div>
-
 <div id="modalOverlay" class="modal-overlay" style="display:none;">
   <div class="modal-container">
-    <div class="modal-header">
-      <h3 id="modalTitle">Titre</h3>
-      <button id="modalCloseBtn" class="modal-close">&times;</button>
-    </div>
+    <div class="modal-header"><h3 id="modalTitle">Titre</h3><button id="modalCloseBtn" class="modal-close">&times;</button></div>
     <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
-
 <script src="../js/config.js"></script>
 <script src="../js/api.js"></script>
 <script src="../js/pharmacy-translations.js"></script>
 <script src="../js/pharmacy-shared.js"></script>
-<script src="../js/pharmacy-dashboard.js"></script>
+<script src="../js/medications.js"></script>
 </body>
 </html>
