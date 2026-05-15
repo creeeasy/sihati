@@ -166,10 +166,10 @@ class ApiService {
       (sum, a) => sum + (a.consultationFee || 0),
       0,
     );
-
+    console.log(reviews);
     const avg = reviews.length
-      ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-      : "–";
+      ? (reviews.reduce((s, r) => s + +r.rating, 0) / reviews.length).toFixed(1)
+      : "0.0";
 
     return {
       total: appts.length,

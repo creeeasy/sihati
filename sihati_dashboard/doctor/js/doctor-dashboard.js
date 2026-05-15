@@ -65,6 +65,7 @@ function setupNav() {
     });
   });
   document.getElementById("logoutBtn").addEventListener("click", async () => {
+    console.log("clicked");
     if (confirm("Voulez-vous vous deconnecter ?")) {
       await api.logout();
       window.location.href = "doctor-login.html";
@@ -143,6 +144,7 @@ async function loadDashboard() {
     api.getDoctorStats(),
     api.getDoctorAppointments(),
   ]);
+  console.log(stats);
   allAppointments = apptRes.data || [];
   const upcoming = allAppointments
     .filter((a) => a.status === "pending" || a.status === "confirmed")
@@ -179,7 +181,7 @@ async function loadDashboard() {
       ${statCard("success", "fa-check-circle", stats.confirmed, "Confirmes")}
       ${statCard("info", "fa-stethoscope", stats.completed, "Termines")}
       ${statCard("danger", "fa-times-circle", stats.cancelled, "Annules")}
-      ${statCard("purple", "fa-star", stats.averageRating, "Note moyenne")}
+      ${statCard("purple", "fa-star", stats.averageRating === "–" ? "–" : stats.averageRating, "Note moyenne")}
     </div>
 
     <div class="card">
@@ -531,6 +533,12 @@ function showPrescriptionModal(patientId, patientName) {
     <div id="medicationsList">${medicationRow()}</div>
     <button class="btn-add-med" id="addMedBtn">Ajouter un medicament</button>
     <div class="form-group"><label>Instructions generales</label><textarea class="modal-input" id="p_instructions" rows="2" placeholder="Instructions..."></textarea></div>
+    <div class="form-group"><label>Renouvelable</label>
+      <select class="modal-input" id="p_renewable">
+        <option value="false">Non</option>
+        <option value="true">Oui</option>
+      </select>
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel-modal" onclick="closeModal()">Annuler</button>
       <button class="btn-save-modal" onclick="savePrescription('${patientId}')">Enregistrer</button>
@@ -583,7 +591,8 @@ async function savePrescription(patientId) {
     medications: medications,
     instructions: document.getElementById("p_instructions").value.trim(),
     validityDays: 30,
-    isRenewable: false,
+    isRenewable:
+      document.getElementById("p_renewable")?.value === "true" || false,
   };
   try {
     await api.createPrescription(data);
@@ -694,8 +703,8 @@ async function loadReviews() {
     ${
       avg
         ? `<div class="card"><div class="card-body" style="display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
-      <div style="text-align:center;"><div style="font-size:52px;font-weight:700;color:var(--teal);">${avg}</div>
-      <div style="color:var(--amber);font-size:22px;">${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))}</div>
+      <div style="text-align:center;"><div style="font-size:52px;font-weight:700;color:var(--violet);">${avg}</div>
+      <div style="color:var(--gold);font-size:22px;">${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))}</div>
       <div class="text-muted">${reviews.length} avis</div></div>
       <div style="flex:1;min-width:200px;">${dist
         .map(
@@ -703,7 +712,7 @@ async function loadReviews() {
             d,
           ) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
         <span style="width:24px;font-size:13px;">${d.n}★</span>
-        <div style="flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;"><div style="width:${d.pct}%;height:100%;background:var(--amber);border-radius:4px;"></div></div>
+        <div style="flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;"><div style="width:${d.pct}%;height:100%;background:var(--gold);border-radius:4px;"></div></div>
         <span style="width:24px;font-size:12px;color:var(--text-dim);">${d.count}</span>
       </div>`,
         )
@@ -1021,7 +1030,7 @@ function renderPwdStrength(pwd) {
     { w: "0%", c: "transparent", t: "" },
     { w: "25%", c: "var(--rose)", t: "Trop faible" },
     { w: "50%", c: "var(--amber)", t: "Faible" },
-    { w: "75%", c: "var(--blue)", t: "Moyen" },
+    { w: "75%", c: "var(--violet)", t: "Moyen" },
     { w: "100%", c: "var(--green)", t: "Fort" },
   ];
   const lvl = levels[score] || levels[0];
@@ -1041,7 +1050,7 @@ function showToast(message, type = "info") {
   const colors = {
     success: "var(--green)",
     error: "var(--rose)",
-    info: "var(--blue)",
+    info: "var(--violet)",
   };
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;

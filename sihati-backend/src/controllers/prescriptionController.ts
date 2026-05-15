@@ -28,10 +28,9 @@ export const createPrescription = async (req: AuthRequest, res: Response, next: 
       return res.status(404).json({ success: false, message: 'Profil médecin non trouvé' });
     }
     
-    // Créer la prescription
     const prescription = await Prescription.create({
       patientId,
-      doctorId: doctorUserId,
+      doctorId: doctor.id,
       consultationId,
       diagnosis,
       notes,
@@ -40,10 +39,8 @@ export const createPrescription = async (req: AuthRequest, res: Response, next: 
       prescriptionDate: new Date()
     });
     
-    // Créer les médicaments de la prescription
     if (medications && medications.length > 0) {
       for (const med of medications) {
-        // Chercher si le médicament existe déjà
         let medication = await Medication.findOne({ where: { name: { [Op.iLike]: med.name } } });
         
         if (!medication) {
@@ -56,7 +53,6 @@ export const createPrescription = async (req: AuthRequest, res: Response, next: 
           });
         }
         
-        // ✅ Correction : utiliser undefined au lieu de null
         await PrescriptionMedication.create({
           prescriptionId: prescription.id,
           medicationId: medication.id,
