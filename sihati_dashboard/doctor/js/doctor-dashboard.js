@@ -4,11 +4,13 @@ let allAppointments = [];
 let currentPatients = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
+  showPageLoading();
   await checkAuth();
   await loadDoctorProfile();
   setupNav();
   setupModal();
-  await loadDashboard();
+  const savedPage = getCurrentPage();
+  await navigateTo(savedPage);
 });
 
 async function checkAuth() {
@@ -38,11 +40,6 @@ async function loadDoctorProfile() {
     if (!res.success) return;
     currentDoctor = res.data;
     const name = currentDoctor.doctorName || "Dr.";
-    const parts = name.split(" ");
-    const initials = (
-      (parts[0]?.[0] || "") + (parts[1]?.[0] || "")
-    ).toUpperCase();
-    document.getElementById("doctorAvatar").textContent = initials || "DR";
     document.getElementById("doctorName").textContent = name;
     document.getElementById("doctorSpecialty").textContent =
       currentDoctor.specialty?.nameFr ||
@@ -61,16 +58,22 @@ function setupNav() {
         .querySelectorAll(".nav-link")
         .forEach((l) => l.classList.remove("active"));
       link.classList.add("active");
-      await navigateTo(link.dataset.page);
+      const page = link.dataset.page;
+      saveCurrentPage(page);
+      await navigateTo(page);
     });
   });
-  document.getElementById("logoutBtn").addEventListener("click", async () => {
-    console.log("clicked");
+
+  document.getElementById("logoutBtn").onclick = async () => {
     if (confirm("Voulez-vous vous deconnecter ?")) {
       await api.logout();
+      api.clearDoctorId();
+      STORAGE.clear();
+      localStorage.removeItem("doctorCurrentPage");
       window.location.href = "doctor-login.html";
     }
-  });
+  };
+
   const mobileBtn = document.getElementById("mobileMenuBtn");
   const sidebar = document.getElementById("sidebar");
   if (mobileBtn && sidebar) {
@@ -94,6 +97,15 @@ function setupNav() {
   }
 }
 
+function setupModal() {
+  document
+    .getElementById("modalCloseBtn")
+    ?.addEventListener("click", closeModal);
+  document.getElementById("modalOverlay")?.addEventListener("click", (e) => {
+    if (e.target === document.getElementById("modalOverlay")) closeModal();
+  });
+}
+
 async function navigateTo(page) {
   currentPage = page;
   const titles = {
@@ -111,7 +123,9 @@ async function navigateTo(page) {
   const [title, subtitle] = titles[page] || ["-", ""];
   document.getElementById("pageTitle").textContent = title;
   document.getElementById("pageSubtitle").textContent = subtitle;
-  pageLoading();
+
+  showPageLoading();
+
   try {
     if (page === "dashboard") await loadDashboard();
     else if (page === "appointments") await loadAppointments();
@@ -125,26 +139,11 @@ async function navigateTo(page) {
   }
 }
 
-function pageLoading() {
-  document.getElementById("pageContent").innerHTML =
-    `<div class="loading"><div class="spinner"></div><p>Chargement en cours...</p></div>`;
-}
-
-function pageError(msg) {
-  document.getElementById("pageContent").innerHTML =
-    `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>${msg}</p></div>`;
-}
-
-function setContent(html) {
-  document.getElementById("pageContent").innerHTML = html;
-}
-
 async function loadDashboard() {
   const [stats, apptRes] = await Promise.all([
     api.getDoctorStats(),
     api.getDoctorAppointments(),
   ]);
-  console.log(stats);
   allAppointments = apptRes.data || [];
   const upcoming = allAppointments
     .filter((a) => a.status === "pending" || a.status === "confirmed")
@@ -171,7 +170,7 @@ async function loadDashboard() {
         <p class="text-muted">${today}</p>
       </div>
       <div class="revenue-chip">
-        <i class="fas fa-coins"></i> Revenus du jour: ${stats.todayRevenue || 0} DA
+        <i class="fas fa-coins"></i> Revenus du jour: ${formatCurrency(stats.todayRevenue)}
       </div>
     </div>
 
@@ -181,7 +180,7 @@ async function loadDashboard() {
       ${statCard("success", "fa-check-circle", stats.confirmed, "Confirmes")}
       ${statCard("info", "fa-stethoscope", stats.completed, "Termines")}
       ${statCard("danger", "fa-times-circle", stats.cancelled, "Annules")}
-      ${statCard("purple", "fa-star", stats.averageRating === "–" ? "–" : stats.averageRating, "Note moyenne")}
+      ${statCard("purple", "fa-star", stats.averageRating === "NaN" ? "0" : stats.averageRating, "Note moyenne")}
     </div>
 
     <div class="card">
@@ -198,13 +197,16 @@ async function loadDashboard() {
   const revenueChip = document.getElementById("revenueChip");
   if (revenueChip) {
     revenueChip.style.display = "flex";
-    document.getElementById("revenueDisplay").textContent =
-      `${stats.todayRevenue || 0} DA`;
+    document.getElementById("revenueDisplay").textContent = formatCurrency(
+      stats.todayRevenue,
+    );
   }
+  hidePageLoading();
 }
 
 function statCard(color, icon, value, label) {
-  return `<div class="stat-card ${color}"><div class="stat-icon ${color}"><i class="fas ${icon}"></i></div><div class="stat-value">${value ?? "-"}</div><div class="stat-label">${label}</div></div>`;
+  const displayValue = value === "–" ? "0" : value;
+  return `<div class="stat-card ${color}"><div class="stat-icon ${color}"><i class="fas ${icon}"></i></div><div class="stat-value">${displayValue ?? "0"}</div><div class="stat-label">${label}</div></div>`;
 }
 
 function renderApptCard(a) {
@@ -215,12 +217,7 @@ function renderApptCard(a) {
     completed: "Termine",
     no_show: "Absent",
   };
-  const date = new Date(a.appointmentDate).toLocaleDateString("fr-FR", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const date = formatDate(a.appointmentDate);
   const time = (a.appointmentTime || "").slice(0, 5);
   const patient = a.patient || {};
 
@@ -332,6 +329,7 @@ async function loadAppointments() {
       bindApptButtons(list);
     });
   });
+  hidePageLoading();
 }
 
 async function loadPatients() {
@@ -345,6 +343,7 @@ async function loadPatients() {
   });
   currentPatients = [...map.values()];
   renderPatientsPage(currentPatients);
+  hidePageLoading();
 }
 
 function renderPatientsPage(patients) {
@@ -365,11 +364,13 @@ function renderPatientsPage(patients) {
     .addEventListener("input", (e) => {
       clearTimeout(timer);
       timer = setTimeout(async () => {
+        showPageLoading();
         const chifaNumber = e.target.value.trim();
         if (!chifaNumber) {
           document.getElementById("patientsList").innerHTML =
             renderPatientCards(currentPatients);
           bindPatientButtons();
+          hidePageLoading();
           return;
         }
         try {
@@ -379,10 +380,10 @@ function renderPatientsPage(patients) {
             renderPatientCards(results);
           bindPatientButtons();
         } catch (error) {
-          console.error("Erreur recherche:", error);
           document.getElementById("patientsList").innerHTML =
             `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Erreur de recherche</p></div>`;
         }
+        hidePageLoading();
       }, 500);
     });
 
@@ -407,9 +408,9 @@ function renderPatientCards(patients) {
         <p><i class="fas fa-id-card"></i> Chifa: ${p.chifaNumber || "Non renseigne"}</p>
       </div>
       <div class="patient-actions">
-        <button class="btn-view" data-patient-id="${p.id}" data-patient-name="${escapeHtml(p.fullName || "")}" data-action="view">Voir details</button>
-        <button class="btn-consult" data-patient-id="${p.id}" data-patient-name="${escapeHtml(p.fullName || "")}" data-action="consult">Consultation</button>
-        <button class="btn-prescription" data-patient-id="${p.id}" data-patient-name="${escapeHtml(p.fullName || "")}" data-action="prescribe">Ordonnance</button>
+        <button class="btn-view" data-patient-id="${p.id}" data-patient-name="${escapeHtml(p.fullName || "")}">Voir details</button>
+        <button class="btn-consult" data-patient-id="${p.id}" data-patient-name="${escapeHtml(p.fullName || "")}">Consultation</button>
+        <button class="btn-prescription" data-patient-id="${p.id}" data-patient-name="${escapeHtml(p.fullName || "")}">Ordonnance</button>
       </div>
     </div>
   `,
@@ -418,42 +419,24 @@ function renderPatientCards(patients) {
 }
 
 function bindPatientButtons() {
-  document.querySelectorAll("[data-action='view']").forEach((btn) => {
+  document.querySelectorAll(".btn-view").forEach((btn) => {
     btn.addEventListener("click", () =>
       window.open(`patient-details.html?id=${btn.dataset.patientId}`, "_blank"),
     );
   });
-  document.querySelectorAll("[data-action='consult']").forEach((btn) => {
+  document.querySelectorAll(".btn-consult").forEach((btn) => {
     btn.addEventListener("click", () =>
       showConsultationModal(btn.dataset.patientId, btn.dataset.patientName),
     );
   });
-  document.querySelectorAll("[data-action='prescribe']").forEach((btn) => {
+  document.querySelectorAll(".btn-prescription").forEach((btn) => {
     btn.addEventListener("click", () =>
       showPrescriptionModal(btn.dataset.patientId, btn.dataset.patientName),
     );
   });
 }
 
-function showAddPatientModal() {
-  openModal(
-    "Nouveau patient",
-    `
-    <div id="addPatientAlert"></div>
-    <div class="form-group"><label>Nom complet</label><input class="modal-input" type="text" id="np_name" placeholder="Mohammed Benali"></div>
-    <div class="form-group"><label>Email</label><input class="modal-input" type="email" id="np_email" placeholder="patient@mail.com"></div>
-    <div class="form-group"><label>Telephone</label><input class="modal-input" type="tel" id="np_phone" placeholder="0555123456"></div>
-    <div class="form-group"><label>Numero Chifa</label><input class="modal-input" type="text" id="np_chifa" placeholder="Optionnel"></div>
-    <div class="form-group"><label>Mot de passe</label><input class="modal-input" type="password" id="np_pwd" placeholder="8 caracteres minimum"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel-modal" onclick="closeModal()">Annuler</button>
-      <button class="btn-save-modal" onclick="saveNewPatient()">Enregistrer</button>
-    </div>
-  `,
-  );
-}
-
-async function saveNewPatient() {
+window.saveNewPatient = async function () {
   const alertEl = document.getElementById("addPatientAlert");
   const data = {
     fullName: document.getElementById("np_name").value.trim(),
@@ -479,27 +462,9 @@ async function saveNewPatient() {
   } catch (e) {
     alertEl.innerHTML = `<div class="alert-error">${e.message}</div>`;
   }
-}
+};
 
-function showConsultationModal(patientId, patientName) {
-  openModal(
-    `Consultation - ${patientName || "Patient"}`,
-    `
-    <div id="consultAlert"></div>
-    <div class="form-group"><label>Motif principal</label><input class="modal-input" type="text" id="c_complaint" placeholder="Ex: Douleurs abdominales"></div>
-    <div class="form-group"><label>Diagnostic</label><textarea class="modal-input" id="c_diagnosis" rows="3" placeholder="Diagnostic..."></textarea></div>
-    <div class="form-group"><label>Plan de traitement</label><textarea class="modal-input" id="c_treatment" rows="3" placeholder="Traitement prescrit..."></textarea></div>
-    <div class="form-group"><label>Notes</label><textarea class="modal-input" id="c_notes" rows="2" placeholder="Notes supplementaires..."></textarea></div>
-    <div class="form-group"><label>Honoraires (DA)</label><input class="modal-input" type="number" id="c_fee" placeholder="3000"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel-modal" onclick="closeModal()">Annuler</button>
-      <button class="btn-save-modal" onclick="saveConsultation('${patientId}')">Enregistrer</button>
-    </div>
-  `,
-  );
-}
-
-async function saveConsultation(patientId) {
+window.saveConsultation = async function (patientId) {
   const alertEl = document.getElementById("consultAlert");
   const chiefComplaint = document.getElementById("c_complaint").value.trim();
   if (!chiefComplaint) {
@@ -522,47 +487,9 @@ async function saveConsultation(patientId) {
   } catch (e) {
     alertEl.innerHTML = `<div class="alert-error">${e.message}</div>`;
   }
-}
+};
 
-function showPrescriptionModal(patientId, patientName) {
-  openModal(
-    `Ordonnance - ${patientName || "Patient"}`,
-    `
-    <div id="prescAlert"></div>
-    <div class="form-group"><label>Diagnostic</label><input class="modal-input" type="text" id="p_diagnosis" placeholder="Diagnostic..."></div>
-    <div id="medicationsList">${medicationRow()}</div>
-    <button class="btn-add-med" id="addMedBtn">Ajouter un medicament</button>
-    <div class="form-group"><label>Instructions generales</label><textarea class="modal-input" id="p_instructions" rows="2" placeholder="Instructions..."></textarea></div>
-    <div class="form-group"><label>Renouvelable</label>
-      <select class="modal-input" id="p_renewable">
-        <option value="false">Non</option>
-        <option value="true">Oui</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel-modal" onclick="closeModal()">Annuler</button>
-      <button class="btn-save-modal" onclick="savePrescription('${patientId}')">Enregistrer</button>
-    </div>
-  `,
-  );
-  document.getElementById("addMedBtn").addEventListener("click", () => {
-    document
-      .getElementById("medicationsList")
-      .insertAdjacentHTML("beforeend", medicationRow());
-  });
-}
-
-function medicationRow() {
-  return `<div class="medication-row">
-    <input class="med-input med-name" type="text" placeholder="Medicament">
-    <input class="med-input med-dosage" type="text" placeholder="Dosage">
-    <input class="med-input med-frequency" type="text" placeholder="Frequence">
-    <input class="med-input med-duration" type="text" placeholder="Duree (jours)">
-    <button class="btn-remove-med" onclick="this.closest('.medication-row').remove()">X</button>
-  </div>`;
-}
-
-async function savePrescription(patientId) {
+window.savePrescription = async function (patientId) {
   const alertEl = document.getElementById("prescAlert");
   const rows = document.querySelectorAll(".medication-row");
   const medications = [];
@@ -602,7 +529,25 @@ async function savePrescription(patientId) {
   } catch (e) {
     alertEl.innerHTML = `<div class="alert-error">${e.message}</div>`;
   }
-}
+};
+
+window.saveAddToQueue = async function () {
+  const patientId = document.getElementById("queuePatientId").value;
+  const priority = parseInt(document.getElementById("queuePriority").value);
+  const notes = document.getElementById("queueNotes").value;
+  if (!patientId) {
+    alert("Veuillez selectionner un patient");
+    return;
+  }
+  const doctorId = api.getDoctorId();
+  await api.request("/waiting-queue", {
+    method: "POST",
+    body: JSON.stringify({ doctorId, patientId, priority, notes }),
+  });
+  closeModal();
+  showToast("Patient ajoute a la file d'attente", "success");
+  await loadWaitingQueue();
+};
 
 async function loadAvailability() {
   const DAYS = [
@@ -651,6 +596,7 @@ async function loadAvailability() {
   document
     .getElementById("saveSchedBtn")
     .addEventListener("click", saveAvailability);
+  hidePageLoading();
 }
 
 function toggleDayTimes(checkbox, dayNum) {
@@ -692,10 +638,10 @@ async function loadReviews() {
   const res = await api.getDoctorReviews();
   const reviews = res.data || [];
   const avg = reviews.length
-    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+    ? (reviews.reduce((s, r) => s + +r.rating, 0) / reviews.length).toFixed(1)
     : null;
   const dist = [5, 4, 3, 2, 1].map((n) => {
-    const count = reviews.filter((r) => r.rating === n).length;
+    const count = reviews.filter((r) => +r.rating === n).length;
     const pct = reviews.length ? Math.round((count / reviews.length) * 100) : 0;
     return { n, count, pct };
   });
@@ -728,20 +674,22 @@ async function loadReviews() {
               (
                 r,
               ) => `<div class="review-card"><div class="review-header"><span class="reviewer">${r.user?.fullName || "Patient"}</span>
-      <span class="review-rating">${"★".repeat(Math.floor(r.rating))}${"☆".repeat(5 - Math.floor(r.rating))}</span>
-      <span class="review-date">${new Date(r.createdAt).toLocaleDateString("fr-FR")}</span></div>
+      <span class="review-rating">${"★".repeat(Math.floor(+r.rating))}${"☆".repeat(5 - Math.floor(+r.rating))}</span>
+      <span class="review-date">${formatDate(r.createdAt)}</span></div>
       ${r.comment ? `<p class="review-comment">"${r.comment}"</p>` : ""}</div>`,
             )
             .join("")
         : `<div class="empty-state"><i class="far fa-star"></i><p>Aucun avis pour le moment</p></div>`
     }</div></div>
   `);
+  hidePageLoading();
 }
 
 async function loadProfile() {
   const res = await api.getCurrentDoctor();
   if (!res.success) {
     pageError("Impossible de charger le profil");
+    hidePageLoading();
     return;
   }
   const doc = res.data;
@@ -754,9 +702,13 @@ async function loadProfile() {
       </div>
       <div id="tab-info" class="tab-pane active">
         <div class="profile-card">
-          <div class="profile-avatar-row"><div class="profile-avatar-big">${(doc.doctorName || "DR").slice(0, 2).toUpperCase()}</div>
-            <div><div style="font-weight:700;font-size:18px;">${doc.doctorName}</div><div class="text-muted">${doc.specialty?.name || ""}</div>
-            <span class="status-badge ${doc.isVerified ? "confirmed" : "pending"}" style="margin-top:6px;display:inline-flex;">${doc.isVerified ? "Compte verifie" : "En attente de verification"}</span></div>
+          <div class="profile-avatar-row">
+            <div class="profile-avatar-big">${(doc.doctorName || "DR").slice(0, 2).toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700;font-size:18px;">${doc.doctorName}</div>
+              <div class="text-muted">${doc.specialty?.name || ""}</div>
+              <span class="status-badge ${doc.isVerified ? "confirmed" : "pending"}" style="margin-top:6px;display:inline-flex;">${doc.isVerified ? "Compte verifie" : "En attente de verification"}</span>
+            </div>
           </div>
           <div id="profileAlert"></div>
           <div class="form-grid-2">
@@ -858,6 +810,7 @@ async function loadProfile() {
       alert.innerHTML = `<div class="alert-error">${e.message}</div>`;
     }
   });
+  hidePageLoading();
 }
 
 async function loadWaitingQueuePage() {
@@ -907,10 +860,11 @@ async function loadWaitingQueue() {
                 .join("")
             : '<div class="empty-state">Aucun patient en attente</div>'
         }</div>
-        <div class="add-patient-section"><button class="btn-add-patient" onclick="showAddToQueueModal()">Ajouter patient a la file</button></div>
+        <div class="add-patient-section"><button class="btn-add-patient" onclick="showAddToQueueModal(currentPatients)">Ajouter patient a la file</button></div>
       </div>
     </div>
   `);
+  hidePageLoading();
 }
 
 async function callNextPatient() {
@@ -944,82 +898,6 @@ async function removeFromQueue(queueId) {
   await loadWaitingQueue();
 }
 
-function showAddToQueueModal() {
-  const patients = currentPatients;
-  openModal(
-    "Ajouter patient a la file",
-    `
-    <div class="form-group"><label>Selectionner un patient</label>
-      <select id="queuePatientId" class="modal-input">
-        <option value="">Choisir un patient...</option>
-        ${patients.map((p) => `<option value="${p.id}">${p.fullName} - ${p.chifaNumber || "Pas de Chifa"}</option>`).join("")}
-      </select>
-    </div>
-    <div class="form-group"><label>Priorite</label>
-      <select id="queuePriority" class="modal-input">
-        <option value="1">Normal (RDV)</option>
-        <option value="2">Sans RDV</option>
-        <option value="0">Urgence</option>
-      </select>
-    </div>
-    <div class="form-group"><label>Notes</label><textarea id="queueNotes" class="modal-input" rows="2" placeholder="Motif, etc..."></textarea></div>
-    <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="saveAddToQueue()">Ajouter</button></div>
-  `,
-  );
-}
-
-async function saveAddToQueue() {
-  const patientId = document.getElementById("queuePatientId").value;
-  const priority = parseInt(document.getElementById("queuePriority").value);
-  const notes = document.getElementById("queueNotes").value;
-  if (!patientId) {
-    alert("Veuillez selectionner un patient");
-    return;
-  }
-  const doctorId = api.getDoctorId();
-  await api.request("/waiting-queue", {
-    method: "POST",
-    body: JSON.stringify({ doctorId, patientId, priority, notes }),
-  });
-  closeModal();
-  showToast("Patient ajoute a la file d'attente", "success");
-  await loadWaitingQueue();
-}
-
-function setupModal() {
-  document
-    .getElementById("modalCloseBtn")
-    ?.addEventListener("click", closeModal);
-  document.getElementById("modalOverlay")?.addEventListener("click", (e) => {
-    if (e.target === document.getElementById("modalOverlay")) closeModal();
-  });
-}
-
-function openModal(title, bodyHTML) {
-  const modal = document.getElementById("modalOverlay");
-  const titleEl = document.getElementById("modalTitle");
-  const bodyEl = document.getElementById("modalBody");
-  if (!modal || !titleEl || !bodyEl) return;
-  titleEl.textContent = title;
-  bodyEl.innerHTML = bodyHTML;
-  modal.style.display = "flex";
-}
-
-function closeModal() {
-  const modal = document.getElementById("modalOverlay");
-  if (modal) modal.style.display = "none";
-}
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return str
-    .replace(
-      /[&<>]/g,
-      (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m] || m,
-    )
-    .replace(/['"]/g, (m) => ({ "'": "&#39;", '"': "&quot;" })[m] || m);
-}
-
 function renderPwdStrength(pwd) {
   let score = 0;
   if (pwd.length >= 8) score++;
@@ -1046,37 +924,25 @@ function renderPwdStrength(pwd) {
   }
 }
 
-function showToast(message, type = "info") {
-  const colors = {
-    success: "var(--green)",
-    error: "var(--rose)",
-    info: "var(--violet)",
-  };
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<i class="fas ${type === "success" ? "fa-check-circle" : type === "error" ? "fa-exclamation-circle" : "fa-info-circle"}"></i> ${message}`;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transform = "translateY(20px)";
-    setTimeout(() => toast.remove(), 300);
-  }, 3200);
+function setContent(html) {
+  document.getElementById("pageContent").innerHTML = html;
 }
 
-window.showMedicationDetails = () => {};
-window.showStockForMedication = () => {};
-window.showEditStockModal = () => {};
-window.saveStock = () => {};
-window.closeModal = closeModal;
+function pageError(msg) {
+  document.getElementById("pageContent").innerHTML =
+    `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>${msg}</p></div>`;
+}
+
 window.navigateTo = navigateTo;
+window.closeModal = closeModal;
 window.completeConsultation = completeConsultation;
 window.callNextPatient = callNextPatient;
 window.setUrgent = setUrgent;
 window.removeFromQueue = removeFromQueue;
 window.saveAddToQueue = saveAddToQueue;
-window.showAddToQueueModal = showAddToQueueModal;
 window.saveNewPatient = saveNewPatient;
 window.saveConsultation = saveConsultation;
 window.savePrescription = savePrescription;
 window.toggleDayTimes = toggleDayTimes;
 window.saveAvailability = saveAvailability;
+window.showAddToQueueModal = showAddToQueueModal;

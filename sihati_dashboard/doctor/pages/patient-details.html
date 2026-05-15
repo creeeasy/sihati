@@ -224,167 +224,6 @@
             color: var(--rose);
         }
 
-        .medication-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr auto;
-            gap: 10px;
-            margin-bottom: 12px;
-            align-items: center;
-        }
-        .med-input {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-xs);
-            padding: 10px 12px;
-            color: var(--text);
-            font-family: var(--font);
-            font-size: 13px;
-            outline: none;
-        }
-        .med-input:focus {
-            border-color: var(--violet);
-        }
-        .btn-remove-med {
-            width: 36px;
-            height: 36px;
-            background: var(--rose-dim);
-            color: var(--rose);
-            border: 1px solid var(--rose-dim);
-            border-radius: var(--radius-xs);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-remove-med:hover {
-            background: var(--rose);
-            color: #fff;
-        }
-        .btn-add-med {
-            padding: 10px 16px;
-            background: var(--violet-dim);
-            color: var(--violet);
-            border: 1px dashed var(--violet-border);
-            border-radius: var(--radius-xs);
-            cursor: pointer;
-            margin-bottom: 16px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn-add-med:hover {
-            background: var(--violet);
-            color: #fff;
-            border-style: solid;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(6px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        .modal-container {
-            background: var(--bg2);
-            border: 1px solid var(--border2);
-            border-radius: var(--radius);
-            width: 100%;
-            max-width: 560px;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--border);
-        }
-        .modal-header h3 {
-            font-size: 16px;
-            font-weight: 700;
-        }
-        .modal-close {
-            width: 32px;
-            height: 32px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-xs);
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .modal-close:hover {
-            background: var(--rose-dim);
-            color: var(--rose);
-        }
-        .modal-body {
-            padding: 24px;
-            overflow-y: auto;
-        }
-        .modal-input {
-            width: 100%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            color: var(--text);
-            font-family: var(--font);
-            font-size: 14px;
-            outline: none;
-            margin-bottom: 16px;
-        }
-        .modal-input:focus {
-            border-color: var(--violet);
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        .btn-cancel-modal {
-            padding: 10px 20px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .btn-cancel-modal:hover {
-            color: var(--text);
-        }
-        .btn-save-modal {
-            padding: 10px 24px;
-            background: var(--violet);
-            border: none;
-            border-radius: var(--radius-sm);
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            transition: filter 0.2s;
-        }
-        .btn-save-modal:hover {
-            filter: brightness(1.08);
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-dim);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
         .alert-error {
             background: var(--rose-dim);
             color: var(--rose);
@@ -434,10 +273,6 @@
             .section-card {
                 padding: 20px;
             }
-            .medication-row {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
         }
     </style>
 </head>
@@ -458,6 +293,9 @@
 
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/doctor-auth.js"></script>
+    <script src="../js/modals.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const patientId = urlParams.get('id');
@@ -478,48 +316,6 @@
                     if (e.target === overlay) closeModal();
                 });
             }
-        }
-
-        function openModal(title, bodyHTML) {
-            const modal = document.getElementById("modalOverlay");
-            const titleEl = document.getElementById("modalTitle");
-            const bodyEl = document.getElementById("modalBody");
-            if (!modal || !titleEl || !bodyEl) return;
-            titleEl.textContent = title;
-            bodyEl.innerHTML = bodyHTML;
-            modal.style.display = "flex";
-            setupModal();
-        }
-
-        function closeModal() {
-            const modal = document.getElementById("modalOverlay");
-            if (modal) modal.style.display = "none";
-        }
-
-        function showToast(message, type) {
-            const colors = { success: "#34d399", error: "#f87171", info: "#a78bfa" };
-            const toast = document.createElement("div");
-            toast.style.position = "fixed";
-            toast.style.bottom = "24px";
-            toast.style.right = "24px";
-            toast.style.padding = "12px 20px";
-            toast.style.borderRadius = "10px";
-            toast.style.fontSize = "13px";
-            toast.style.fontWeight = "600";
-            toast.style.zIndex = "9999";
-            toast.style.display = "flex";
-            toast.style.alignItems = "center";
-            toast.style.gap = "10px";
-            toast.style.boxShadow = "0 4px 24px rgba(0,0,0,0.4)";
-            toast.style.backgroundColor = colors[type] || colors.info;
-            toast.style.color = type === 'success' ? '#0b0f1a' : '#fff';
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = "0";
-                toast.style.transform = "translateY(20px)";
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
         }
 
         async function loadPatientDetails() {
@@ -586,13 +382,13 @@
                 <div class="section-card">
                     <div class="section-title">
                         <i class="fas fa-stethoscope"></i> Consultations (${consultations.length})
-                        <button class="btn-icon" style="margin-left:auto;" onclick="addConsultationFromDetails('${patient.id}','${patient.fullName}')"><i class="fas fa-plus"></i></button>
+                        <button class="btn-icon" style="margin-left:auto;" onclick="showConsultationModal('${patient.id}', '${patient.fullName}')"><i class="fas fa-plus"></i></button>
                     </div>
                     ${consultations.length > 0 ? consultations.map(c => `
                         <div class="consultation-item">
                             <div style="display:flex;justify-content:space-between; margin-bottom: 8px;">
                                 <strong>${new Date(c.consultationDate).toLocaleDateString('fr-FR')}</strong>
-                                ${c.feePaid ? `<span style="color: var(--gold); font-weight: 600;">${c.feePaid} DA</span>` : ''}
+                                ${c.feePaid ? `<span style="color: var(--gold); font-weight: 600;">${formatCurrency(c.feePaid)}</span>` : ''}
                             </div>
                             <div><strong>Motif:</strong> ${c.chiefComplaint || '-'}</div>
                             <div><strong>Diagnostic:</strong> ${c.diagnosis || '-'}</div>
@@ -605,7 +401,7 @@
                 <div class="section-card">
                     <div class="section-title">
                         <i class="fas fa-pills"></i> Ordonnances (${prescriptions.length})
-                        <button class="btn-icon" style="margin-left:auto;" onclick="addPrescriptionFromDetails('${patient.id}','${patient.fullName}')"><i class="fas fa-plus"></i></button>
+                        <button class="btn-icon" style="margin-left:auto;" onclick="showPrescriptionModal('${patient.id}', '${patient.fullName}')"><i class="fas fa-plus"></i></button>
                     </div>
                     ${prescriptions.length > 0 ? prescriptions.map(p => `
                         <div class="prescription-item">
@@ -629,98 +425,6 @@
             `;
         }
 
-        function addConsultationFromDetails(patientId, patientName) {
-            openModal(`Nouvelle consultation`, `
-                <div id="consultAlert"></div>
-                <div class="form-group"><label>Motif principal</label><input class="modal-input" type="text" id="c_complaint" placeholder="Ex: Douleurs abdominales"></div>
-                <div class="form-group"><label>Diagnostic</label><textarea class="modal-input" id="c_diagnosis" rows="3" placeholder="Diagnostic..."></textarea></div>
-                <div class="form-group"><label>Traitement</label><textarea class="modal-input" id="c_treatment" rows="3" placeholder="Traitement prescrit..."></textarea></div>
-                <div class="form-group"><label>Notes</label><textarea class="modal-input" id="c_notes" rows="2" placeholder="Notes supplementaires..."></textarea></div>
-                <div class="form-group"><label>Honoraires (DA)</label><input class="modal-input" type="number" id="c_fee" placeholder="3000"></div>
-                <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="saveConsultationFromDetails('${patientId}')">Enregistrer</button></div>
-            `);
-        }
-
-        async function saveConsultationFromDetails(patientId) {
-            const alertEl = document.getElementById("consultAlert");
-            const chiefComplaint = document.getElementById("c_complaint").value.trim();
-            if (!chiefComplaint) { alertEl.innerHTML = `<div class="alert-error">Le motif principal est obligatoire</div>`; return; }
-            try {
-                await api.createConsultation({ 
-                    patientId, 
-                    chiefComplaint, 
-                    diagnosis: document.getElementById("c_diagnosis").value.trim(), 
-                    treatmentPlan: document.getElementById("c_treatment").value.trim(), 
-                    notes: document.getElementById("c_notes").value.trim(), 
-                    feePaid: parseFloat(document.getElementById("c_fee").value) || null 
-                });
-                closeModal(); 
-                showToast("Consultation ajoutee", "success"); 
-                setTimeout(() => location.reload(), 1000);
-            } catch(e) { 
-                alertEl.innerHTML = `<div class="alert-error">${e.message}</div>`; 
-            }
-        }
-
-        function addPrescriptionFromDetails(patientId, patientName) {
-            openModal(`Nouvelle ordonnance`, `
-                <div id="prescAlert"></div>
-                <div class="form-group"><label>Diagnostic</label><input class="modal-input" type="text" id="p_diagnosis" placeholder="Diagnostic..."></div>
-                <div id="medicationsList">${medicationRow()}</div>
-                <button class="btn-add-med" onclick="addMedicationRow()">+ Ajouter un medicament</button>
-                <div class="form-group"><label>Instructions</label><textarea class="modal-input" id="p_instructions" rows="2" placeholder="Instructions generales..."></textarea></div>
-                <div class="form-group"><label>Renouvelable</label><select class="modal-input" id="p_renewable"><option value="false">Non</option><option value="true">Oui</option></select></div>
-                <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="savePrescriptionFromDetails('${patientId}')">Enregistrer</button></div>
-            `);
-        }
-
-        function medicationRow() {
-            return `<div class="medication-row">
-                <input class="med-input med-name" placeholder="Medicament">
-                <input class="med-input med-dosage" placeholder="Dosage">
-                <input class="med-input med-frequency" placeholder="Frequence">
-                <input class="med-input med-duration" placeholder="Duree (jours)">
-                <button class="btn-remove-med" onclick="this.closest('.medication-row').remove()"><i class="fas fa-trash"></i></button>
-            </div>`;
-        }
-
-        function addMedicationRow() {
-            document.getElementById('medicationsList').insertAdjacentHTML('beforeend', medicationRow());
-        }
-
-        async function savePrescriptionFromDetails(patientId) {
-            const alertEl = document.getElementById("prescAlert");
-            const rows = document.querySelectorAll(".medication-row");
-            const medications = [];
-            rows.forEach(row => { 
-                const name = row.querySelector(".med-name")?.value.trim(); 
-                if(name) medications.push({ 
-                    name, 
-                    dosage: row.querySelector(".med-dosage")?.value, 
-                    frequency: row.querySelector(".med-frequency")?.value, 
-                    durationDays: row.querySelector(".med-duration")?.value 
-                }); 
-            });
-            if(!medications.length) { 
-                alertEl.innerHTML = `<div class="alert-error">Ajoutez au moins un medicament</div>`; 
-                return; 
-            }
-            try {
-                await api.createPrescription({ 
-                    patientId, 
-                    diagnosis: document.getElementById("p_diagnosis").value.trim(), 
-                    medications, 
-                    instructions: document.getElementById("p_instructions").value.trim(), 
-                    isRenewable: document.getElementById("p_renewable").value === 'true' 
-                });
-                closeModal(); 
-                showToast("Ordonnance ajoutee", "success"); 
-                setTimeout(() => location.reload(), 1000);
-            } catch(e) { 
-                alertEl.innerHTML = `<div class="alert-error">${e.message}</div>`; 
-            }
-        }
-
         function addAllergyFromDetails(patientId) {
             openModal(`Ajouter une allergie`, `
                 <div id="allergyAlert"></div>
@@ -730,6 +434,7 @@
                 <div class="form-group"><label>Reaction</label><textarea class="modal-input" id="a_reaction" rows="2" placeholder="Description de la reaction..."></textarea></div>
                 <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="saveAllergyFromDetails('${patientId}')">Enregistrer</button></div>
             `);
+            setupModal();
         }
 
         async function saveAllergyFromDetails(patientId) {
@@ -765,15 +470,11 @@
             }
         }
 
-        window.addConsultationFromDetails = addConsultationFromDetails;
-        window.saveConsultationFromDetails = saveConsultationFromDetails;
-        window.addPrescriptionFromDetails = addPrescriptionFromDetails;
-        window.savePrescriptionFromDetails = savePrescriptionFromDetails;
         window.addAllergyFromDetails = addAllergyFromDetails;
         window.saveAllergyFromDetails = saveAllergyFromDetails;
         window.deleteAllergyFromDetails = deleteAllergyFromDetails;
         window.closeModal = closeModal;
-        window.addMedicationRow = addMedicationRow;
+        setupModal();
     </script>
 </body>
 </html>
