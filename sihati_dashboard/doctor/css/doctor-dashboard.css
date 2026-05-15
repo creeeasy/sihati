@@ -41,6 +41,113 @@
   --shadow-violet: 0 0 40px rgba(124,58,237,0.18);
 }
 
+/* ── Light Mode ─────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg: #f4f3ff;
+  --bg2: #ffffff;
+  --bg3: #eeeef8;
+  --surface: #ebe9fa;
+  --surface2: #e0ddf7;
+  --surface3: #d4d0f2;
+  --text: #1a1832;
+  --text-muted: #5a5880;
+  --text-dim: #9895be;
+  --border: rgba(124,58,237,0.10);
+  --border2: rgba(124,58,237,0.20);
+  --gold: #c27a1a;
+  --gold-dim: rgba(194,122,26,0.10);
+  --gold-glow: rgba(194,122,26,0.18);
+  --gold-border: rgba(194,122,26,0.28);
+  --violet: #6d28d9;
+  --violet-dim: rgba(109,40,217,0.08);
+  --violet-glow: rgba(109,40,217,0.16);
+  --violet-border: rgba(109,40,217,0.28);
+  --violet-deep: #5b21b6;
+  --rose: #e11d48;
+  --rose-dim: rgba(225,29,72,0.08);
+  --rose-border: rgba(225,29,72,0.25);
+  --green: #16a34a;
+  --green-dim: rgba(22,163,74,0.08);
+  --green-border: rgba(22,163,74,0.25);
+  --sky: #0369a1;
+  --sky-dim: rgba(3,105,161,0.08);
+  --amber: #b45309;
+  --amber-dim: rgba(180,83,9,0.08);
+  --shadow: 0 4px 28px rgba(109,40,217,0.08);
+  --shadow-lg: 0 8px 48px rgba(109,40,217,0.14);
+  --shadow-violet: 0 0 40px rgba(109,40,217,0.08);
+}
+[data-theme="light"] body { background: var(--bg); }
+[data-theme="light"] .sidebar { background: var(--bg2); }
+[data-theme="light"] .topbar  { background: var(--bg2); }
+[data-theme="light"] .brand-icon { box-shadow: 0 0 16px rgba(109,40,217,0.25); }
+[data-theme="light"] .sidebar::before { background: radial-gradient(circle, rgba(109,40,217,0.08) 0%, transparent 70%); }
+
+/* ── Loading Skeleton ────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+.skeleton-stat { height: 110px; }
+.skeleton-row  { height: 76px; margin-bottom: 10px; }
+.skeleton-text { height: 13px; margin-bottom: 8px; border-radius: 6px; }
+.skeleton-text.short { width: 55%; }
+.skeleton-text.long  { width: 85%; }
+
+/* ── Inline button loading ───────────────────────────────────────────────── */
+.btn-loading { position: relative; pointer-events: none; opacity: 0.75; }
+.btn-loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ── Theme & Lang Toggles ────────────────────────────────────────────────── */
+.topbar-toggle {
+  width: 36px; height: 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.topbar-toggle:hover { color: var(--violet); border-color: var(--violet-border); background: var(--violet-dim); }
+.lang-toggle { padding: 0 8px; width: auto; gap: 4px; font-size: 11px; font-weight: 700; }
+
+/* ── Brand logo image ────────────────────────────────────────────────────── */
+.brand-logo {
+  width: 28px; height: 28px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── RTL overrides ───────────────────────────────────────────────────────── */
+[dir="rtl"] .sidebar { border-right: none; border-left: 1px solid var(--border); }
+[dir="rtl"] .nav-link.active::after { left: auto; right: 0; border-radius: 4px 0 0 4px; }
+[dir="rtl"] .topbar::after { left: 28px; right: 28px; }
+[dir="rtl"] .toast { right: auto; left: 24px; }
+[dir="rtl"] .appointment-card::before { left: auto; right: 0; }
+[dir="rtl"] .stat-card::before { right: auto; left: -20px; }
+
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body {

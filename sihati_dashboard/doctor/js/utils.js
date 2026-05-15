@@ -1,73 +1,57 @@
 function formatCurrency(amount) {
-  if (!amount && amount !== 0) return "—";
-  const value = typeof amount === "string" ? parseFloat(amount) : amount;
-  if (isNaN(value)) return "—";
-  if (value === 0) return "0 DZD";
-  return new Intl.NumberFormat("en-US").format(Math.round(value)) + " DZD";
+  if (!amount && amount !== 0) return '—';
+  const value = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(value)) return '—';
+  if (value === 0) return '0 DZD';
+  return new Intl.NumberFormat('en-US').format(Math.round(value)) + ' DZD';
 }
 
 function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const locale = (typeof currentLang !== 'undefined' && currentLang === 'ar') ? 'ar-DZ' : 'fr-FR';
+  return new Date(dateString).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function formatDateTime(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const locale = (typeof currentLang !== 'undefined' && currentLang === 'ar') ? 'ar-DZ' : 'fr-FR';
+  return new Date(dateString).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 function showPageLoading() {
-  const content = document.getElementById("pageContent");
+  const content = document.getElementById('pageContent');
   if (content) {
-    content.innerHTML =
-      '<div class="loading"><div class="spinner"></div><p>Chargement en cours...</p></div>';
+    const txt = (typeof t === 'function') ? t('loading_text') : 'Chargement...';
+    content.innerHTML = `<div class="loading"><div class="spinner"></div><p>${txt}</p></div>`;
   }
 }
 
 function hidePageLoading() {
-  const loadingEl = document.querySelector("#pageContent .loading");
-  if (loadingEl) loadingEl.remove();
+  document.querySelector('#pageContent .loading')?.remove();
 }
 
-function showToast(message, type = "info") {
-  const colors = {
-    success: "var(--green)",
-    error: "var(--rose)",
-    info: "var(--violet)",
-  };
-  const toast = document.createElement("div");
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.innerHTML = `<i class="fas ${type === "success" ? "fa-check-circle" : type === "error" ? "fa-exclamation-circle" : "fa-info-circle"}"></i> ${message}`;
+  const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+  toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
   document.body.appendChild(toast);
   setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transform = "translateY(20px)";
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
     setTimeout(() => toast.remove(), 300);
   }, 3200);
 }
 
 function escapeHtml(str) {
-  if (!str) return "";
+  if (!str) return '';
   return str
-    .replace(/[&<>]/g, (m) => {
-      if (m === "&") return "&amp;";
-      if (m === "<") return "&lt;";
-      if (m === ">") return "&gt;";
-      return m;
-    })
-    .replace(/['"]/g, (m) => {
-      if (m === "'") return "&#39;";
-      if (m === '"') return "&quot;";
-      return m;
-    });
+    .replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]))
+    .replace(/['"]/g, m => m === "'" ? '&#39;' : '&quot;');
+}
+
+// Skeleton helpers
+function skeletonStats(count = 6) {
+  return `<div class="stats-grid">${Array(count).fill('<div class="stat-card skeleton skeleton-stat"></div>').join('')}</div>`;
+}
+function skeletonList(count = 4) {
+  return Array(count).fill('<div class="skeleton skeleton-row"></div>').join('');
 }

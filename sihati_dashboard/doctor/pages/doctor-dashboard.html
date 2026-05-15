@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sihati - Espace Médecin</title>
+  <script>(function(){var t=localStorage.getItem('sihati_theme')||'dark';document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('sihati_lang')||'fr';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';})()</script>
+  <title>Sihati - Tableau de bord</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/doctor-dashboard.css">
@@ -13,50 +14,41 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="brand">
-      <div class="brand-icon">S</div>
+      <div class="brand-icon">
+        <img src="../../icons/sihati_icon_transparent.svg" alt="Sihati" class="brand-logo">
+      </div>
       <div>
         <div class="brand-text">Sihati</div>
         <div class="brand-sub">Espace Medecin</div>
       </div>
     </div>
   </div>
-
   <nav class="sidebar-nav">
     <div class="nav-section">Principal</div>
-    <a href="#" class="nav-link active" data-page="dashboard">
-      <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span>
-      <span>Tableau de bord</span>
+    <a href="doctor-dashboard.html" class="nav-link" data-file="doctor-dashboard.html">
+      <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span><span>Tableau de bord</span>
     </a>
-    <a href="#" class="nav-link" data-page="waiting-queue">
-      <span class="nav-icon"><i class="fas fa-clock"></i></span>
-      <span>File d'attente</span>
+    <a href="waiting-queue.html" class="nav-link" data-file="waiting-queue.html">
+      <span class="nav-icon"><i class="fas fa-clock"></i></span><span>File d'attente</span>
     </a>
-    <a href="#" class="nav-link" data-page="appointments">
-      <span class="nav-icon"><i class="fas fa-calendar-alt"></i></span>
-      <span>Rendez-vous</span>
+    <a href="appointments.html" class="nav-link" data-file="appointments.html">
+      <span class="nav-icon"><i class="fas fa-calendar-alt"></i></span><span>Rendez-vous</span>
     </a>
-
     <div class="nav-section">Gestion</div>
-    <a href="#" class="nav-link" data-page="patients">
-      <span class="nav-icon"><i class="fas fa-users"></i></span>
-      <span>Patients</span>
+    <a href="patients.html" class="nav-link" data-file="patients.html">
+      <span class="nav-icon"><i class="fas fa-users"></i></span><span>Patients</span>
     </a>
-    <a href="#" class="nav-link" data-page="availability">
-      <span class="nav-icon"><i class="fas fa-clock"></i></span>
-      <span>Disponibilites</span>
+    <a href="availability.html" class="nav-link" data-file="availability.html">
+      <span class="nav-icon"><i class="fas fa-calendar-check"></i></span><span>Disponibilites</span>
     </a>
-    <a href="#" class="nav-link" data-page="reviews">
-      <span class="nav-icon"><i class="fas fa-star"></i></span>
-      <span>Avis patients</span>
+    <a href="reviews.html" class="nav-link" data-file="reviews.html">
+      <span class="nav-icon"><i class="fas fa-star"></i></span><span>Avis patients</span>
     </a>
-
     <div class="nav-section">Compte</div>
-    <a href="#" class="nav-link" data-page="profile">
-      <span class="nav-icon"><i class="fas fa-user"></i></span>
-      <span>Mon profil</span>
+    <a href="profile.html" class="nav-link" data-file="profile.html">
+      <span class="nav-icon"><i class="fas fa-user"></i></span><span>Mon profil</span>
     </a>
   </nav>
-
   <div class="sidebar-profile">
     <div class="sidebar-profile-inner">
       <div class="doc-avatar" id="doctorAvatar">DR</div>
@@ -74,9 +66,7 @@
 <div class="main-content">
   <header class="topbar">
     <div class="topbar-left">
-      <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fas fa-bars"></i>
-      </button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
       <div>
         <h1 id="pageTitle">Tableau de bord</h1>
         <p id="pageSubtitle">Bienvenue dans votre espace professionnel</p>
@@ -87,18 +77,13 @@
         <i class="fas fa-calendar-day"></i>
         <span id="dateDisplay"></span>
       </div>
-      <div class="revenue-chip" id="revenueChip" style="display: none;">
-        <i class="fas fa-coins"></i>
-        <span id="revenueDisplay">0 DA</span>
-      </div>
+      <button class="topbar-toggle lang-toggle" id="langToggleBtn" title="Langue"></button>
+      <button class="topbar-toggle" id="themeToggleBtn" title="Thème"><i class="fas fa-sun"></i></button>
     </div>
   </header>
 
   <div id="pageContent">
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>Chargement en cours...</p>
-    </div>
+    <div class="loading"><div class="spinner"></div><p>Chargement en cours...</p></div>
   </div>
 </div>
 
@@ -112,39 +97,13 @@
   </div>
 </div>
 
-<script>
-  const now = new Date();
-  document.getElementById('dateDisplay').textContent = now.toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  });
-
-  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-  const sidebar = document.getElementById('sidebar');
-  if (mobileMenuBtn && sidebar) {
-    mobileMenuBtn.addEventListener('click', function() {
-      if (window.innerWidth <= 700) {
-        if (sidebar.style.display === 'none' || getComputedStyle(sidebar).display === 'none') {
-          sidebar.style.display = 'flex';
-        } else {
-          sidebar.style.display = 'none';
-        }
-      }
-    });
-    window.addEventListener('resize', function() {
-      if (window.innerWidth > 700) {
-        sidebar.style.display = '';
-      }
-    });
-  }
-</script>
 <script src="../js/config.js"></script>
+<script src="../js/translations.js"></script>
 <script src="../js/api.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/storage.js"></script>
-<script src="../js/doctor-auth.js"></script>
 <script src="../js/modals.js"></script>
+<script src="../js/shared.js"></script>
 <script src="../js/doctor-dashboard.js"></script>
 </body>
 </html>
