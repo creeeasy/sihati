@@ -198,29 +198,15 @@ button { cursor: pointer; font-family: var(--font); border: none; background: no
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
-.brand-icon {
-  width: 42px; height: 42px;
-  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 60%, #f0a354 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 18px;
-  color: #fff;
-  box-shadow: 0 0 20px rgba(124,58,237,0.45), 0 0 0 1px rgba(167,139,250,0.3);
-  letter-spacing: -0.5px;
+.brand-lockup {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  /* Invert SVG for light mode is handled by filter below */
 }
-.brand-text {
-  font-size: 19px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(90deg, var(--violet), #c4b5fd, var(--gold));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+[data-theme="light"] .brand-lockup { filter: none; }
 .brand-sub {
   font-size: 10.5px;
   color: var(--text-dim);
@@ -228,6 +214,9 @@ button { cursor: pointer; font-family: var(--font); border: none; background: no
   font-weight: 500;
   letter-spacing: 1px;
   text-transform: uppercase;
+  margin-left: 8px;
+  align-self: flex-end;
+  padding-bottom: 2px;
 }
 
 .sidebar-nav {

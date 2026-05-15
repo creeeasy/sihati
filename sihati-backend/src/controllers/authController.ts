@@ -50,6 +50,7 @@ export const login = async (
   try {
     const { email, password } = req.body;
     const result = await authService.login(email, password);
+    console.log(result)
     ResponseHandler.success(res, result, 'Connexion réussie.');
   } catch (error) {
     if (error instanceof AuthenticationError) {

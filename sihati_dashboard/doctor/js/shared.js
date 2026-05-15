@@ -193,10 +193,24 @@ async function authCheck() {
 async function initPage() {
   initTheme();
   _updateLangBtn();
-  applyAllI18n(); // ← applies ALL static text (topbar, sidebar, nav) in current lang
+  applyAllI18n();
+
+  // Show Lottie loader while we auth+load
+  const pc = document.getElementById('pageContent');
+  if (pc) pc.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;">
+      <lottie-player src="../../assets/animations/sihati_dna.json" background="transparent" speed="1"
+        style="width:140px;height:140px;" loop autoplay></lottie-player>
+    </div>`;
 
   const ok = await authCheck();
   if (!ok) return false;
+
+  // Auth passed — reveal page with a smooth fade-in
+  document.documentElement.style.transition = 'opacity 0.2s ease';
+  document.documentElement.style.opacity = '0';
+  document.documentElement.style.visibility = 'visible';
+  requestAnimationFrame(() => { document.documentElement.style.opacity = '1'; });
 
   await loadSidebarProfile();
   setupSidebar();

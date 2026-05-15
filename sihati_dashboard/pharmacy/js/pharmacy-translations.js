@@ -216,7 +216,7 @@ const PH_TRANSLATIONS = {
   }
 };
 
-let phLang = localStorage.getItem('sihati_ph_lang') || 'fr';
+let phLang = localStorage.getItem('sihati_lang') || 'fr';
 
 function pt(key) {
   const translations = PH_TRANSLATIONS[phLang] || PH_TRANSLATIONS['fr'];
@@ -225,7 +225,7 @@ function pt(key) {
 
 function setPhLanguage(lang) {
   phLang = lang;
-  localStorage.setItem('sihati_ph_lang', lang);
+  localStorage.setItem('sihati_lang', lang);
   document.documentElement.lang = lang;
   document.documentElement.dir  = lang === 'ar' ? 'rtl' : 'ltr';
 }

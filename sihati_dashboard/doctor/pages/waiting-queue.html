@@ -2,7 +2,7 @@
 <html lang="fr" data-theme="dark">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>(function(){var t=localStorage.getItem('sihati_theme')||'dark';document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('sihati_lang')||'fr';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';})()</script>
+  <script>(function(){var t=localStorage.getItem('sihati_theme')||'dark';document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('sihati_lang')||'fr';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';})()</script><script>document.documentElement.style.visibility='hidden'</script>
   <title>Sihati - File d'attente</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -12,8 +12,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="brand">
-      <div class="brand-icon"><img src="../../icons/sihati_icon_transparent.svg" alt="Sihati" class="brand-logo"></div>
-      <div><div class="brand-text">Sihati</div><div class="brand-sub">Espace Medecin</div></div>
+      <img src="../../assets/icons/sihati_lockup.svg" alt="Sihati" class="brand-lockup">
     </div>
   </div>
   <nav class="sidebar-nav">
@@ -57,6 +56,8 @@
   </div>
 </div>
 <script src="../js/config.js"></script>
+<script src="../../assets/js/core.js"></script>
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <script src="../js/translations.js"></script>
 <script src="../js/api.js"></script>
 <script src="../js/utils.js"></script>

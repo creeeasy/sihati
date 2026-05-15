@@ -66,7 +66,7 @@ function phApplyAllI18n() {
 
 // ─── Theme ──────────────────────────────────────────────────────────────────
 function phInitTheme() {
-  const theme = localStorage.getItem("sihati_ph_theme") || "dark";
+  const theme = localStorage.getItem("sihati_theme") || "dark";
   document.documentElement.setAttribute("data-theme", theme);
   phUpdateThemeBtn(theme);
 }
@@ -74,7 +74,7 @@ function phToggleTheme() {
   const cur = document.documentElement.getAttribute("data-theme") || "dark";
   const next = cur === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", next);
-  localStorage.setItem("sihati_ph_theme", next);
+  localStorage.setItem("sihati_theme", next);
   phUpdateThemeBtn(next);
 }
 function phUpdateThemeBtn(theme) {
@@ -273,24 +273,32 @@ async function phInitPage() {
   phUpdateLangBtn();
   phApplyAllI18n();
 
+  // Show Lottie loader while we auth+load
+  const pc = document.getElementById('pageContent');
+  if (pc) pc.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;">
+      <lottie-player src="../../assets/animations/sihati_dna.json" background="transparent" speed="1"
+        style="width:140px;height:140px;" loop autoplay></lottie-player>
+    </div>`;
+
   const ok = await phAuthCheck();
   if (!ok) return false;
+
+  // Auth passed — reveal page with a smooth fade-in
+  document.documentElement.style.transition = 'opacity 0.2s ease';
+  document.documentElement.style.opacity = '0';
+  document.documentElement.style.visibility = 'visible';
+  requestAnimationFrame(() => { document.documentElement.style.opacity = '1'; });
 
   await phLoadSidebarProfile();
   phSetupSidebar();
 
-  document
-    .getElementById("themeToggleBtn")
-    ?.addEventListener("click", phToggleTheme);
-  document
-    .getElementById("langToggleBtn")
-    ?.addEventListener("click", phToggleLanguage);
+  document.getElementById('themeToggleBtn')?.addEventListener('click', phToggleTheme);
+  document.getElementById('langToggleBtn')?.addEventListener('click', phToggleLanguage);
 
-  document
-    .getElementById("modalCloseBtn")
-    ?.addEventListener("click", phCloseModal);
-  document.getElementById("modalOverlay")?.addEventListener("click", (e) => {
-    if (e.target === document.getElementById("modalOverlay")) phCloseModal();
+  document.getElementById('modalCloseBtn')?.addEventListener('click', phCloseModal);
+  document.getElementById('modalOverlay')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modalOverlay')) phCloseModal();
   });
 
   return true;
