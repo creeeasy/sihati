@@ -32,11 +32,6 @@ module.exports = {
         allowNull: false,
         defaultValue: "patient",
       },
-      is_active: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
-      },
       is_verified: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -52,10 +47,6 @@ module.exports = {
       },
       profile_image: {
         type: Sequelize.STRING,
-        allowNull: true,
-      },
-      fcm_token: {
-        type: Sequelize.TEXT,
         allowNull: true,
       },
       last_login: {

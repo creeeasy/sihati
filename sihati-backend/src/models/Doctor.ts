@@ -16,7 +16,6 @@ export interface DoctorAttributes {
   phone: string;
   whatsappNumber?: string;
   consultationFee?: number;
-  workingHours?: object;
   bio?: string;
   yearsOfExperience?: number;
   averageRating?: number;
@@ -46,7 +45,6 @@ class Doctor
   public phone!: string;
   public whatsappNumber?: string;
   public consultationFee?: number;
-  public workingHours?: object;
   public bio?: string;
   public yearsOfExperience?: number;
   public averageRating?: number;
@@ -148,10 +146,6 @@ Doctor.init(
     },
     consultationFee: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-    },
-    workingHours: {
-      type: DataTypes.JSONB,
       allowNull: true,
     },
     bio: {

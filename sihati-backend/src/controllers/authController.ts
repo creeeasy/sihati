@@ -1,10 +1,8 @@
-// src/controllers/authController.ts
+import _ from "multer";
 import { Request, Response, NextFunction } from 'express';
-import multer from 'multer';
 import authService, { AuthenticationError, ConflictError } from '../services/authService';
 import ResponseHandler from '../utils/responseHandler';
 
-// ─── Types ─────────────────────────────────────────────────────────
 interface RequestWithUser extends Request {
   user?: {
     id: string;
@@ -22,7 +20,17 @@ export const register = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password, fullName, phoneNumber, role, chifaNumber } = req.body;
+    const {
+      email,
+      password,
+      fullName,
+      phoneNumber,
+      role,
+      chifaNumber,
+      pharmacyData,
+      doctorProfile,
+    } = req.body;
+
     const result = await authService.register({
       email,
       password,
@@ -30,7 +38,10 @@ export const register = async (
       phoneNumber,
       role,
       chifaNumber,
+      pharmacyData,
+      doctorProfile,
     });
+
     ResponseHandler.created(res, result, 'Compte créé avec succès.');
   } catch (error) {
     if (error instanceof ConflictError) {
@@ -50,7 +61,6 @@ export const login = async (
   try {
     const { email, password } = req.body;
     const result = await authService.login(email, password);
-    console.log(result)
     ResponseHandler.success(res, result, 'Connexion réussie.');
   } catch (error) {
     if (error instanceof AuthenticationError) {
@@ -61,7 +71,7 @@ export const login = async (
   }
 };
 
-// POST /api/auth/refresh-token (sans authenticateToken)
+// POST /api/auth/refresh-token
 export const refreshToken = async (
   req: Request,
   res: Response,
@@ -174,7 +184,7 @@ export const uploadProfilePhoto = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const file = req.file; // utiliser multer
+    const file = req.file;
     if (!file) {
       ResponseHandler.badRequest(res, 'Aucun fichier fourni');
       return;

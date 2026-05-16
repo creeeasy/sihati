@@ -13,13 +13,12 @@ export interface MedicalDocumentAttributes {
   fileType?: string;
   fileSizeBytes?: number;
   documentDate: Date;
-  uploadedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface MedicalDocumentCreationAttributes
-  extends Optional<MedicalDocumentAttributes, 'id' | 'uploadedAt'> {}
+  extends Optional<MedicalDocumentAttributes, 'id'> {}
 
 class MedicalDocument
   extends Model<MedicalDocumentAttributes, MedicalDocumentCreationAttributes>
@@ -35,7 +34,6 @@ class MedicalDocument
   public fileType?: string;
   public fileSizeBytes?: number;
   public documentDate!: Date;
-  public uploadedAt!: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -110,11 +108,6 @@ MedicalDocument.init(
     documentDate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
-    },
-    uploadedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
     },
   },
   {

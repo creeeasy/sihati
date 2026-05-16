@@ -65,7 +65,6 @@ module.exports = {
           full_name: "Dr. Mehdi Benali",
           phone_number: "0555123457",
           role: "doctor",
-          is_active: true,
           is_verified: true,
           created_at: now,
           updated_at: now,
@@ -78,7 +77,6 @@ module.exports = {
           phone_number: "0555123456",
           chifa_number: "1234567890123",
           role: "patient",
-          is_active: true,
           is_verified: true,
           created_at: now,
           updated_at: now,
@@ -91,7 +89,6 @@ module.exports = {
           phone_number: "0555987654",
           chifa_number: "12345678901234",
           role: "patient",
-          is_active: true,
           is_verified: true,
           created_at: now,
           updated_at: now,
@@ -143,10 +140,10 @@ module.exports = {
 
     // 5. CONSULTATIONS
     await queryInterface.sequelize.query(`
-      INSERT INTO consultations (id, patient_id, doctor_id, consultation_date, chief_complaint, diagnosis, treatment_plan, notes, fee_paid, created_at, updated_at)
+      INSERT INTO consultations (id, patient_id, doctor_id, consultation_date, chief_complaint, diagnosis, treatment_plan, notes, created_at, updated_at)
       VALUES 
-        (gen_random_uuid(), '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '30 days', 'Douleurs abdominales', 'Gastrite aiguë', 'Repos, antiacides', 'Patient à revoir dans 7 jours', 2500, NOW(), NOW()),
-        (gen_random_uuid(), 'fd355685-3476-4e51-8585-5bb6b150cdc3', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '15 days', 'Maux de tête', 'Migraine', 'Doliprane 1000mg si besoin', 'Stress au travail', 2500, NOW(), NOW());
+        (gen_random_uuid(), '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '30 days', 'Douleurs abdominales', 'Gastrite aigu\u00eb', 'Repos, antiacides', 'Patient \u00e0 revoir dans 7 jours', NOW(), NOW()),
+        (gen_random_uuid(), 'fd355685-3476-4e51-8585-5bb6b150cdc3', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '15 days', 'Maux de t\u00eate', 'Migraine', 'Doliprane 1000mg si besoin', 'Stress au travail', NOW(), NOW());
     `);
 
     // 6. PRESCRIPTIONS

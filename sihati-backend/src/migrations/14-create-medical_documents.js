@@ -58,11 +58,6 @@ module.exports = {
         type: Sequelize.DATEONLY,
         allowNull: false,
       },
-      uploaded_at: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.fn("NOW"),
-      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

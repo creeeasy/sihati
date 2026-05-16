@@ -15,7 +15,7 @@ const getId = (param: string | string[] | undefined): string => {
 // POST /api/consultations
 export const createConsultation = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { patientId, appointmentId, chiefComplaint, symptoms, diagnosis, treatmentPlan, notes, durationMinutes, feePaid } = req.body;
+    const { patientId, appointmentId, chiefComplaint, symptoms, diagnosis, treatmentPlan, notes } = req.body;
     
     // ✅ Récupérer l'userId du médecin connecté (JWT)
     const doctorUserId = req.user?.id;
@@ -23,7 +23,7 @@ export const createConsultation = async (req: AuthRequest, res: Response, next: 
       return res.status(401).json({ success: false, message: 'Utilisateur non authentifié' });
     }
     
-    // ✅ Récupérer le doctorId à partir du userId
+    // ✅ Vérifier que l'utilisateur a un profil médecin
     const doctor = await Doctor.findOne({ where: { userId: doctorUserId } });
     if (!doctor) {
       return res.status(404).json({ success: false, message: 'Profil médecin non trouvé' });
@@ -31,15 +31,13 @@ export const createConsultation = async (req: AuthRequest, res: Response, next: 
     
     const consultation = await Consultation.create({
       patientId,
-      doctorId: doctorUserId,  // ✅ Utiliser userId (référence users table)
+      doctorId: doctorUserId,  // ✅ doctorId → users.id
       appointmentId,
       chiefComplaint,
       symptoms,
       diagnosis,
       treatmentPlan,
       notes,
-      durationMinutes,
-      feePaid,
       consultationDate: new Date()
     });
     
@@ -56,7 +54,7 @@ export const getPatientConsultations = async (req: Request, res: Response, next:
     const consultations = await Consultation.findAll({
       where: { patientId },
       include: [
-        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user' }] }
+        { model: User, as: 'doctor', attributes: ['id', 'fullName', 'profileImage'] }
       ],
       order: [['consultationDate', 'DESC']]
     });
@@ -72,7 +70,7 @@ export const getConsultationById = async (req: Request, res: Response, next: Nex
     const id = getId(req.params.id);
     const consultation = await Consultation.findByPk(id, {
       include: [
-        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user' }] }
+        { model: User, as: 'doctor', attributes: ['id', 'fullName', 'profileImage'] }
       ]
     });
     if (!consultation) {

@@ -76,7 +76,6 @@ export interface DoctorCreateDTO {
   phone: string;
   whatsappNumber?: string;
   consultationFee?: number;
-  workingHours?: object;
   bio?: string;
   yearsOfExperience?: number;
 }
@@ -93,7 +92,6 @@ export interface DoctorUpdateDTO {
   phone?: string;
   whatsappNumber?: string;
   consultationFee?: number;
-  workingHours?: object;
   bio?: string;
   yearsOfExperience?: number;
   isVerified?: boolean;
@@ -153,7 +151,6 @@ export interface AppointmentCreateDTO {
   appointmentDate: Date;
   appointmentTime: string;
   reason?: string;
-  consultationFee?: number;
 }
 
 export interface AppointmentUpdateDTO {
@@ -224,8 +221,6 @@ export interface ConsultationCreateDTO {
   diagnosis?: string;
   treatmentPlan?: string;
   notes?: string;
-  durationMinutes?: number;
-  feePaid?: number;
 }
 
 // ============================================================
@@ -236,9 +231,6 @@ export interface PatientProfileDTO {
   dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
   bloodType?: string;
-  address?: string;
-  wilaya?: string;
-  commune?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
 }

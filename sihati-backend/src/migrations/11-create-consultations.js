@@ -55,14 +55,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      duration_minutes: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-      },
-      fee_paid: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: true,
-      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

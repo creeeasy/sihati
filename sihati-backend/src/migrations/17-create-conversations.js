@@ -24,10 +24,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false,
       },
-      context: {
-        type: Sequelize.JSONB,
-        allowNull: true,
-      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

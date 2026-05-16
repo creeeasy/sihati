@@ -12,7 +12,6 @@ export interface AppointmentAttributes {
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
   reason?: string;
   notes?: string;
-  consultationFee?: number;
   cancelledAt?: Date;
   cancelledBy?: string;
   cancellationReason?: string;
@@ -33,7 +32,6 @@ class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttrib
   public status!: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
   public reason?: string;
   public notes?: string;
-  public consultationFee?: number;
   public cancelledAt?: Date;
   public cancelledBy?: string;
   public cancellationReason?: string;
@@ -133,10 +131,6 @@ Appointment.init(
     },
     notes: {
       type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    consultationFee: {
-      type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
     cancelledAt: {

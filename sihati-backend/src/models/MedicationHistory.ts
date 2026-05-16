@@ -14,14 +14,12 @@ export interface MedicationHistoryAttributes {
   endDate?: Date;
   prescribedBy?: string;
   reason?: string;
-  isActive: boolean;
-  adherenceRate?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface MedicationHistoryCreationAttributes
-  extends Optional<MedicationHistoryAttributes, 'id' | 'isActive'> {}
+  extends Optional<MedicationHistoryAttributes, 'id'> {}
 
 class MedicationHistory extends Model<MedicationHistoryAttributes, MedicationHistoryCreationAttributes> implements MedicationHistoryAttributes {
   public id!: string;
@@ -35,8 +33,6 @@ class MedicationHistory extends Model<MedicationHistoryAttributes, MedicationHis
   public endDate?: Date;
   public prescribedBy?: string;
   public reason?: string;
-  public isActive!: boolean;
-  public adherenceRate?: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -119,15 +115,6 @@ MedicationHistory.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true, // ✅ Ajouté
-    },
-    adherenceRate: {
-      type: DataTypes.DECIMAL(5, 2),
-      allowNull: true,
-    },
   },
   {
     sequelize,
@@ -136,7 +123,6 @@ MedicationHistory.init(
     underscored: true,
     indexes: [
       { fields: ['patient_id'] },
-      { fields: ['is_active'] },
       { fields: ['start_date'] },
     ],
   }

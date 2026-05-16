@@ -13,8 +13,6 @@ export interface ConsultationAttributes {
   diagnosis?: string;
   treatmentPlan?: string;
   notes?: string;
-  durationMinutes?: number;
-  feePaid?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -32,15 +30,13 @@ class Consultation extends Model<ConsultationAttributes, ConsultationCreationAtt
   public diagnosis?: string;
   public treatmentPlan?: string;
   public notes?: string;
-  public durationMinutes?: number;
-  public feePaid?: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
 public static associate(): void {
-  const { User, Doctor, Appointment, Prescription } = sequelize.models;
+  const { User, Appointment, Prescription } = sequelize.models;
   Consultation.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
-  Consultation.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
+  Consultation.belongsTo(User, { foreignKey: 'doctorId', as: 'doctor' }); // ✅ doctorId → users.id
   Consultation.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
   Consultation.hasMany(Prescription, { foreignKey: 'consultationId', as: 'prescriptions' });
 }
@@ -93,14 +89,6 @@ Consultation.init(
     },
     notes: {
       type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    durationMinutes: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    feePaid: {
-      type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
   },

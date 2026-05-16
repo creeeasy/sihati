@@ -51,16 +51,12 @@
 
         .bg-animated {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 0;
             background: linear-gradient(135deg, #0b0f1a 0%, #111827 50%, #0b0f1a 100%);
         }
-
-        .bg-animated::before,
-        .bg-animated::after {
+        .bg-animated::before, .bg-animated::after {
             content: '';
             position: absolute;
             border-radius: 50%;
@@ -68,24 +64,17 @@
             opacity: 0.3;
             animation: float 20s infinite ease-in-out;
         }
-
         .bg-animated::before {
-            width: 600px;
-            height: 600px;
+            width: 600px; height: 600px;
             background: var(--teal);
-            top: -300px;
-            right: -250px;
+            top: -300px; right: -250px;
         }
-
         .bg-animated::after {
-            width: 500px;
-            height: 500px;
+            width: 500px; height: 500px;
             background: var(--blue);
-            bottom: -250px;
-            left: -200px;
+            bottom: -250px; left: -200px;
             animation-delay: -10s;
         }
-
         @keyframes float {
             0%, 100% { transform: translate(0, 0) scale(1); }
             33% { transform: translate(60px, -60px) scale(1.1); }
@@ -100,7 +89,6 @@
             padding: 20px;
             animation: slideUp 0.8s ease-out;
         }
-
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -110,10 +98,8 @@
             text-align: center;
             margin-bottom: 32px;
         }
-
         .logo {
-            width: 70px;
-            height: 70px;
+            width: 70px; height: 70px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 18px;
@@ -122,12 +108,7 @@
             justify-content: center;
             margin-bottom: 20px;
         }
-
-        .logo i {
-            font-size: 36px;
-            color: var(--teal);
-        }
-
+        .logo i { font-size: 36px; color: var(--teal); }
         .login-title {
             font-size: 24px;
             font-weight: 700;
@@ -135,7 +116,6 @@
             color: var(--text);
             margin-bottom: 6px;
         }
-
         .login-subtitle {
             font-size: 13px;
             color: var(--text-muted);
@@ -149,27 +129,29 @@
             backdrop-filter: blur(10px);
         }
 
-        .error-box {
+        .alert-box {
             display: none;
-            background: var(--rose-dim);
-            border: 1px solid var(--rose);
             border-radius: var(--radius-sm);
             padding: 14px 16px;
             margin-bottom: 24px;
-            color: var(--rose);
             font-size: 13px;
             align-items: center;
             gap: 10px;
         }
-
-        .error-box i {
-            font-size: 18px;
+        .alert-box i { font-size: 18px; }
+        .alert-box.show { display: flex; }
+        .alert-box.error {
+            background: var(--rose-dim);
+            border: 1px solid var(--rose);
+            color: var(--rose);
+        }
+        .alert-box.success {
+            background: var(--green-dim);
+            border: 1px solid var(--green);
+            color: var(--green);
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
+        .form-group { margin-bottom: 20px; }
         .form-label {
             display: block;
             font-size: 12px;
@@ -179,11 +161,7 @@
             color: var(--text-dim);
             margin-bottom: 8px;
         }
-
-        .input-wrapper {
-            position: relative;
-        }
-
+        .input-wrapper { position: relative; }
         .form-input {
             width: 100%;
             height: 52px;
@@ -196,17 +174,12 @@
             font-size: 14px;
             transition: all 0.2s ease;
         }
-
         .form-input:focus {
             outline: none;
             border-color: var(--teal);
             box-shadow: 0 0 0 3px var(--teal-dim);
         }
-
-        .form-input::placeholder {
-            color: var(--text-dim);
-        }
-
+        .form-input::placeholder { color: var(--text-dim); }
         .input-icon {
             position: absolute;
             left: 16px;
@@ -215,7 +188,6 @@
             color: var(--teal);
             font-size: 16px;
         }
-
         .toggle-password {
             position: absolute;
             right: 16px;
@@ -228,10 +200,7 @@
             font-size: 16px;
             transition: color 0.2s;
         }
-
-        .toggle-password:hover {
-            color: var(--teal);
-        }
+        .toggle-password:hover { color: var(--teal); }
 
         .options-row {
             display: flex;
@@ -239,7 +208,6 @@
             align-items: center;
             margin-bottom: 24px;
         }
-
         .remember-me {
             display: flex;
             align-items: center;
@@ -248,14 +216,11 @@
             font-size: 13px;
             cursor: pointer;
         }
-
         .remember-me input {
-            width: 16px;
-            height: 16px;
+            width: 16px; height: 16px;
             cursor: pointer;
             accent-color: var(--teal);
         }
-
         .forgot-link {
             color: var(--teal);
             font-size: 13px;
@@ -263,10 +228,7 @@
             text-decoration: none;
             transition: color 0.2s;
         }
-
-        .forgot-link:hover {
-            color: var(--blue);
-        }
+        .forgot-link:hover { color: var(--blue); }
 
         .submit-btn {
             width: 100%;
@@ -285,16 +247,11 @@
             justify-content: center;
             gap: 8px;
         }
-
         .submit-btn:hover {
             filter: brightness(1.08);
             transform: translateY(-1px);
         }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
+        .submit-btn:active { transform: translateY(0); }
         .submit-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -307,13 +264,11 @@
             gap: 16px;
             margin: 28px 0 20px;
         }
-
         .divider-line {
             flex: 1;
             height: 1px;
             background: var(--border);
         }
-
         .divider-text {
             color: var(--text-dim);
             font-size: 11px;
@@ -334,11 +289,14 @@
             font-weight: 500;
             transition: all 0.2s ease;
         }
-
         .register-link:hover {
             border-color: var(--teal);
             color: var(--teal);
             background: var(--teal-dim);
+        }
+
+        @media (max-width: 480px) {
+            .form-card { padding: 24px; }
         }
     </style>
 </head>
@@ -356,16 +314,16 @@
     </div>
 
     <div class="form-card">
-        <div id="errorMsg" class="error-box">
-            <i class="fas fa-exclamation-circle"></i>
-            <span id="errorText"></span>
+        <div id="alertMsg" class="alert-box">
+            <i id="alertIcon" class="fas fa-exclamation-circle"></i>
+            <span id="alertText"></span>
         </div>
 
         <div class="form-group">
             <label class="form-label">Email</label>
             <div class="input-wrapper">
                 <i class="fas fa-envelope input-icon"></i>
-                <input type="email" id="email" class="form-input" value="pharmacie.ennour@sihati.dz" placeholder="pharmacie@exemple.dz">
+                <input type="email" id="email" class="form-input" placeholder="pharmacie@exemple.dz">
             </div>
         </div>
 
@@ -373,7 +331,7 @@
             <label class="form-label">Mot de passe</label>
             <div class="input-wrapper">
                 <i class="fas fa-lock input-icon"></i>
-                <input type="password" id="password" class="form-input" value="password123" placeholder="••••••••">
+                <input type="password" id="password" class="form-input" placeholder="••••••••">
                 <button type="button" class="toggle-password" id="togglePassword">
                     <i class="fas fa-eye" id="toggleIcon"></i>
                 </button>
@@ -385,7 +343,7 @@
                 <input type="checkbox" id="rememberMe">
                 <span>Se souvenir de moi</span>
             </label>
-            <a href="#" class="forgot-link">Mot de passe oublie</a>
+            <a href="#" class="forgot-link">Mot de passe oublié</a>
         </div>
 
         <button class="submit-btn" id="loginBtn">
@@ -400,33 +358,38 @@
         </div>
 
         <a href="pharmacy-register.html" class="register-link">
-            <i class="fas fa-user-plus"></i> Creer un compte pharmacie
+            <i class="fas fa-user-plus"></i> Créer un compte pharmacie
         </a>
     </div>
 </div>
 
 <script src="../js/config.js"></script>
 <script src="../../assets/js/core.js"></script>
-<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <script src="../js/api.js"></script>
 <script>
-    const errorDiv = document.getElementById('errorMsg');
-    const errorText = document.getElementById('errorText');
+    const alertDiv = document.getElementById('alertMsg');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertText = document.getElementById('alertText');
     const loginBtn = document.getElementById('loginBtn');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const rememberCheckbox = document.getElementById('rememberMe');
 
     function showError(message) {
-        errorText.textContent = message;
-        errorDiv.style.display = 'flex';
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 5000);
+        alertDiv.className = 'alert-box error show';
+        alertIcon.className = 'fas fa-exclamation-circle';
+        alertText.textContent = message;
+        setTimeout(() => alertDiv.classList.remove('show'), 5000);
     }
 
-    function hideError() {
-        errorDiv.style.display = 'none';
+    function showSuccess(message) {
+        alertDiv.className = 'alert-box success show';
+        alertIcon.className = 'fas fa-check-circle';
+        alertText.textContent = message;
+    }
+
+    function hideAlert() {
+        alertDiv.classList.remove('show');
     }
 
     function saveCredentials(email, password) {
@@ -451,7 +414,7 @@
         }
     }
 
-    document.getElementById('togglePassword').addEventListener('click', function() {
+    document.getElementById('togglePassword').addEventListener('click', function () {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
         const icon = document.getElementById('toggleIcon');
@@ -462,47 +425,45 @@
     async function handleLogin() {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
-        
-        hideError();
-        
+
+        hideAlert();
+
         if (!email || !password) {
             showError('Veuillez remplir tous les champs');
             return;
         }
-        
+
         loginBtn.disabled = true;
         const originalText = loginBtn.innerHTML;
         loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
-        
+
         try {
             const res = await api.login(email, password);
             const user = STORAGE.getUser();
-            
-            console.log("Utilisateur connecte:", user);
-            
+
             const pharmacies = await api.getPharmacyByUserId(user.id);
-            console.log("Pharmacies recues:", pharmacies);
-            
+
             if (pharmacies.data && pharmacies.data.length > 0) {
                 const pharmacy = pharmacies.data.find(p => p.userId === user.id);
-                
+
                 if (pharmacy) {
                     api.setPharmacyId(pharmacy.id);
                     saveCredentials(email, password);
-                    console.log("Pharmacie selectionnee:", pharmacy.pharmacyName);
-                    window.location.href = 'pharmacy-dashboard.html';
+                    showSuccess('Connexion réussie ! Redirection...');
+                    setTimeout(() => {
+                        window.location.href = 'pharmacy-dashboard.html';
+                    }, 1000);
                 } else {
-                    showError('Aucune pharmacie associee a ce compte');
+                    showError('Aucune pharmacie associée à ce compte');
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = originalText;
                 }
             } else {
-                showError('Aucune pharmacie trouvee pour ce compte');
+                showError('Aucune pharmacie trouvée pour ce compte');
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = originalText;
             }
         } catch (err) {
-            console.error("Erreur:", err);
             showError(err.message || 'Email ou mot de passe incorrect');
             loginBtn.disabled = false;
             loginBtn.innerHTML = originalText;
@@ -510,11 +471,11 @@
     }
 
     loginBtn.addEventListener('click', handleLogin);
-    
+
     passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
     });
-    
+
     emailInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
     });

@@ -7,7 +7,6 @@ export interface ConversationAttributes {
   userId: string;  // ✅ UUID
   userMessage: string;
   aiResponse: string;
-  context?: object;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -23,7 +22,6 @@ class Conversation
   public userId!: string;
   public userMessage!: string;
   public aiResponse!: string;
-  public context?: object;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -53,10 +51,6 @@ Conversation.init(
     aiResponse: {
       type: DataTypes.TEXT,
       allowNull: false,
-    },
-    context: {
-      type: DataTypes.JSONB,
-      allowNull: true,
     },
   },
   {

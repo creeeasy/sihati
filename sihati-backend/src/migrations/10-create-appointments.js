@@ -57,10 +57,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      consultation_fee: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: true,
-      },
       cancelled_at: {
         type: Sequelize.DATE,
         allowNull: true,

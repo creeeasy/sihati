@@ -54,10 +54,8 @@
 
         .bg-animated {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 0;
             background: linear-gradient(135deg, #0b0f1a 0%, #111827 50%, #0b0f1a 100%);
         }
@@ -136,20 +134,27 @@
             backdrop-filter: blur(10px);
         }
 
-        .error-box {
+        .alert-box {
             display: none;
-            background: var(--rose-dim);
-            border: 1px solid var(--rose);
             border-radius: var(--radius-sm);
             padding: 14px 16px;
             margin-bottom: 24px;
-            color: var(--rose);
             font-size: 13px;
             align-items: center;
             gap: 10px;
         }
-        .error-box i { font-size: 16px; }
-        .error-box.show { display: flex; }
+        .alert-box i { font-size: 16px; }
+        .alert-box.show { display: flex; }
+        .alert-box.error {
+            background: var(--rose-dim);
+            border: 1px solid var(--rose);
+            color: var(--rose);
+        }
+        .alert-box.success {
+            background: var(--green-dim);
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
 
         .form-group { margin-bottom: 20px; }
         .form-label {
@@ -294,37 +299,8 @@
             background: var(--violet-dim);
         }
 
-        .test-credentials {
-            margin-top: 20px;
-            padding: 16px;
-            background: var(--surface);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-        }
-        .test-credentials small {
-            color: var(--text-dim);
-            font-size: 11px;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .test-credentials code {
-            background: var(--surface2);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            color: var(--violet);
-            font-family: var(--mono);
-        }
-        .test-grid {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
         @media (max-width: 480px) {
             .form-card { padding: 24px; }
-            .test-grid { flex-direction: column; }
         }
     </style>
 </head>
@@ -342,16 +318,16 @@
     </div>
 
     <div class="form-card">
-        <div id="errorMsg" class="error-box">
-            <i class="fas fa-exclamation-circle"></i>
-            <span id="errorText"></span>
+        <div id="alertMsg" class="alert-box">
+            <i id="alertIcon" class="fas fa-exclamation-circle"></i>
+            <span id="alertText"></span>
         </div>
 
         <div class="form-group">
             <label class="form-label">Email professionnel</label>
             <div class="input-wrapper">
                 <i class="fas fa-envelope input-icon"></i>
-                <input type="email" id="email" class="form-input" value="dr.benali@test.com" placeholder="dr.benali@test.com">
+                <input type="email" id="email" class="form-input" placeholder="dr.benali@exemple.com">
             </div>
         </div>
 
@@ -359,7 +335,7 @@
             <label class="form-label">Mot de passe</label>
             <div class="input-wrapper">
                 <i class="fas fa-lock input-icon"></i>
-                <input type="password" id="password" class="form-input" value="Password123" placeholder="Mot de passe">
+                <input type="password" id="password" class="form-input" placeholder="Mot de passe">
                 <button type="button" class="toggle-password" id="togglePassword">
                     <i class="fas fa-eye" id="toggleIcon"></i>
                 </button>
@@ -371,7 +347,7 @@
                 <input type="checkbox" id="rememberMe">
                 <span>Se souvenir de moi</span>
             </label>
-            <a href="#" class="forgot-link">Mot de passe oublie</a>
+            <a href="#" class="forgot-link">Mot de passe oublié</a>
         </div>
 
         <button class="submit-btn" id="loginBtn">
@@ -386,43 +362,38 @@
         </div>
 
         <a href="doctor-register.html" class="register-link">
-            <i class="fas fa-user-plus"></i> Creer un compte medecin
+            <i class="fas fa-user-plus"></i> Créer un compte médecin
         </a>
-
-        <div class="test-credentials">
-            <small>Comptes de test</small>
-            <div class="test-grid">
-                <code>dr.benali@test.com</code>
-                <code>dr.zeroual@test.com</code>
-                <code>dr.mansouri@test.com</code>
-            </div>
-            <small class="mt-2" style="margin-top: 8px;">Mot de passe: <code>Password123</code></small>
-        </div>
     </div>
 </div>
 
 <script src="../js/config.js"></script>
 <script src="../../assets/js/core.js"></script>
-<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <script src="../js/api.js"></script>
 <script>
-    const errorDiv = document.getElementById('errorMsg');
-    const errorText = document.getElementById('errorText');
+    const alertDiv = document.getElementById('alertMsg');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertText = document.getElementById('alertText');
     const loginBtn = document.getElementById('loginBtn');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const rememberCheckbox = document.getElementById('rememberMe');
 
     function showError(message) {
-        errorText.textContent = message;
-        errorDiv.classList.add('show');
-        setTimeout(() => {
-            errorDiv.classList.remove('show');
-        }, 5000);
+        alertDiv.className = 'alert-box error show';
+        alertIcon.className = 'fas fa-exclamation-circle';
+        alertText.textContent = message;
+        setTimeout(() => alertDiv.classList.remove('show'), 5000);
     }
 
-    function hideError() {
-        errorDiv.classList.remove('show');
+    function showSuccess(message) {
+        alertDiv.className = 'alert-box success show';
+        alertIcon.className = 'fas fa-check-circle';
+        alertText.textContent = message;
+    }
+
+    function hideAlert() {
+        alertDiv.classList.remove('show');
     }
 
     function saveCredentials(email, password) {
@@ -447,7 +418,7 @@
         }
     }
 
-    document.getElementById('togglePassword').addEventListener('click', function() {
+    document.getElementById('togglePassword').addEventListener('click', function () {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
         const icon = document.getElementById('toggleIcon');
@@ -458,32 +429,32 @@
     async function handleLogin() {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
-        
-        hideError();
-        
+
+        hideAlert();
+
         if (!email || !password) {
             showError('Veuillez remplir tous les champs');
             return;
         }
-        
+
         loginBtn.disabled = true;
         const originalText = loginBtn.innerHTML;
         loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
-        
+
         try {
             const res = await api.login(email, password);
             const user = STORAGE.getUser();
-            
+
             if (user && user.role !== 'doctor') {
-                showError('Acces reserve aux medecins');
+                showError('Accès réservé aux médecins');
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = originalText;
                 return;
             }
-            
+
             if (res.success) {
                 saveCredentials(email, password);
-                showError('Connexion reussie');
+                showSuccess('Connexion réussie ! Redirection...');
                 setTimeout(() => {
                     window.location.href = 'doctor-dashboard.html';
                 }, 1000);
@@ -498,11 +469,11 @@
     }
 
     loginBtn.addEventListener('click', handleLogin);
-    
+
     passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
     });
-    
+
     emailInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
     });

@@ -8,9 +8,6 @@ export interface PatientProfileAttributes {
   dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
   bloodType?: string;
-  address?: string;
-  wilaya?: string;
-  commune?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   createdAt?: Date;
@@ -29,9 +26,6 @@ class PatientProfile
   public dateOfBirth?: Date;
   public gender?: 'male' | 'female' | 'other';
   public bloodType?: string;
-  public address?: string;
-  public wilaya?: string;
-  public commune?: string;
   public emergencyContactName?: string;
   public emergencyContactPhone?: string;
   public readonly createdAt!: Date;
@@ -79,18 +73,6 @@ PatientProfile.init(
     },
     bloodType: {
       type: DataTypes.STRING(5),
-      allowNull: true,
-    },
-    address: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    wilaya: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    commune: {
-      type: DataTypes.STRING,
       allowNull: true,
     },
     emergencyContactName: {

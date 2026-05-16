@@ -29,18 +29,6 @@ module.exports = {
         type: Sequelize.STRING(5),
         allowNull: true,
       },
-      address: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-      },
-      wilaya: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      commune: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
       emergency_contact_name: {
         type: Sequelize.STRING,
         allowNull: true,

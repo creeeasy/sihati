@@ -39,7 +39,6 @@ class AppointmentService {
     appointmentDate: Date;
     appointmentTime: string;
     reason?: string;
-    consultationFee?: number;
   }) {
     return Appointment.create({
       ...data,

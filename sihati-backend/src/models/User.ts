@@ -13,19 +13,17 @@ export interface UserAttributes {
   phoneNumber: string;
   role: 'patient' | 'pharmacy' | 'doctor' | 'admin';
   chifaNumber?: string;
-  isActive: boolean;
   isVerified: boolean;
   wilaya?: string;
   address?: string;
   profileImage?: string;
-  fcmToken?: string;
   lastLogin?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface UserCreationAttributes
-  extends Optional<UserAttributes, 'id' | 'isActive' | 'isVerified' | 'role'> {}
+  extends Optional<UserAttributes, 'id' | 'isVerified' | 'role'> {}
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string;
@@ -35,12 +33,10 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public phoneNumber!: string;
   public role!: 'patient' | 'pharmacy' | 'doctor' | 'admin';
   public chifaNumber?: string;
-  public isActive!: boolean;
   public isVerified!: boolean;
   public wilaya?: string;
   public address?: string;
   public profileImage?: string;
-  public fcmToken?: string;
   public lastLogin?: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -122,11 +118,6 @@ User.init(
       allowNull: false,
       defaultValue: 'patient',
     },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
-    },
     isVerified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -142,10 +133,6 @@ User.init(
     },
     profileImage: {
       type: DataTypes.STRING,
-      allowNull: true,
-    },
-    fcmToken: {
-      type: DataTypes.TEXT,
       allowNull: true,
     },
     lastLogin: {

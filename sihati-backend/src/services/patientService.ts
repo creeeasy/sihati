@@ -113,9 +113,9 @@ class PatientService {
       where: { patientId: userId },
       include: [
         { 
-          model: Doctor, 
-          as: 'doctor', 
-          include: [{ model: User, as: 'user' }] 
+          model: User, 
+          as: 'doctor',
+          attributes: ['id', 'fullName', 'profileImage']
         },
         { model: Appointment, as: 'appointment' }
       ],
@@ -135,7 +135,7 @@ class PatientService {
   async getConsultationById(consultationId: string) {
     const consultation = await Consultation.findByPk(consultationId, {
       include: [
-        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user' }] },
+        { model: User, as: 'doctor', attributes: ['id', 'fullName', 'profileImage'] },
         { model: Appointment, as: 'appointment' },
         { model: Prescription, as: 'prescriptions' }
       ]
@@ -160,7 +160,7 @@ class PatientService {
       patientId: userId,
       ...data,
       fileUrl,
-      uploadedAt: new Date()
+      // createdAt is set automatically by Sequelize
     });
     return document;
   }

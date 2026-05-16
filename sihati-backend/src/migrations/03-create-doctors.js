@@ -64,10 +64,6 @@ module.exports = {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: true,
       },
-      working_hours: {
-        type: Sequelize.JSONB,
-        allowNull: true,
-      },
       bio: {
         type: Sequelize.TEXT,
         allowNull: true,

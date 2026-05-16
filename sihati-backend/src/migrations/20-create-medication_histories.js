@@ -61,15 +61,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      is_active: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
-      },
-      adherence_rate: {
-        type: Sequelize.DECIMAL(5, 2),
-        allowNull: true,
-      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -83,7 +74,6 @@ module.exports = {
     });
 
     await queryInterface.addIndex("medication_histories", ["patient_id"]);
-    await queryInterface.addIndex("medication_histories", ["is_active"]);
     await queryInterface.addIndex("medication_histories", ["start_date"]);
   },
 

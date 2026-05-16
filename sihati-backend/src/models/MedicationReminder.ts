@@ -8,13 +8,12 @@ export interface MedicationReminderAttributes {
   medicationHistoryId: string;
   reminderTime: string;
   daysOfWeek: number[]; // Array of days (0-6)
-  isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface MedicationReminderCreationAttributes
-  extends Optional<MedicationReminderAttributes, 'id' | 'isActive'> {}
+  extends Optional<MedicationReminderAttributes, 'id'> {}
 
 class MedicationReminder
   extends Model<MedicationReminderAttributes, MedicationReminderCreationAttributes>
@@ -25,7 +24,6 @@ class MedicationReminder
   public medicationHistoryId!: string;
   public reminderTime!: string;
   public daysOfWeek!: number[];
-  public isActive!: boolean;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -63,11 +61,6 @@ MedicationReminder.init(
       type: DataTypes.ARRAY(DataTypes.INTEGER),
       allowNull: false,
     },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
-    },
   },
   {
     sequelize,
@@ -76,7 +69,6 @@ MedicationReminder.init(
     underscored: true,
     indexes: [
       { fields: ['patient_id'] },
-      { fields: ['is_active'] },
     ],
   }
 );

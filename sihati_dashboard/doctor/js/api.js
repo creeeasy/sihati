@@ -157,15 +157,8 @@ class ApiService {
     const appts = apptRes.data || [];
     const reviews = reviewRes.data || [];
 
-    // Calcul des revenus du jour
+    // Calcul des rendez-vous du jour
     const today = new Date().toISOString().slice(0, 10);
-    const todayAppts = appts.filter(
-      (a) => a.status === "completed" && a.appointmentDate === today,
-    );
-    const todayRevenue = todayAppts.reduce(
-      (sum, a) => sum + (a.consultationFee || 0),
-      0,
-    );
     console.log(reviews);
     const avg = reviews.length
       ? (reviews.reduce((s, r) => s + +r.rating, 0) / reviews.length).toFixed(1)
@@ -178,7 +171,6 @@ class ApiService {
       completed: appts.filter((a) => a.status === "completed").length,
       cancelled: appts.filter((a) => a.status === "cancelled").length,
       today: appts.filter((a) => a.appointmentDate === today).length,
-      todayRevenue,
       averageRating: avg,
     };
   }

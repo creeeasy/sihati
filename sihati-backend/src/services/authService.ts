@@ -1,4 +1,3 @@
-// src/services/authService.ts
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User, RefreshToken } from '../models';
@@ -6,7 +5,6 @@ import env from '../config/env';
 import { RegisterDTO } from '../types';
 import { Op } from 'sequelize';
 
-// Custom errors
 export class AuthenticationError extends Error {
   statusCode = 401;
   constructor(message: string) {
@@ -32,51 +30,69 @@ export class NotFoundError extends Error {
 }
 
 class AuthService {
-  // ─── Register ────────────────────────────────────────────────────
   async register(
-  data: RegisterDTO & { chifaNumber?: string; pharmacyData?: any }
-): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
-  const existing = await User.findOne({ where: { email: data.email } });
-  if (existing) {
-    throw new ConflictError('Un compte avec cet email existe déjà.');
-  }
-console.log("data:")
-console.log(data)
-  const user = await User.create({
-    email: data.email,
-    password: data.password,
-    fullName: data.fullName,
-    phoneNumber: data.phoneNumber,
-    chifaNumber: data.chifaNumber,
-    role: (data.role as any) || 'patient',
-  });
+    data: RegisterDTO & {
+      chifaNumber?: string;
+      pharmacyData?: any;
+      doctorProfile?: any;
+    }
+  ): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
+    const existing = await User.findOne({ where: { email: data.email } });
+    if (existing) {
+      throw new ConflictError('Un compte avec cet email existe déjà.');
+    }
 
-  // ✅ SI LE RÔLE EST PHARMACY, CRÉER LA PHARMACIE
-  if (data.role === 'pharmacy' && data.pharmacyData) {
-    const { Pharmacy } = await import('../models');
-    await Pharmacy.create({
-      userId: user.id,
-      pharmacyName: data.pharmacyData.pharmacyName,
-      address: data.pharmacyData.address,
-      wilaya: data.pharmacyData.wilaya,
-      commune: data.pharmacyData.commune,
-      latitude: data.pharmacyData.latitude,
-      longitude: data.pharmacyData.longitude,
-      phone: data.pharmacyData.phone,
-      whatsappNumber: data.pharmacyData.whatsappNumber,
+    const user = await User.create({
       email: data.email,
-      isOnDutyTonight: false,
-      isVerified: false,
+      password: data.password,
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber,
+      chifaNumber: data.chifaNumber,
+      role: (data.role as any) || 'patient',
     });
+
+    if (data.role === 'pharmacy' && data.pharmacyData) {
+      const { Pharmacy } = await import('../models');
+      await Pharmacy.create({
+        userId: user.id,
+        pharmacyName: data.pharmacyData.pharmacyName,
+        address: data.pharmacyData.address,
+        wilaya: data.pharmacyData.wilaya,
+        commune: data.pharmacyData.commune,
+        latitude: data.pharmacyData.latitude,
+        longitude: data.pharmacyData.longitude,
+        phone: data.pharmacyData.phone,
+        whatsappNumber: data.pharmacyData.whatsappNumber,
+        email: data.email,
+        isOnDutyTonight: false,
+        isVerified: false,
+      });
+    }
+
+    if (data.role === 'doctor' && data.doctorProfile) {
+      const { Doctor } = await import('../models');
+      await Doctor.create({
+        userId: user.id,
+        specialtyId: data.doctorProfile.specialtyId,
+        doctorName: data.doctorProfile.doctorName,
+        clinicName: data.doctorProfile.clinicName,
+        clinicAddress: data.doctorProfile.clinicAddress,
+        wilaya: data.doctorProfile.wilaya,
+        commune: data.doctorProfile.commune,
+        latitude: data.doctorProfile.latitude,
+        longitude: data.doctorProfile.longitude,
+        phone: data.doctorProfile.phone,
+        consultationFee: data.doctorProfile.consultationFee,
+        isVerified: false,
+      });
+    }
+
+    const accessToken = user.generateToken();
+    const refreshToken = await this.createRefreshToken(user.id);
+
+    return { user: user.toJSON() as any, accessToken, refreshToken };
   }
 
-  const accessToken = user.generateToken();
-  const refreshToken = await this.createRefreshToken(user.id);
-
-  return { user: user.toJSON() as any, accessToken, refreshToken };
-}
-
-  // ─── Login ───────────────────────────────────────────────────────
   async login(
     email: string,
     password: string
@@ -85,12 +101,10 @@ console.log(data)
       where: { email },
       attributes: { include: ['password'] },
     });
-     
+console.log("user")
+console.log(user)
     if (!user) {
       throw new AuthenticationError('Email ou mot de passe incorrect.');
-    }
-    if (!user.isActive) {
-      throw new AuthenticationError('Ce compte a été désactivé.');
     }
 
     const isMatch = await user.comparePassword(password);
@@ -106,7 +120,6 @@ console.log(data)
     return { user: user.toJSON() as any, accessToken, refreshToken };
   }
 
-  // ─── Refresh Token ───────────────────────────────────────────────
   async createRefreshToken(userId: string): Promise<string> {
     const token = RefreshToken.generateToken();
     const expiresAt = new Date();
@@ -121,13 +134,15 @@ console.log(data)
     return token;
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async refreshAccessToken(
+    refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const tokenRecord = await RefreshToken.findOne({
       where: {
         token: refreshToken,
         expiresAt: { [Op.gt]: new Date() },
-        revokedAt: { [Op.is]: null } as any, // ✅ Correction
-      } as any, // ✅ Type assertion temporaire
+        revokedAt: { [Op.is]: null } as any,
+      } as any,
     });
 
     if (!tokenRecord) {
@@ -135,8 +150,8 @@ console.log(data)
     }
 
     const user = await User.findByPk(tokenRecord.userId);
-    if (!user || !user.isActive) {
-      throw new AuthenticationError('Utilisateur introuvable ou désactivé.');
+    if (!user) {
+      throw new AuthenticationError('Utilisateur introuvable.');
     }
 
     const newAccessToken = user.generateToken();
@@ -153,7 +168,6 @@ console.log(data)
     }
   }
 
-  // ─── User Management ────────────────────────────────────────────
   async getUserById(userId: string): Promise<Omit<User, 'password'>> {
     const user = await User.findByPk(userId);
     if (!user) {
@@ -170,23 +184,27 @@ console.log(data)
     if (!user) {
       throw new NotFoundError('Utilisateur non trouvé.');
     }
-
     await user.update(data);
     return user.toJSON() as any;
   }
 
-  async updateChifaNumber(userId: string, chifaNumber?: string): Promise<Omit<User, 'password'>> {
+  async updateChifaNumber(
+    userId: string,
+    chifaNumber?: string
+  ): Promise<Omit<User, 'password'>> {
     const user = await User.findByPk(userId);
     if (!user) {
       throw new NotFoundError('Utilisateur non trouvé.');
     }
-
-    // ✅ Correction : envoyer undefined ou la valeur, jamais null
     await user.update({ chifaNumber: chifaNumber || undefined });
     return user.toJSON() as any;
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
     const user = await User.findByPk(userId, {
       attributes: { include: ['password'] },
     });
@@ -204,8 +222,7 @@ console.log(data)
     await user.update({ password: hashedPassword });
   }
 
-  // ─── Profile Photo ──────────────────────────────────────────────
-  async uploadProfilePhoto(userId: string, file: any): Promise<string> {
+  async uploadProfilePhoto(userId: string, _: any): Promise<string> {
     const user = await User.findByPk(userId);
     if (!user) {
       throw new NotFoundError('Utilisateur non trouvé.');
@@ -221,36 +238,27 @@ console.log(data)
     if (!user) {
       throw new NotFoundError('Utilisateur non trouvé.');
     }
-
-    // ✅ Correction : envoyer undefined (pas null)
     await user.update({ profileImage: undefined });
   }
 
-  // ─── Forgot Password (à compléter plus tard) ────────────────────
   async sendPasswordResetEmail(email: string): Promise<void> {
     const user = await User.findOne({ where: { email } });
     if (!user) return;
-    // TODO: Implémenter l'envoi d'email
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    // TODO: Implémenter avec une table ResetToken
+  async resetPassword(_: string, __: string): Promise<void> {
     throw new AuthenticationError('Fonctionnalité non encore implémentée.');
   }
 
-  // ─── Email Verification (à compléter plus tard) ─────────────────
-  async verifyEmail(token: string): Promise<void> {
-    // TODO: Implémenter avec une table EmailVerificationToken
+  async verifyEmail(_: string): Promise<void> {
     throw new AuthenticationError('Fonctionnalité non encore implémentée.');
   }
 
   async resendVerificationEmail(email: string): Promise<void> {
     const user = await User.findOne({ where: { email } });
     if (!user || user.isVerified) return;
-    // TODO: Implémenter l'envoi d'email
   }
 
-  // ─── Token Verification ─────────────────────────────────────────
   async verifyToken(token: string): Promise<User> {
     let decoded: any;
 
@@ -263,9 +271,6 @@ console.log(data)
     const user = await User.findByPk(decoded.id);
     if (!user) {
       throw new AuthenticationError('Utilisateur introuvable.');
-    }
-    if (!user.isActive) {
-      throw new AuthenticationError('Ce compte a été désactivé.');
     }
     return user;
   }

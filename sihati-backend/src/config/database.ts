@@ -53,7 +53,8 @@ switch (env.NODE_ENV) {
         host: env.DB_HOST,
         port: env.DB_PORT,
         dialect: 'postgres',
-        logging: console.log,
+        logging: false,
+        //logging: console.log,
       }
     );
 }

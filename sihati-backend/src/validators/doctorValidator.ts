@@ -33,7 +33,6 @@ export const validateCreate = Joi.object({
   }),
   whatsappNumber: Joi.string().pattern(algerianPhone).optional(),
   consultationFee: Joi.number().min(0).optional(),
-  workingHours: Joi.object().optional(),
   bio: Joi.string().optional(),
   yearsOfExperience: Joi.number().integer().min(0).optional(),
 });
@@ -50,7 +49,6 @@ export const validateUpdate = Joi.object({
   phone: Joi.string().pattern(algerianPhone).optional(),
   whatsappNumber: Joi.string().pattern(algerianPhone).optional(),
   consultationFee: Joi.number().min(0).optional(),
-  workingHours: Joi.object().optional(),
   bio: Joi.string().optional(),
   yearsOfExperience: Joi.number().integer().min(0).optional(),
   isVerified: Joi.boolean().optional(),
