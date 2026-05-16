@@ -102,20 +102,10 @@ function _updateLangBtn() {
   btn.title     = currentLang === 'fr' ? 'العربية' : 'Français';
 }
 function _flagDZ() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="24" height="16" style="border-radius:3px;display:block">
-    <rect width="1.5" height="2" fill="#006233"/>
-    <rect x="1.5" width="1.5" height="2" fill="#fff"/>
-    <circle cx="1.65" cy="1" r="0.42" fill="#d21034"/>
-    <circle cx="1.73" cy="1" r="0.42" fill="#fff"/>
-    <polygon points="1.73,0.62 1.78,0.77 1.93,0.77 1.81,0.86 1.86,1.01 1.73,0.92 1.6,1.01 1.65,0.86 1.53,0.77 1.68,0.77" fill="#d21034"/>
-  </svg>`;
+  return `<img src="../../assets/icons/dz-flag.svg" width="24" height="16" style="border-radius:3px;display:block" alt="DZ">`;
 }
 function _flagFR() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="24" height="16" style="border-radius:3px;display:block">
-    <rect width="1" height="2" fill="#002395"/>
-    <rect x="1" width="1" height="2" fill="#fff"/>
-    <rect x="2" width="1" height="2" fill="#ed2939"/>
-  </svg>`;
+  return `<img src="../../assets/icons/fr-flag.svg" width="24" height="16" style="border-radius:3px;display:block" alt="FR">`;
 }
 
 // ─── Sidebar profile ──────────────────────────────────────────────────────────

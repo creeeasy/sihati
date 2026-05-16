@@ -100,84 +100,10 @@ function phUpdateLangBtn() {
   btn.title = phLang === "fr" ? "العربية" : "Français";
 }
 function phFlagDZ() {
-  return `<svg 
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 -4 28 28"
-    width="24"
-    height="16"
-    fill="none"
-    style="border-radius:3px;display:block"
-  >
-    <g clip-path="url(#clip0)">
-      <rect
-        x="0.25"
-        y="0.25"
-        width="27.5"
-        height="19.5"
-        rx="1.75"
-        fill="white"
-        stroke="#F5F5F5"
-        stroke-width="0.5"
-      />
-
-      <mask
-        id="mask0"
-        style="mask-type:alpha"
-        maskUnits="userSpaceOnUse"
-        x="0"
-        y="0"
-        width="28"
-        height="20"
-      >
-        <rect
-          x="0.25"
-          y="0.25"
-          width="27.5"
-          height="19.5"
-          rx="1.75"
-          fill="white"
-          stroke="white"
-          stroke-width="0.5"
-        />
-      </mask>
-
-      <g mask="url(#mask0)">
-        <path
-          fill-rule="evenodd"
-          clip-rule="evenodd"
-          d="M0 20H14.6667V0H0V20Z"
-          fill="#048345"
-        />
-
-        <path
-          fill-rule="evenodd"
-          clip-rule="evenodd"
-          d="M17.3333 11.04L15.7659 12.1574L16.3442 10.3214L14.7971 9.17596L16.722 9.15863L17.3333 7.33334L17.9446 9.15863L19.8694 9.17596L18.3224 10.3214L18.9007 12.1574L17.3333 11.04Z"
-          fill="#E81B42"
-        />
-
-        <path
-          fill-rule="evenodd"
-          clip-rule="evenodd"
-          d="M17.68 14.3813C16.6519 15.3853 15.2702 16 13.7509 16C10.5748 16 8 13.3137 8 10C8 6.68629 10.5748 4 13.7509 4C15.2702 4 16.6519 4.61468 17.68 5.61867C16.9709 5.28113 16.1688 5.09091 15.3193 5.09091C12.4319 5.09091 10.0912 7.28878 10.0912 10C10.0912 12.7112 12.4319 14.9091 15.3193 14.9091C16.1688 14.9091 16.9709 14.7189 17.68 14.3813Z"
-          fill="#E81B42"
-        />
-      </g>
-    </g>
-
-    <defs>
-      <clipPath id="clip0">
-        <rect width="28" height="20" rx="2" fill="white"/>
-      </clipPath>
-    </defs>
-  </svg>`;
+  return `<img src="../../assets/icons/dz-flag.svg" width="24" height="16" style="border-radius:3px;display:block" alt="DZ">`;
 }
 function phFlagFR() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="24" height="16" style="border-radius:3px;display:block">
-    <rect width="1" height="2" fill="#002395"/>
-    <rect x="1" width="1" height="2" fill="#fff"/>
-    <rect x="2" width="1" height="2" fill="#ed2939"/>
-  </svg>`;
+  return `<img src="../../assets/icons/fr-flag.svg" width="24" height="16" style="border-radius:3px;display:block" alt="FR">`;
 }
 
 // ─── Sidebar profile ─────────────────────────────────────────────────────────
@@ -351,6 +277,14 @@ function phEscapeHtml(str) {
   return str
     .replace(/[&<>]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m])
     .replace(/['"]/g, (m) => (m === "'" ? "&#39;" : "&quot;"));
+}
+
+function formatCurrency(amount) {
+  if (!amount && amount !== 0) return '—';
+  const value = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(value)) return '—';
+  if (value === 0) return '0 DZD';
+  return new Intl.NumberFormat('en-US').format(Math.round(value)) + ' DZD';
 }
 
 window.phCloseModal = phCloseModal;

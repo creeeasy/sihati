@@ -142,3 +142,11 @@ function showAddToQueueModal(patients) {
     </div>
   `);
 }
+
+// ── Expose as globals for onclick attributes ────────────────────────────────
+window.openModal             = openModal;
+window.closeModal            = closeModal;
+window.showConsultationModal = showConsultationModal;
+window.showPrescriptionModal = showPrescriptionModal;
+window.showAddPatientModal   = showAddPatientModal;
+window.showAddToQueueModal   = showAddToQueueModal;

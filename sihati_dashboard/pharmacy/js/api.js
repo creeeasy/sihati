@@ -22,9 +22,13 @@ class PharmacyApiService {
       const data = await response.json();
       if (!response.ok) {
         if (response.status === 401) {
-          STORAGE.clear();
-          localStorage.removeItem("pharmacyId");
-          window.location.href = "pharmacy-login.html";
+          const onLoginPage = window.location.pathname.includes('pharmacy-login') ||
+                              window.location.pathname.includes('pharmacy-forgot');
+          if (!onLoginPage) {
+            STORAGE.clear();
+            localStorage.removeItem("pharmacyId");
+            window.location.href = "pharmacy-login.html";
+          }
         }
         throw new Error(data.message || `Erreur ${response.status}`);
       }
@@ -64,6 +68,13 @@ class PharmacyApiService {
     } catch (_) {}
     STORAGE.clear();
     this.clearPharmacyId();
+  }
+
+  async forgotPassword(email) {
+    return this.request("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
   }
 
   async getPharmacyByUserId(userId) {

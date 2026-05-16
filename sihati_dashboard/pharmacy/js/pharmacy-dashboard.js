@@ -86,25 +86,8 @@ async function loadDashboard() {
         </div>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-header"><h3><i class="fas fa-moon" style="color:var(--teal)"></i> ${pt('duty_section')}</h3></div>
-      <div class="card-body">
-        <div class="duty-toggle">
-          <div class="duty-status">
-            ${pt('duty_current')}
-            <span class="stock-badge ${currentPharmacy?.isOnDutyTonight ? 'in-stock' : 'out-of-stock'}" style="margin-left:8px;">
-              ${currentPharmacy?.isOnDutyTonight ? pt('on_duty') : pt('off_duty')}
-            </span>
-          </div>
-          <button id="toggleDutyBtn" class="${currentPharmacy?.isOnDutyTonight ? 'btn-danger' : 'btn-success'}">
-            <i class="fas ${currentPharmacy?.isOnDutyTonight ? 'fa-power-off' : 'fa-bell'}"></i>
-            ${currentPharmacy?.isOnDutyTonight ? pt('deactivate_duty') : pt('activate_duty')}
-          </button>
-        </div>
-      </div>
-    </div>
   `;
+
 
   // Bind events
   let timer;
@@ -135,7 +118,7 @@ function renderStockRow(item) {
   return `<tr>
     <td><strong>${name}</strong></td>
     <td class="quantity-cell">${qty}</td>
-    <td>${item.price ? item.price + ' DA' : '-'}</td>
+    <td>${item.price ? formatCurrency(item.price) : '-'}</td>
     <td><span class="stock-badge ${sc}">${st}</span></td>
     <td><button class="btn-edit-stock" data-mid="${mid}" data-mname="${phEscapeHtml(name)}"><i class="fas fa-edit"></i></button></td>
   </tr>`;

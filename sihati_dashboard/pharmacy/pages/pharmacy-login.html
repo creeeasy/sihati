@@ -11,16 +11,13 @@
             --bg: #0b0f1a;
             --bg2: #111827;
             --surface: #1e2d45;
-            --surface2: #243552;
             --border: rgba(99,179,237,0.10);
-            --border2: rgba(99,179,237,0.18);
             --teal: #2dd4bf;
             --teal-dim: rgba(45,212,191,0.12);
             --teal-glow: rgba(45,212,191,0.25);
+            --teal-border: rgba(45,212,191,0.28);
             --blue: #60a5fa;
             --blue-dim: rgba(96,165,250,0.12);
-            --amber: #fbbf24;
-            --amber-dim: rgba(251,191,36,0.12);
             --rose: #f87171;
             --rose-dim: rgba(248,113,113,0.12);
             --green: #34d399;
@@ -29,11 +26,9 @@
             --text-muted: #94a3b8;
             --text-dim: #64748b;
             --radius: 14px;
-            --radius-sm: 8px;
+            --radius-sm: 9px;
             --font: 'Sora', sans-serif;
-            --mono: 'JetBrains Mono', monospace;
             --shadow: 0 4px 24px rgba(0,0,0,0.4);
-            --shadow-lg: 0 8px 40px rgba(0,0,0,0.55);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,12 +38,13 @@
             color: var(--text);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             position: relative;
             overflow-x: hidden;
         }
 
+        /* ── Animated background ── */
         .bg-animated {
             position: fixed;
             top: 0; left: 0;
@@ -61,7 +57,7 @@
             position: absolute;
             border-radius: 50%;
             filter: blur(120px);
-            opacity: 0.3;
+            opacity: 0.28;
             animation: float 20s infinite ease-in-out;
         }
         .bg-animated::before {
@@ -76,22 +72,96 @@
             animation-delay: -10s;
         }
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(60px, -60px) scale(1.1); }
-            66% { transform: translate(-40px, 40px) scale(0.9); }
+            0%, 100% { transform: translate(0,0) scale(1); }
+            33%  { transform: translate(60px,-60px) scale(1.1); }
+            66%  { transform: translate(-40px,40px) scale(0.9); }
         }
 
+        /* ── Auth Navbar ── */
+        .auth-navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            height: 64px;
+            background: rgba(11,15,26,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+        .navbar-logo img {
+            height: 32px;
+            display: block;
+        }
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .navbar-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: var(--font);
+        }
+        .navbar-back:hover {
+            color: var(--teal);
+            border-color: var(--teal-border);
+            background: var(--teal-dim);
+        }
+        .navbar-lang {
+            width: 40px; height: 40px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .navbar-lang:hover {
+            border-color: var(--teal-border);
+            background: var(--teal-dim);
+        }
+        .navbar-lang img {
+            width: 24px; height: 16px;
+            border-radius: 3px;
+            display: block;
+        }
+
+        /* ── Login container ── */
         .login-container {
             position: relative;
             z-index: 1;
             width: 100%;
             max-width: 480px;
-            padding: 20px;
-            animation: slideUp 0.8s ease-out;
+            padding: 24px 20px 40px;
+            margin-top: 64px;
+            animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 64px);
         }
+        .login-inner { width: 100%; }
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .logo-section {
@@ -99,16 +169,17 @@
             margin-bottom: 32px;
         }
         .logo {
-            width: 70px; height: 70px;
+            width: 72px; height: 72px;
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 18px;
+            border: 1px solid var(--teal-border);
+            border-radius: 20px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
+            box-shadow: 0 0 36px var(--teal-glow);
         }
-        .logo i { font-size: 36px; color: var(--teal); }
+        .logo i { font-size: 34px; color: var(--teal); }
         .login-title {
             font-size: 24px;
             font-weight: 700;
@@ -126,7 +197,6 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 32px;
-            backdrop-filter: blur(10px);
         }
 
         .alert-box {
@@ -137,24 +207,26 @@
             font-size: 13px;
             align-items: center;
             gap: 10px;
+            animation: fadeIn 0.3s ease;
         }
-        .alert-box i { font-size: 18px; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+        .alert-box i { font-size: 16px; flex-shrink: 0; }
         .alert-box.show { display: flex; }
         .alert-box.error {
             background: var(--rose-dim);
-            border: 1px solid var(--rose);
+            border: 1px solid rgba(248,113,113,0.3);
             color: var(--rose);
         }
         .alert-box.success {
             background: var(--green-dim);
-            border: 1px solid var(--green);
+            border: 1px solid rgba(52,211,153,0.3);
             color: var(--green);
         }
 
         .form-group { margin-bottom: 20px; }
         .form-label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.8px;
@@ -187,10 +259,11 @@
             transform: translateY(-50%);
             color: var(--teal);
             font-size: 16px;
+            pointer-events: none;
         }
         .toggle-password {
             position: absolute;
-            right: 16px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
@@ -199,6 +272,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: color 0.2s;
+            padding: 4px;
         }
         .toggle-password:hover { color: var(--teal); }
 
@@ -215,6 +289,7 @@
             color: var(--text-muted);
             font-size: 13px;
             cursor: pointer;
+            user-select: none;
         }
         .remember-me input {
             width: 16px; height: 16px;
@@ -247,11 +322,12 @@
             justify-content: center;
             gap: 8px;
         }
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             filter: brightness(1.08);
             transform: translateY(-1px);
+            box-shadow: 0 6px 24px var(--teal-glow);
         }
-        .submit-btn:active { transform: translateY(0); }
+        .submit-btn:active:not(:disabled) { transform: translateY(0); }
         .submit-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -264,11 +340,7 @@
             gap: 16px;
             margin: 28px 0 20px;
         }
-        .divider-line {
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
+        .divider-line { flex:1; height:1px; background: var(--border); }
         .divider-text {
             color: var(--text-dim);
             font-size: 11px;
@@ -295,8 +367,13 @@
             background: var(--teal-dim);
         }
 
+        [dir="rtl"] .input-icon { left: auto; right: 16px; }
+        [dir="rtl"] .form-input { padding: 0 44px 0 16px; }
+        [dir="rtl"] .toggle-password { right: auto; left: 14px; }
+
         @media (max-width: 480px) {
             .form-card { padding: 24px; }
+            .navbar-back span { display: none; }
         }
     </style>
 </head>
@@ -304,183 +381,217 @@
 
 <div class="bg-animated"></div>
 
-<div class="login-container">
-    <div class="logo-section">
-        <div class="logo">
-            <i class="fas fa-hospital"></i>
-        </div>
-        <h1 class="login-title">Sihati Pharmacie</h1>
-        <p class="login-subtitle">Connectez-vous à votre espace professionnel</p>
-    </div>
-
-    <div class="form-card">
-        <div id="alertMsg" class="alert-box">
-            <i id="alertIcon" class="fas fa-exclamation-circle"></i>
-            <span id="alertText"></span>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Email</label>
-            <div class="input-wrapper">
-                <i class="fas fa-envelope input-icon"></i>
-                <input type="email" id="email" class="form-input" placeholder="pharmacie@exemple.dz">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Mot de passe</label>
-            <div class="input-wrapper">
-                <i class="fas fa-lock input-icon"></i>
-                <input type="password" id="password" class="form-input" placeholder="••••••••">
-                <button type="button" class="toggle-password" id="togglePassword">
-                    <i class="fas fa-eye" id="toggleIcon"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="options-row">
-            <label class="remember-me">
-                <input type="checkbox" id="rememberMe">
-                <span>Se souvenir de moi</span>
-            </label>
-            <a href="#" class="forgot-link">Mot de passe oublié</a>
-        </div>
-
-        <button class="submit-btn" id="loginBtn">
-            <i class="fas fa-arrow-right-to-bracket"></i>
-            <span>Se connecter</span>
-        </button>
-
-        <div class="divider">
-            <div class="divider-line"></div>
-            <span class="divider-text">Nouveau sur Sihati</span>
-            <div class="divider-line"></div>
-        </div>
-
-        <a href="pharmacy-register.html" class="register-link">
-            <i class="fas fa-user-plus"></i> Créer un compte pharmacie
+<!-- Auth Navbar -->
+<nav class="auth-navbar">
+    <a href="../../index.html" class="navbar-logo">
+        <img src="../../assets/icons/sihati_lockup.svg" alt="Sihati">
+    </a>
+    <div class="navbar-actions">
+        <a href="../../index.html" class="navbar-back" id="backHomeBtn">
+            <i class="fas fa-arrow-left"></i>
+            <span id="backHomeText">Retour à l'accueil</span>
         </a>
+        <button class="navbar-lang" id="langToggleBtn" title="Langue">
+            <img id="langFlagImg" src="../../assets/icons/dz-flag.svg" alt="AR">
+        </button>
+    </div>
+</nav>
+
+<div class="login-container">
+    <div class="login-inner">
+        <div class="logo-section">
+            <div class="logo">
+                <i class="fas fa-hospital"></i>
+            </div>
+            <h1 class="login-title" id="loginTitle">Sihati Pharmacie</h1>
+            <p class="login-subtitle" id="loginSubtitle">Connectez-vous à votre espace professionnel</p>
+        </div>
+
+        <div class="form-card">
+            <div id="alertMsg" class="alert-box">
+                <i id="alertIcon" class="fas fa-exclamation-circle"></i>
+                <span id="alertText"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" id="labelEmail">Email</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="email" class="form-input" placeholder="pharmacie@exemple.dz" autocomplete="email">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" id="labelPassword">Mot de passe</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="toggle-password" id="togglePassword">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="options-row">
+                <label class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    <span id="rememberMeText">Se souvenir de moi</span>
+                </label>
+                <a href="pharmacy-forgot-password.html" class="forgot-link" id="forgotLink">Mot de passe oublié ?</a>
+            </div>
+
+            <button class="submit-btn" id="loginBtn">
+                <i class="fas fa-arrow-right-to-bracket"></i>
+                <span id="loginBtnText">Se connecter</span>
+            </button>
+
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text" id="dividerText">Nouveau sur Sihati</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <a href="pharmacy-register.html" class="register-link" id="registerLink">
+                <i class="fas fa-user-plus"></i> <span id="registerLinkText">Créer un compte pharmacie</span>
+            </a>
+        </div>
     </div>
 </div>
 
 <script src="../js/config.js"></script>
-<script src="../../assets/js/core.js"></script>
+<script src="../js/pharmacy-translations.js"></script>
 <script src="../js/api.js"></script>
 <script>
-    const alertDiv = document.getElementById('alertMsg');
-    const alertIcon = document.getElementById('alertIcon');
-    const alertText = document.getElementById('alertText');
-    const loginBtn = document.getElementById('loginBtn');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const rememberCheckbox = document.getElementById('rememberMe');
+    // ── Apply i18n ──────────────────────────────────────────────────────
+    function applyAuthI18n() {
+        const lang = localStorage.getItem('sihati_lang') || 'fr';
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
 
-    function showError(message) {
-        alertDiv.className = 'alert-box error show';
-        alertIcon.className = 'fas fa-exclamation-circle';
-        alertText.textContent = message;
-        setTimeout(() => alertDiv.classList.remove('show'), 5000);
-    }
+        document.getElementById('loginTitle').textContent       = pt('login_title');
+        document.getElementById('loginSubtitle').textContent    = pt('login_subtitle');
+        document.getElementById('labelEmail').textContent       = pt('label_email');
+        document.getElementById('labelPassword').textContent    = pt('label_password');
+        document.getElementById('rememberMeText').textContent   = pt('remember_me');
+        document.getElementById('forgotLink').textContent       = pt('forgot_password');
+        document.getElementById('loginBtnText').textContent     = pt('login_btn');
+        document.getElementById('dividerText').textContent      = pt('divider_new');
+        document.getElementById('registerLinkText').textContent = pt('create_account');
+        document.getElementById('backHomeText').textContent     = pt('nav_back_home');
 
-    function showSuccess(message) {
-        alertDiv.className = 'alert-box success show';
-        alertIcon.className = 'fas fa-check-circle';
-        alertText.textContent = message;
-    }
-
-    function hideAlert() {
-        alertDiv.classList.remove('show');
-    }
-
-    function saveCredentials(email, password) {
-        if (rememberCheckbox.checked) {
-            localStorage.setItem('savedEmail', email);
-            localStorage.setItem('savedPassword', password);
+        const flagImg = document.getElementById('langFlagImg');
+        if (lang === 'fr') {
+            flagImg.src = '../../assets/icons/dz-flag.svg'; flagImg.alt = 'AR';
         } else {
-            localStorage.removeItem('savedEmail');
-            localStorage.removeItem('savedPassword');
+            flagImg.src = '../../assets/icons/fr-flag.svg'; flagImg.alt = 'FR';
         }
     }
+    applyAuthI18n();
 
-    function loadSavedCredentials() {
-        const savedEmail = localStorage.getItem('savedEmail');
-        const savedPassword = localStorage.getItem('savedPassword');
-        if (savedEmail) {
-            emailInput.value = savedEmail;
-            rememberCheckbox.checked = true;
-        }
-        if (savedPassword && rememberCheckbox.checked) {
-            passwordInput.value = savedPassword;
-        }
-    }
-
-    document.getElementById('togglePassword').addEventListener('click', function () {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        const icon = document.getElementById('toggleIcon');
-        icon.classList.toggle('fa-eye');
-        icon.classList.toggle('fa-eye-slash');
+    document.getElementById('langToggleBtn').addEventListener('click', () => {
+        const cur = localStorage.getItem('sihati_lang') || 'fr';
+        localStorage.setItem('sihati_lang', cur === 'fr' ? 'ar' : 'fr');
+        window.location.reload();
     });
 
-    async function handleLogin() {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
+    // ── Alert helpers ───────────────────────────────────────────────────
+    const alertDiv  = document.getElementById('alertMsg');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertText = document.getElementById('alertText');
+    const loginBtn  = document.getElementById('loginBtn');
 
+    function showError(msg) {
+        alertDiv.className = 'alert-box error show';
+        alertIcon.className = 'fas fa-exclamation-circle';
+        alertText.textContent = msg;
+        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function showSuccess(msg) {
+        alertDiv.className = 'alert-box success show';
+        alertIcon.className = 'fas fa-check-circle';
+        alertText.textContent = msg;
+    }
+    function hideAlert() { alertDiv.classList.remove('show'); }
+
+    // ── Remember me ─────────────────────────────────────────────────────
+    const emailInput    = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const rememberCb    = document.getElementById('rememberMe');
+
+    (function loadSaved() {
+        const saved    = localStorage.getItem('phEmail');
+        const savedPwd = localStorage.getItem('phPassword');
+        if (saved) { emailInput.value = saved; rememberCb.checked = true; }
+        if (savedPwd && rememberCb.checked) passwordInput.value = savedPwd;
+    })();
+
+    function saveCredentials(email, pw) {
+        if (rememberCb.checked) {
+            localStorage.setItem('phEmail', email);
+            localStorage.setItem('phPassword', pw);
+        } else {
+            localStorage.removeItem('phEmail');
+            localStorage.removeItem('phPassword');
+        }
+    }
+
+    // ── Toggle password visibility ──────────────────────────────────────
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+        document.getElementById('toggleIcon').classList.toggle('fa-eye');
+        document.getElementById('toggleIcon').classList.toggle('fa-eye-slash');
+    });
+
+    // ── Login handler (mirrors doctor pattern exactly) ──────────────────
+    async function handleLogin() {
+        const email    = emailInput.value.trim();
+        const password = passwordInput.value;
         hideAlert();
 
         if (!email || !password) {
-            showError('Veuillez remplir tous les champs');
+            showError(pt('empty_fields_error'));
             return;
         }
 
         loginBtn.disabled = true;
-        const originalText = loginBtn.innerHTML;
-        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
+        const origHTML = loginBtn.innerHTML;
+        loginBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pt('logging_in')}`;
 
         try {
-            const res = await api.login(email, password);
+            const res  = await api.login(email, password);
             const user = STORAGE.getUser();
 
-            const pharmacies = await api.getPharmacyByUserId(user.id);
-
-            if (pharmacies.data && pharmacies.data.length > 0) {
-                const pharmacy = pharmacies.data.find(p => p.userId === user.id);
-
-                if (pharmacy) {
-                    api.setPharmacyId(pharmacy.id);
-                    saveCredentials(email, password);
-                    showSuccess('Connexion réussie ! Redirection...');
-                    setTimeout(() => {
-                        window.location.href = 'pharmacy-dashboard.html';
-                    }, 1000);
-                } else {
-                    showError('Aucune pharmacie associée à ce compte');
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = originalText;
-                }
-            } else {
-                showError('Aucune pharmacie trouvée pour ce compte');
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = originalText;
+            if (!res.success) {
+                throw new Error(res.message || pt('login_error'));
             }
+
+            // Fetch linked pharmacy
+            const pharmacies = await api.getPharmacyByUserId(user.id);
+            const pharmacy   = (pharmacies.data || []).find(p => p.userId === user.id);
+
+            if (!pharmacy) {
+                showError(pt('no_pharmacy_error'));
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = origHTML;
+                return;
+            }
+
+            api.setPharmacyId(pharmacy.id);
+            saveCredentials(email, password);
+            showSuccess(pt('login_success'));
+            setTimeout(() => { window.location.href = 'pharmacy-dashboard.html'; }, 1000);
+
         } catch (err) {
-            showError(err.message || 'Email ou mot de passe incorrect');
+            showError(err.message || pt('login_error'));
             loginBtn.disabled = false;
-            loginBtn.innerHTML = originalText;
+            loginBtn.innerHTML = origHTML;
         }
     }
 
     loginBtn.addEventListener('click', handleLogin);
-
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleLogin();
-    });
-
-    emailInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleLogin();
-    });
-
-    loadSavedCredentials();
+    passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleLogin(); });
+    emailInput.addEventListener('keypress',    e => { if (e.key === 'Enter') handleLogin(); });
 </script>
 </body>
 </html>

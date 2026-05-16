@@ -24,9 +24,14 @@ class ApiService {
       const data = await response.json();
       if (!response.ok) {
         if (response.status === 401) {
-          STORAGE.clear();
-          localStorage.removeItem("doctorId");
-          window.location.href = "doctor-login.html";
+          const onLoginPage =
+            window.location.pathname.includes("doctor-login") ||
+            window.location.pathname.includes("doctor-forgot");
+          if (!onLoginPage) {
+            STORAGE.clear();
+            localStorage.removeItem("doctorId");
+            window.location.href = "doctor-login.html";
+          }
         }
         throw new Error(data.message || `Erreur ${response.status}`);
       }
@@ -74,6 +79,13 @@ class ApiService {
     return this.request("/auth/change-password", {
       method: "POST",
       body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
+  async forgotPassword(email) {
+    return this.request("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
     });
   }
 
@@ -159,7 +171,6 @@ class ApiService {
 
     // Calcul des rendez-vous du jour
     const today = new Date().toISOString().slice(0, 10);
-    console.log(reviews);
     const avg = reviews.length
       ? (reviews.reduce((s, r) => s + +r.rating, 0) / reviews.length).toFixed(1)
       : "0.0";

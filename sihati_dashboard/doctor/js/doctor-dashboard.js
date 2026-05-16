@@ -32,9 +32,6 @@ async function loadDashboard() {
           <h2>${greeting}, ${currentDoctor?.doctorName?.split(' ')[0] || 'Docteur'} 👋</h2>
           <p class="text-muted">${today}</p>
         </div>
-        <div class="revenue-chip">
-          <i class="fas fa-coins"></i> ${t('revenue_today')}: ${formatCurrency(stats.todayRevenue)}
-        </div>
       </div>
       <div class="stats-grid">
         ${skeletonIfNull(stats.total,     'primary', 'fa-calendar-check',  t('total_appointments'))}

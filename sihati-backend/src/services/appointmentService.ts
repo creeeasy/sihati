@@ -9,7 +9,7 @@ class AppointmentService {
     return Appointment.findAll({
       where,
       include: [
-        { model: User, as: 'patient', attributes: ['id', 'fullName', 'phoneNumber'] },
+        { model: User, as: 'patient', attributes: ['id', 'fullName', 'phoneNumber','chifaNumber'] },
         { model: DoctorOffice, as: 'office' }
       ],
       order: [['appointmentDate', 'ASC'], ['appointmentTime', 'ASC']]

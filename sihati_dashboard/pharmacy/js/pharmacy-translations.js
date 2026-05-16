@@ -106,6 +106,34 @@ const PH_TRANSLATIONS = {
     // Loading
     loading: 'Chargement en cours...',
     loading_short: 'Chargement...',
+
+    // Auth screens
+    nav_back_home:        "Retour à l'accueil",
+    login_title:          'Sihati Pharmacie',
+    login_subtitle:       'Connectez-vous à votre espace professionnel',
+    label_email:          'Email',
+    label_password:       'Mot de passe',
+    remember_me:          'Se souvenir de moi',
+    forgot_password:      'Mot de passe oublié ?',
+    login_btn:            'Se connecter',
+    logging_in:           'Connexion...',
+    divider_new:          'Nouveau sur Sihati',
+    create_account:       'Créer un compte pharmacie',
+    empty_fields_error:   'Veuillez remplir tous les champs',
+    no_pharmacy_error:    'Aucune pharmacie associée à ce compte',
+    login_success:        'Connexion réussie ! Redirection...',
+    login_error:          'Email ou mot de passe incorrect',
+
+    // Forgot password screen
+    forgot_title:         'Mot de passe oublié',
+    forgot_subtitle:      'Entrez votre email pour recevoir un lien de réinitialisation',
+    forgot_email_label:   'Adresse email',
+    forgot_send_btn:      'Envoyer le lien',
+    forgot_sending:       'Envoi en cours...',
+    forgot_success_title: 'Email envoyé !',
+    forgot_success_msg:   'Si un compte existe avec cet email, vous recevrez un lien de réinitialisation dans quelques minutes.',
+    forgot_back_login:    'Retour à la connexion',
+    forgot_error:         'Une erreur est survenue. Veuillez réessayer.',
   },
   ar: {
     // Pages
@@ -213,6 +241,34 @@ const PH_TRANSLATIONS = {
     // Loading
     loading: 'جار التحميل...',
     loading_short: 'تحميل...',
+
+    // Auth screens
+    nav_back_home:        'العودة إلى الصفحة الرئيسية',
+    login_title:          'سيحاتي صيدلية',
+    login_subtitle:       'سجّل دخولك إلى مساحتك المهنية',
+    label_email:          'البريد الإلكتروني',
+    label_password:       'كلمة المرور',
+    remember_me:          'تذكّرني',
+    forgot_password:      'نسيت كلمة المرور؟',
+    login_btn:            'تسجيل الدخول',
+    logging_in:           'جار التسجيل...',
+    divider_new:          'جديد على سيحاتي',
+    create_account:       'إنشاء حساب صيدلية',
+    empty_fields_error:   'يرجى ملء جميع الحقول',
+    no_pharmacy_error:    'لا توجد صيدلية مرتبطة بهذا الحساب',
+    login_success:        'تم تسجيل الدخول! جار التوجيه...',
+    login_error:          'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+
+    // Forgot password screen
+    forgot_title:         'نسيت كلمة المرور',
+    forgot_subtitle:      'أدخل بريدك الإلكتروني لاستلام رابط إعادة التعيين',
+    forgot_email_label:   'عنوان البريد الإلكتروني',
+    forgot_send_btn:      'إرسال الرابط',
+    forgot_sending:       'جار الإرسال...',
+    forgot_success_title: 'تم الإرسال!',
+    forgot_success_msg:   'إذا كان الحساب موجوداً، ستتلقى رابط إعادة التعيين في غضون دقائق.',
+    forgot_back_login:    'العودة إلى تسجيل الدخول',
+    forgot_error:         'حدث خطأ. يرجى المحاولة مجدداً.',
   }
 };
 
