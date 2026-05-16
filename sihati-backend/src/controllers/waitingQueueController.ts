@@ -29,8 +29,8 @@ export const getQueue = async (req: Request, res: Response, next: NextFunction) 
 // Body: { doctorIdOrUserId: string, patientId: string, ... }
 export const addPatient = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { doctorIdOrUserId, patientId, appointmentId, priority, notes } = req.body;
-    
+    const { doctorId:doctorIdOrUserId, patientId, appointmentId, priority, notes } = req.body;
+    console.log(req.body)
     // Validate required fields
     if (!doctorIdOrUserId || !patientId) {
       return res.status(400).json({ 
@@ -56,7 +56,7 @@ export const addPatient = async (req: Request, res: Response, next: NextFunction
 // PUT /api/waiting-queue/doctor/:doctorId/next
 export const callNext = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const doctorId = getId(req.params.doctorId);
+    const doctorId = getId(req.params.id);
     if (!doctorId) {
       return res.status(400).json({ success: false, message: 'doctorId is required' });
     }
