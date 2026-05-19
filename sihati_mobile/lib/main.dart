@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'app/theme/app_theme.dart';
 import 'app/routes/app_routes.dart';
 import 'app/routes/app_pages.dart';
+import 'core/services/api_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/favorites_service.dart';
@@ -19,8 +20,13 @@ Future<void> initServices() async {
   print('🚀 Initializing services...');
 
   try {
+    // ✅ StorageService must be first — ApiService depends on it
     await Get.putAsync(() => StorageService().init());
     print('✓ Storage service');
+
+    // ✅ ApiService registered early so all bindings can find it
+    Get.put(ApiService(), permanent: true);
+    print('✓ API service');
 
     await Get.putAsync(() => LocationService().init());
     print('✓ Location service');

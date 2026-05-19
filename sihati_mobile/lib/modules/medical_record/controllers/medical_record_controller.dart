@@ -8,6 +8,7 @@ import '../../../core/models/prescription_model.dart';
 import '../../../core/models/consultation_model.dart';
 import '../../../core/models/medical_document_model.dart';
 import '../../../core/models/medication_history_model.dart';
+import '../../../core/models/allergy_model.dart';
 
 class MedicalRecordController extends GetxController {
   final PatientRepository _patientRepository;
@@ -40,7 +41,7 @@ class MedicalRecordController extends GetxController {
   final medicalDocuments = <MedicalDocument>[].obs;
 
   // Allergies
-  final allergies = <Map<String, dynamic>>[].obs;
+  final allergies = <Allergy>[].obs;
 
   // Current medications
   final currentMedications = <MedicationHistory>[].obs;
@@ -84,9 +85,9 @@ class MedicalRecordController extends GetxController {
       // Load allergies
       allergies.value = await _patientRepository.getAllergies();
 
-      // Load current medications
+      // Load current medications (ongoing = no endDate, or endDate in future)
       currentMedications.value =
-          medicationHistory.where((m) => m.isActive).toList();
+          medicationHistory.where((m) => m.isContinuous || (m.endDate != null && m.endDate!.isAfter(DateTime.now()))).toList();
 
       // Get last consultation
       if (consultations.isNotEmpty) {
@@ -112,115 +113,9 @@ class MedicalRecordController extends GetxController {
     Get.toNamed('/prescription/$prescriptionId');
   }
 
-  Future<void> downloadPrescriptionPDF(String prescriptionId) async {
-    try {
-      isLoading.value = true;
-      await _patientRepository.downloadPrescriptionPDF(prescriptionId);
-      Get.snackbar(
-        'Téléchargement',
-        'PDF téléchargé avec succès',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible de télécharger le PDF',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  void addAllergy() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Ajouter une allergie'),
-        content: TextField(
-          decoration: const InputDecoration(
-            hintText: 'Nom de l\'allergie',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (value) async {
-            if (value.isNotEmpty) {
-              try {
-                await _patientRepository.addAllergy({'name': value});
-                await loadMedicalData(); // Refresh
-                Get.back();
-                Get.snackbar(
-                  'Succès',
-                  'Allergie ajoutée',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                );
-              } catch (e) {
-                Get.snackbar(
-                  'Erreur',
-                  'Impossible d\'ajouter l\'allergie',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.red,
-                  colorText: Colors.white,
-                );
-              }
-            }
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Annuler'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void removeAllergy(Map<String, dynamic> allergy) async {
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Supprimer l\'allergie'),
-        content: Text('Voulez-vous vraiment supprimer "${allergy['name']}" ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Annuler'),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Supprimer'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await _patientRepository.deleteAllergy(allergy['id'].toString());
-        await loadMedicalData(); // Refresh
-        Get.snackbar(
-          'Succès',
-          'Allergie supprimée',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } catch (e) {
-        Get.snackbar(
-          'Erreur',
-          'Impossible de supprimer l\'allergie',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    }
-  }
+  // NOTE: downloadPrescriptionPDF removed — backend returns JSON, not a PDF file stream.
+  // NOTE: addAllergy / removeAllergy removed — patient read-only via /patient/allergies.
+  //   Allergy management is handled by /allergies (separate controller if needed).
 
   // 🆕 Delete document method
   Future<void> deleteDocument(String documentId) async {
@@ -285,30 +180,7 @@ class MedicalRecordController extends GetxController {
     }
   }
 
-  // À ajouter si nécessaire
-  Future<void> downloadDocumentById(String documentId) async {
-    try {
-      isLoading.value = true;
-      await _patientRepository.downloadDocument(documentId);
-      Get.snackbar(
-        'Succès',
-        'Document téléchargé',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible de télécharger le document',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  // downloadDocumentById removed — use downloadDocument(document) instead.
 
   void uploadDocument() async {
     // TODO: Implement document upload with file picker
@@ -323,10 +195,13 @@ class MedicalRecordController extends GetxController {
     await loadMedicalData();
   }
 
-  // 🆕 Helper to get filtered medications
+  // Helper to get filtered medications
+  // Uses isContinuous (endDate == null) as the "active" proxy
   List<MedicationHistory> getFilteredMedications() {
     if (showActiveOnly.value) {
-      return medicationHistory.where((m) => m.isActive).toList();
+      return medicationHistory
+          .where((m) => m.isContinuous || (m.endDate != null && m.endDate!.isAfter(DateTime.now())))
+          .toList();
     }
     return medicationHistory;
   }

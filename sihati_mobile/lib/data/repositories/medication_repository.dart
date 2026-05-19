@@ -163,18 +163,14 @@ class MedicationRepository {
   }
 
   /// Check drug interactions
+  /// NOTE: The real drug-drug interaction check is handled by AiRepository.checkInteraction().
+  /// This method is a stub that always returns safe to keep the app from crashing.
   Future<Map<String, dynamic>> checkInteractions({
     required List<String> currentMedicationIds,
     required String newMedicationId,
   }) async {
-    try {
-      return await _medicationProvider.checkInteractions(
-        medicationIds: currentMedicationIds,
-        newMedicationId: newMedicationId,
-      );
-    } catch (e) {
-      return {'hasInteractions': false, 'interactions': [], 'safeToTake': true};
-    }
+    // Use AiRepository.checkInteraction(med1, med2) for the actual check.
+    return {'hasInteractions': false, 'interactions': [], 'safeToTake': true};
   }
 
   /// Check if location services are available

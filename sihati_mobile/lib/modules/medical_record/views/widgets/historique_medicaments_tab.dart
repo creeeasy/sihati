@@ -215,21 +215,24 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
 
   List<MedicationHistory> _getFilteredMedications() {
     if (controller.showActiveOnly.value) {
-      return controller.medicationHistory.where((m) => m.isActive).toList();
+      return controller.medicationHistory
+          .where((m) => m.isContinuous || (m.endDate != null && m.endDate!.isAfter(DateTime.now())))
+          .toList();
     }
     return controller.medicationHistory;
   }
 
   Widget _buildMedicationCard(MedicationHistory med) {
+    final isOngoing = med.isContinuous || (med.endDate != null && med.endDate!.isAfter(DateTime.now()));
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: med.isActive
+          color: isOngoing
               ? AppColors.primary.withOpacity(0.3)
               : AppColors.border,
-          width: med.isActive ? 2 : 1,
+          width: isOngoing ? 2 : 1,
         ),
       ),
       child: Column(
@@ -240,7 +243,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               color:
-                  med.isActive ? AppColors.primarySoft : AppColors.background,
+                  isOngoing ? AppColors.primarySoft : AppColors.background,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -251,14 +254,14 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: med.isActive
+                    color: isOngoing
                         ? AppColors.primary.withOpacity(0.2)
                         : Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     Icons.medication,
-                    color: med.isActive
+                    color: isOngoing
                         ? AppColors.primary
                         : AppColors.textSecondary,
                     size: 24,
@@ -296,14 +299,8 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     horizontal: 10,
                     vertical: 5,
                   ),
-                  decoration: BoxDecoration(
-                    color: med.isActive
-                        ? AppColors.success
-                        : AppColors.textTertiary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    med.isActive ? 'En cours' : 'Terminé',
+                    child: Text(
+                    isOngoing ? 'En cours' : 'Terminé',
                     style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 11,
@@ -367,14 +364,14 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     med.prescribedBy!,
                   ),
 
-                if (med.isActive && med.endDate != null) ...[
+                if (isOngoing && med.endDate != null) ...[
                   const SizedBox(height: AppSpacing.md),
 
                   // Progress bar
                   _buildProgressBar(med),
                 ],
 
-                if (med.isActive && med.endDate == null) ...[
+                if (isOngoing && med.endDate == null) ...[
                   const SizedBox(height: AppSpacing.md),
 
                   // Continuous treatment indicator

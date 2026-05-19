@@ -1,4 +1,11 @@
 // lib/core/models/user_model.dart
+//
+// Matches backend: User.ts (underscored: true → snake_case JSON keys)
+// Fields: id, email, role, fullName→full_name, phoneNumber→phone_number,
+//   chifaNumber→chifa_number, isVerified→is_verified, wilaya, address,
+//   profileImage→profile_image, lastLogin→last_login, createdAt→created_at,
+//   updatedAt→updated_at
+// password is stripped by toJSON()
 class UserModel {
   final String id;
   final String email;
@@ -6,19 +13,13 @@ class UserModel {
   final String fullName;
   final String phoneNumber;
   final String? chifaNumber;
-  final String? photoUrl;
-  final bool isActive;
+  final bool isVerified;
+  final String? wilaya;
+  final String? address;
+  final String? profileImage;
+  final DateTime? lastLogin;
   final DateTime createdAt;
   final DateTime? updatedAt;
-
-  // Medical info
-  final List<String>? allergies;
-  final String? bloodType;
-
-  // Stats
-  final int ordonnancesCount;
-  final int medicationsCount;
-  final int consultationsCount;
 
   UserModel({
     required this.id,
@@ -27,15 +28,13 @@ class UserModel {
     required this.fullName,
     required this.phoneNumber,
     this.chifaNumber,
-    this.photoUrl,
-    this.isActive = true,
+    this.isVerified = false,
+    this.wilaya,
+    this.address,
+    this.profileImage,
+    this.lastLogin,
     required this.createdAt,
     this.updatedAt,
-    this.allergies,
-    this.bloodType,
-    this.ordonnancesCount = 0,
-    this.medicationsCount = 0,
-    this.consultationsCount = 0,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -46,8 +45,15 @@ class UserModel {
       fullName: json['fullName'] ?? json['full_name'] ?? '',
       phoneNumber: json['phoneNumber'] ?? json['phone_number'] ?? '',
       chifaNumber: json['chifaNumber'] ?? json['chifa_number'],
-      photoUrl: json['photoUrl'] ?? json['photo_url'],
-      isActive: json['isActive'] ?? json['is_active'] ?? true,
+      isVerified: json['isVerified'] ?? json['is_verified'] ?? false,
+      wilaya: json['wilaya'],
+      address: json['address'],
+      profileImage: json['profileImage'] ?? json['profile_image'],
+      lastLogin: json['lastLogin'] != null
+          ? DateTime.tryParse(json['lastLogin'].toString())
+          : json['last_login'] != null
+              ? DateTime.tryParse(json['last_login'].toString())
+              : null,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : json['created_at'] != null
@@ -58,16 +64,6 @@ class UserModel {
           : json['updated_at'] != null
               ? DateTime.parse(json['updated_at'] as String)
               : null,
-      allergies: json['allergies'] != null
-          ? List<String>.from(json['allergies'])
-          : null,
-      bloodType: json['bloodType'] ?? json['blood_type'],
-      ordonnancesCount:
-          json['ordonnancesCount'] ?? json['ordonnances_count'] ?? 0,
-      medicationsCount:
-          json['medicationsCount'] ?? json['medications_count'] ?? 0,
-      consultationsCount:
-          json['consultationsCount'] ?? json['consultations_count'] ?? 0,
     );
   }
 
@@ -80,15 +76,13 @@ class UserModel {
       'phoneNumber': phoneNumber,
       if (chifaNumber != null && chifaNumber!.isNotEmpty)
         'chifaNumber': chifaNumber,
-      if (photoUrl != null) 'photoUrl': photoUrl,
-      'isActive': isActive,
+      'isVerified': isVerified,
+      if (wilaya != null) 'wilaya': wilaya,
+      if (address != null) 'address': address,
+      if (profileImage != null) 'profileImage': profileImage,
+      if (lastLogin != null) 'lastLogin': lastLogin!.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt?.toIso8601String(),
-      if (allergies != null) 'allergies': allergies,
-      if (bloodType != null) 'bloodType': bloodType,
-      'ordonnancesCount': ordonnancesCount,
-      'medicationsCount': medicationsCount,
-      'consultationsCount': consultationsCount,
     };
   }
 
@@ -99,10 +93,8 @@ class UserModel {
 
   bool get hasChifa => chifaNumber != null && chifaNumber!.isNotEmpty;
 
-  /// ✅ AJOUTER CE GETTER
   String? get formattedChifa {
     if (!hasChifa) return null;
-
     String clean = chifaNumber!.replaceAll(' ', '');
     String formatted = '';
     for (int i = 0; i < clean.length; i++) {
@@ -129,15 +121,13 @@ class UserModel {
     String? fullName,
     String? phoneNumber,
     String? chifaNumber,
-    String? photoUrl,
-    bool? isActive,
+    bool? isVerified,
+    String? wilaya,
+    String? address,
+    String? profileImage,
+    DateTime? lastLogin,
     DateTime? createdAt,
     DateTime? updatedAt,
-    List<String>? allergies,
-    String? bloodType,
-    int? ordonnancesCount,
-    int? medicationsCount,
-    int? consultationsCount,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -146,21 +136,19 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       chifaNumber: chifaNumber ?? this.chifaNumber,
-      photoUrl: photoUrl ?? this.photoUrl,
-      isActive: isActive ?? this.isActive,
+      isVerified: isVerified ?? this.isVerified,
+      wilaya: wilaya ?? this.wilaya,
+      address: address ?? this.address,
+      profileImage: profileImage ?? this.profileImage,
+      lastLogin: lastLogin ?? this.lastLogin,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      allergies: allergies ?? this.allergies,
-      bloodType: bloodType ?? this.bloodType,
-      ordonnancesCount: ordonnancesCount ?? this.ordonnancesCount,
-      medicationsCount: medicationsCount ?? this.medicationsCount,
-      consultationsCount: consultationsCount ?? this.consultationsCount,
     );
   }
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, role: $role, fullName: $fullName, hasChifa: $hasChifa)';
+    return 'UserModel(id: $id, email: $email, role: $role, fullName: $fullName, isVerified: $isVerified)';
   }
 
   @override

@@ -368,9 +368,7 @@ class ProfileScreen extends GetView<ProfileController> {
                     Expanded(
                       child: _buildMedicalStatItem(
                         icon: Icons.description_outlined,
-                        count: controller.user.value?.ordonnancesCount
-                                .toString() ??
-                            '0',
+                        count: controller.prescriptionsCount.value.toString(),
                         label: 'Ordonnances',
                       ),
                     ),
@@ -382,9 +380,7 @@ class ProfileScreen extends GetView<ProfileController> {
                     Expanded(
                       child: _buildMedicalStatItem(
                         icon: Icons.medication_outlined,
-                        count: controller.user.value?.medicationsCount
-                                .toString() ??
-                            '0',
+                        count: controller.medicationsCount.value.toString(),
                         label: 'Médicaments',
                       ),
                     ),
@@ -396,9 +392,7 @@ class ProfileScreen extends GetView<ProfileController> {
                     Expanded(
                       child: _buildMedicalStatItem(
                         icon: Icons.calendar_today_outlined,
-                        count: controller.user.value?.consultationsCount
-                                .toString() ??
-                            '0',
+                        count: controller.consultationsCount.value.toString(),
                         label: 'Consultations',
                       ),
                     ),

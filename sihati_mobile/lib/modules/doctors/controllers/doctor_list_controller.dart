@@ -211,7 +211,7 @@ class DoctorListController extends GetxController {
     if (searchQuery.value.isNotEmpty) {
       results = results.where((doctor) {
         return doctor.doctorName.toLowerCase().contains(searchQuery.value) ||
-            doctor.specialty.nameFr.toLowerCase().contains(searchQuery.value) ||
+            doctor.specialty?.nameFr.toLowerCase().contains(searchQuery.value) == true ||
             doctor.clinicName.toLowerCase().contains(searchQuery.value);
       }).toList();
     }

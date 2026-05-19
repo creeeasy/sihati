@@ -118,7 +118,7 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            doctor?.doctorName ?? 'Consultation médicale',
+                            doctor?.fullName ?? 'Consultation médicale',
                             style: const TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 16,
@@ -128,7 +128,7 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            doctor?.specialty.nameFr ?? 'Consultation générale',
+                            'Consultation médicale',
                             style: const TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 13,
@@ -268,26 +268,7 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                         const SizedBox(height: AppSpacing.md),
                       ],
 
-                      // Durée
-                      if (consultation.durationMinutes != null)
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Durée: ${consultation.durationMinutes} minutes',
-                              style: const TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
+                      // NOTE: durationMinutes removed — not in backend Consultation model.
                     ],
                   );
                 }),

@@ -129,12 +129,12 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: _getDocumentColor(document.type).withOpacity(0.1),
+                    color: _getDocumentColor(document.documentType).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    _getDocumentIcon(document.type),
-                    color: _getDocumentColor(document.type),
+                    _getDocumentIcon(document.documentType),
+                    color: _getDocumentColor(document.documentType),
                     size: 28,
                   ),
                 ),
@@ -158,11 +158,11 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        document.typeDisplayName,
+                        document.documentTypeDisplayName,
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 13,
-                          color: _getDocumentColor(document.type),
+                          color: _getDocumentColor(document.documentType),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

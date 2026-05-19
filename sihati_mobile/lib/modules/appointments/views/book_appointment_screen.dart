@@ -87,7 +87,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                   style: AppTextStyles.subtitle1,
                 ),
                 Text(
-                  controller.doctor.specialty.nameFr,
+                  controller.doctor.specialty?.nameFr ?? 'Spécialiste',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),

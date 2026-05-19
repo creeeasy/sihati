@@ -4,6 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../controllers/medical_record_controller.dart';
 import '../../../../core/models/medication_history_model.dart';
+import '../../../../core/models/allergy_model.dart';
 
 class BilanTab extends GetView<MedicalRecordController> {
   const BilanTab({Key? key}) : super(key: key);
@@ -201,7 +202,7 @@ class BilanTab extends GetView<MedicalRecordController> {
               ),
               const SizedBox(width: 8),
               Text(
-                consultation.doctor?.doctorName ?? 'Médecin non spécifié',
+                consultation.doctor?.fullName ?? 'Médecin non spécifié',
                 style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 14,
@@ -221,8 +222,7 @@ class BilanTab extends GetView<MedicalRecordController> {
               ),
               const SizedBox(width: 8),
               Text(
-                consultation.doctor?.specialty.nameFr ??
-                    'Spécialité non spécifiée',
+                'Consultation médicale',
                 style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 13,
@@ -415,20 +415,14 @@ class BilanTab extends GetView<MedicalRecordController> {
             );
           }),
           const SizedBox(height: AppSpacing.md),
-          TextButton.icon(
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Ajouter une allergie'),
-            onPressed: controller.addAllergy,
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
-            ),
-          ),
+          // NOTE: addAllergy removed — /patient/allergies is read-only.
+          // Use a dedicated allergy management screen with /allergies endpoint.
         ],
       ),
     );
   }
 
-  Widget _buildAllergyChip(Map<String, dynamic> allergy) {
+  Widget _buildAllergyChip(Allergy allergy) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
@@ -444,18 +438,15 @@ class BilanTab extends GetView<MedicalRecordController> {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => controller.removeAllergy(allergy),
-            child: const Icon(
-              Icons.close,
-              color: AppColors.error,
-              size: 18,
-            ),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AppColors.error,
+            size: 18,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              allergy['name'] ?? allergy['allergyName'] ?? 'Allergie',
+              allergy.allergyName,
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 14,
@@ -464,23 +455,23 @@ class BilanTab extends GetView<MedicalRecordController> {
               ),
             ),
           ),
-          if (allergy['severity'] != null)
+          if (allergy.severity != AllergySeverity.mild || true)
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8,
                 vertical: 2,
               ),
               decoration: BoxDecoration(
-                color: _getSeverityColor(allergy['severity']).withOpacity(0.1),
+                color: _getSeverityByEnum(allergy.severity).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                allergy['severity'],
+                allergy.formattedSeverity,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: _getSeverityColor(allergy['severity']),
+                  color: _getSeverityByEnum(allergy.severity),
                 ),
               ),
             ),
@@ -489,6 +480,18 @@ class BilanTab extends GetView<MedicalRecordController> {
     );
   }
 
+  Color _getSeverityByEnum(AllergySeverity severity) {
+    switch (severity) {
+      case AllergySeverity.severe:
+        return Colors.red;
+      case AllergySeverity.moderate:
+        return Colors.orange;
+      case AllergySeverity.mild:
+        return Colors.green;
+    }
+  }
+
+  // Legacy string-based version kept for compatibility
   Color _getSeverityColor(String severity) {
     switch (severity.toLowerCase()) {
       case 'severe':

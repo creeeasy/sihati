@@ -29,6 +29,7 @@ export const register = async (
       chifaNumber,
       pharmacyData,
       doctorProfile,
+      patientProfile
     } = req.body;
 
     const result = await authService.register({
@@ -40,6 +41,7 @@ export const register = async (
       chifaNumber,
       pharmacyData,
       doctorProfile,
+      patientProfile
     });
 
     ResponseHandler.created(res, result, 'Compte créé avec succès.');
@@ -59,8 +61,8 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password } = req.body;
-    const result = await authService.login(email, password);
+    const { email, password, role } = req.body;
+    const result = await authService.login(email, password,role);
     ResponseHandler.success(res, result, 'Connexion réussie.');
   } catch (error) {
     if (error instanceof AuthenticationError) {

@@ -8,6 +8,7 @@ import 'package:sihati_mobile/modules/appointments/bindings/my_appointments_bind
 import 'package:sihati_mobile/modules/appointments/views/book_appointment_screen.dart';
 import 'package:sihati_mobile/modules/appointments/views/my_appointments_screen.dart';
 import 'package:sihati_mobile/modules/favorites/views/favorites_screen.dart';
+import 'package:sihati_mobile/modules/favorites/bindings/favorites_binding.dart';
 import 'package:sihati_mobile/modules/medical_record/bindings/medical_record_binding.dart';
 import 'package:sihati_mobile/modules/medical_record/views/medical_record_screen.dart';
 import 'package:sihati_mobile/modules/medications/bindings/medication_detail_binding.dart';
@@ -121,6 +122,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.FAVORITES,
       page: () => const FavoritesScreen(),
+      binding: FavoritesBinding(),
     ),
     // AI Assistant
     GetPage(

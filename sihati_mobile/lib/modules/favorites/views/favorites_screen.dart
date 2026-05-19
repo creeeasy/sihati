@@ -859,7 +859,7 @@ class _EpicDoctorCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          doctor.specialty.nameFr,
+                          doctor.specialty?.nameFr ?? 'Spécialiste',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.secondary,

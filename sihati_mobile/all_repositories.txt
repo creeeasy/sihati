@@ -1,0 +1,1519 @@
+// lib/data/repositories/auth_repository.dart
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../core/services/storage_service.dart';
+import '../../core/models/auth_response.dart';
+import '../../core/models/user_model.dart';
+import '../providers/auth_provider.dart';
+
+/// Authentication repository
+/// Handles login, register, logout and token management.
+///
+/// NOTE on provider signatures:
+///   - getProfile()             → no args (JWT from interceptor)
+///   - updateProfile(...)       → no userId param (JWT identifies user)
+///   - updateChifaNumber(...)   → no userId param (JWT identifies user)
+class AuthRepository {
+  final AuthProvider _authProvider;
+  final StorageService _storageService;
+
+  AuthRepository({
+    required AuthProvider authProvider,
+    required StorageService storageService,
+  })  : _authProvider = authProvider,
+        _storageService = storageService;
+
+  // Observable states
+  final isGuestMode = false.obs;
+  final isAuthenticated = false.obs;
+
+  /// Login with email and password
+  Future<AuthResponse> login(String email, String password) async {
+    try {
+      if (email.isEmpty) throw Exception('Email requis');
+      if (password.isEmpty) throw Exception('Mot de passe requis');
+
+      final response = await _authProvider.login(email, password);
+
+      // Save tokens and user
+      await _storageService.saveToken(response.token);
+      if (response.refreshToken != null) {
+        await _storageService.saveRefreshToken(response.refreshToken!);
+      }
+      await _storageService.saveUser(response.user);
+
+      isAuthenticated.value = true;
+      isGuestMode.value = false;
+      await _storageService.saveGuestModeStatus(false);
+
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Login as guest
+  Future<void> loginAsGuest() async {
+    try {
+      await _storageService.clearAuth();
+      await _storageService.saveGuestModeStatus(true);
+      isGuestMode.value = true;
+      isAuthenticated.value = false;
+    } catch (e) {
+      throw Exception('Impossible d\'entrer en mode invité');
+    }
+  }
+
+  /// Register new patient
+  Future<AuthResponse> registerPatient({
+    required String email,
+    required String password,
+    required String fullName,
+    required String phoneNumber,
+    String? chifaNumber,
+  }) async {
+    try {
+      // Validations
+      if (email.isEmpty) throw Exception('Email requis');
+      if (!_isValidEmail(email)) throw Exception('Format d\'email invalide');
+      if (password.isEmpty) throw Exception('Mot de passe requis');
+      if (password.length < 8) {
+        throw Exception('Mot de passe doit contenir au moins 8 caractères');
+      }
+      if (fullName.isEmpty) throw Exception('Nom complet requis');
+      if (fullName.length < 3)
+        throw Exception('Nom doit contenir au moins 3 caractères');
+      if (phoneNumber.isEmpty) throw Exception('Numéro de téléphone requis');
+      if (!_isValidAlgerianPhone(phoneNumber)) {
+        throw Exception('Numéro de téléphone invalide (format: 05XXXXXXXX)');
+      }
+
+      final response = await _authProvider.registerPatient(
+        email: email,
+        password: password,
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+        chifaNumber: chifaNumber,
+      );
+
+      // Save tokens and user
+      await _storageService.saveToken(response.token);
+      if (response.refreshToken != null) {
+        await _storageService.saveRefreshToken(response.refreshToken!);
+      }
+      await _storageService.saveUser(response.user);
+
+      isAuthenticated.value = true;
+      isGuestMode.value = false;
+      await _storageService.saveGuestModeStatus(false);
+
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Logout user
+  Future<void> logout() async {
+    try {
+      await _authProvider.logout();
+    } finally {
+      await _storageService.clearAuth();
+      await _storageService.remove('guest_mode');
+      isAuthenticated.value = false;
+      isGuestMode.value = false;
+    }
+  }
+
+  /// Check authentication status on app start
+  Future<void> checkAuthStatus() async {
+    try {
+      final token = await _storageService.getToken();
+      if (token != null && token.isNotEmpty) {
+        isAuthenticated.value = true;
+        isGuestMode.value = false;
+        return;
+      }
+
+      final isGuest = await _storageService.getGuestModeStatus();
+      if (isGuest) {
+        isGuestMode.value = true;
+        isAuthenticated.value = false;
+        return;
+      }
+
+      isAuthenticated.value = false;
+      isGuestMode.value = false;
+    } catch (e) {
+      print('Auth check error: $e');
+      isAuthenticated.value = false;
+      isGuestMode.value = false;
+    }
+  }
+
+  /// Get current user from storage
+  Future<UserModel?> getCurrentUser() async {
+    try {
+      return await _storageService.getUser();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Check if user is logged in
+  Future<bool> isLoggedIn() async {
+    return await _storageService.isLoggedIn();
+  }
+
+  /// Check if user is in guest mode
+  Future<bool> isGuest() async {
+    return await _storageService.getGuestModeStatus();
+  }
+
+  /// Get current auth token from storage
+  Future<String?> getToken() async {
+    return await _storageService.getToken();
+  }
+
+  /// Verify token and get user profile from backend
+  /// NOTE: getProfile() takes NO token parameter — JWT handled by interceptor.
+  Future<UserModel?> verifyToken() async {
+    try {
+      final token = await getToken();
+      if (token == null) return null;
+
+      // getProfile() uses JWT from interceptor — no token arg
+      final user = await _authProvider.getProfile();
+      await _storageService.saveUser(user);
+      return user;
+    } catch (e) {
+      await logout();
+      return null;
+    }
+  }
+
+  /// Update user profile (fullName, phoneNumber)
+  /// NOTE: updateProfile() takes NO userId param — backend uses JWT.
+  Future<UserModel> updateProfile({
+    String? fullName,
+    String? phoneNumber,
+  }) async {
+    try {
+      if (fullName != null && fullName.length < 3) {
+        throw Exception('Nom doit contenir au moins 3 caractères');
+      }
+      if (phoneNumber != null && !_isValidAlgerianPhone(phoneNumber)) {
+        throw Exception('Numéro de téléphone invalide');
+      }
+
+      // No userId param — provider uses JWT interceptor
+      final updatedUser = await _authProvider.updateProfile(
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+      );
+
+      await _storageService.saveUser(updatedUser);
+      return updatedUser;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Update user's Chifa number
+  /// NOTE: updateChifaNumber() takes NO userId param — backend uses JWT.
+  Future<UserModel> updateChifaNumber(String? chifaNumber) async {
+    try {
+      if (chifaNumber != null && chifaNumber.isNotEmpty) {
+        if (chifaNumber.length < 13 || chifaNumber.length > 15) {
+          throw Exception(
+              'Le numéro Carte Chifa doit contenir entre 13 et 15 chiffres');
+        }
+        if (!RegExp(r'^\d+$').hasMatch(chifaNumber)) {
+          throw Exception(
+              'Le numéro Carte Chifa ne doit contenir que des chiffres');
+        }
+      }
+
+      // No userId param — provider uses JWT interceptor
+      final updatedUser = await _authProvider.updateChifaNumber(
+        chifaNumber: chifaNumber,
+      );
+
+      await _storageService.saveUser(updatedUser);
+      return updatedUser;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Prompt login for restricted actions
+  void promptLoginForFeature(String featureName) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.lock_outline, color: Colors.blue, size: 28),
+            const SizedBox(width: 12),
+            const Text('Connexion requise',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+            'Pour $featureName, vous devez créer un compte ou vous connecter.'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Continuer en invité',
+                style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              Get.toNamed('/login');
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            child: const Text('Se connecter',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
+
+  bool _isValidAlgerianPhone(String phone) {
+    final phoneRegex = RegExp(r'^0[5-7][0-9]{8}$');
+    return phoneRegex.hasMatch(phone);
+  }
+}
+// lib/data/repositories/appointment_repository.dart
+import '../providers/appointment_provider.dart';
+import '../../core/models/appointment_model.dart';
+
+/// Appointment repository
+///
+/// All filtering (upcoming, past) is done client-side because the backend
+/// only exposes GET /appointments/patient/:id (all appointments combined).
+class AppointmentRepository {
+  final AppointmentProvider _appointmentProvider;
+
+  AppointmentRepository({
+    required AppointmentProvider appointmentProvider,
+  }) : _appointmentProvider = appointmentProvider;
+
+  // ─── Read ─────────────────────────────────────────────────────────────
+
+  /// Get all appointments for a patient
+  Future<List<AppointmentModel>> getMyAppointments(String patientId) async {
+    try {
+      return await _appointmentProvider.getPatientAppointments(patientId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get upcoming appointments (client-side filter from full list)
+  Future<List<AppointmentModel>> getUpcomingAppointments(
+      String patientId) async {
+    try {
+      final all = await _appointmentProvider.getPatientAppointments(patientId);
+      return all.where((a) => a.isUpcoming).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get past appointments (client-side filter from full list)
+  Future<List<AppointmentModel>> getPastAppointments(String patientId) async {
+    try {
+      final all = await _appointmentProvider.getPatientAppointments(patientId);
+      return all.where((a) => a.isPast).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get appointment by ID
+  Future<AppointmentModel> getAppointmentById(String id) async {
+    try {
+      return await _appointmentProvider.getAppointmentById(id);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ─── Write ────────────────────────────────────────────────────────────
+
+  /// Book a new appointment
+  Future<AppointmentModel> bookAppointment({
+    required String patientId,
+    required String doctorId,
+    required DateTime date,
+    required String time,
+    String? reason,
+    String? officeId,
+  }) async {
+    try {
+      final today = DateTime.now();
+      final appointmentDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        int.parse(time.split(':')[0]),
+        int.parse(time.split(':')[1]),
+      );
+
+      if (appointmentDateTime.isBefore(today)) {
+        throw Exception('La date ne peut pas être dans le passé');
+      }
+
+      return await _appointmentProvider.bookAppointment(
+        patientId: patientId,
+        doctorId: doctorId,
+        date: date,
+        time: time,
+        reason: reason,
+        officeId: officeId,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Cancel an appointment
+  Future<void> cancelAppointment(String appointmentId) async {
+    try {
+      await _appointmentProvider.cancelAppointment(appointmentId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get available time slots for a doctor on a specific date
+  Future<List<String>> getAvailableSlots({
+    required String doctorId,
+    required DateTime date,
+    String? officeId,
+  }) async {
+    try {
+      return await _appointmentProvider.getAvailableSlots(
+        doctorId: doctorId,
+        date: date,
+        officeId: officeId,
+      );
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Get next available slot for a doctor (checks next 7 days)
+  Future<String?> getNextAvailableSlot(String doctorId) async {
+    try {
+      final now = DateTime.now();
+
+      for (var i = 0; i < 7; i++) {
+        final date = now.add(Duration(days: i));
+        final slots = await getAvailableSlots(
+          doctorId: doctorId,
+          date: date,
+        );
+
+        if (slots.isNotEmpty) {
+          if (i == 0) return "Aujourd'hui ${slots.first}";
+          if (i == 1) return 'Demain ${slots.first}';
+          return '${_formatDate(date)} ${slots.first}';
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('Error getting next available slot: $e');
+      return null;
+    }
+  }
+
+  /// Check if a patient already has an appointment with a doctor
+  Future<bool> hasAppointmentWith(String patientId, String doctorId) async {
+    try {
+      final appointments = await getUpcomingAppointments(patientId);
+      return appointments.any((a) => a.doctorId == doctorId);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get appointment counts by status
+  Future<Map<String, int>> getAppointmentsCounts(String patientId) async {
+    try {
+      final appointments = await getMyAppointments(patientId);
+
+      return {
+        'total': appointments.length,
+        'upcoming': appointments.where((a) => a.isUpcoming).length,
+        'past': appointments.where((a) => a.isPast).length,
+        'cancelled': appointments
+            .where((a) => a.status == AppointmentStatus.cancelled)
+            .length,
+      };
+    } catch (e) {
+      return {'total': 0, 'upcoming': 0, 'past': 0, 'cancelled': 0};
+    }
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────
+
+  String _formatDate(DateTime date) {
+    final days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    return '${days[date.weekday % 7]} ${date.day}/${date.month}';
+  }
+}
+import 'package:dio/dio.dart';
+import '../providers/patient_provider.dart';
+import '../../core/services/storage_service.dart';
+import '../../core/models/user_model.dart';
+import '../../core/models/patient_profile_model.dart';
+import '../../core/models/prescription_model.dart';
+import '../../core/models/consultation_model.dart';
+import '../../core/models/medical_document_model.dart';
+import '../../core/models/medication_history_model.dart';
+import '../../core/models/allergy_model.dart';
+
+/// Patient repository
+///
+/// Wraps PatientProvider with business logic and error handling.
+///
+/// Design decisions:
+///   - No getActiveMedications() — backend has no isActive field
+///   - No downloadPrescriptionPDF() — backend returns JSON, not a file stream
+///   - No downloadDocument() — requires native file handling outside this scope
+///   - No addAllergy() / deleteAllergy() — not exposed via patient routes
+///   - getAllergies() returns List<Allergy> (typed model, not raw Map)
+///   - getMedicationHistory() is derived from prescriptions client-side
+class PatientRepository {
+  final PatientProvider _patientProvider;
+  final StorageService _storageService;
+
+  PatientRepository({
+    required PatientProvider patientProvider,
+    required StorageService storageService,
+  })  : _patientProvider = patientProvider,
+        _storageService = storageService;
+
+  // ─── Current User ──────────────────────────────────────────
+
+  Future<UserModel?> getCurrentUser() async {
+    return await _storageService.getUser();
+  }
+
+  // ─── Profile ────────────────────────────────────────────────
+
+  Future<PatientProfile> getPatientProfile() async {
+    return await _patientProvider.getPatientProfile();
+  }
+
+  Future<PatientProfile> updatePatientProfile(
+      Map<String, dynamic> data) async {
+    return await _patientProvider.updatePatientProfile(data);
+  }
+
+  // ─── Prescriptions ──────────────────────────────────────────
+
+  Future<List<Prescription>> getPrescriptions(
+      {int page = 1, int limit = 20}) async {
+    return await _patientProvider.getPrescriptions(page: page, limit: limit);
+  }
+
+  Future<Prescription> getPrescriptionById(String id) async {
+    return await _patientProvider.getPrescriptionById(id);
+  }
+
+  // ─── Medication History ─────────────────────────────────────
+  // Derived client-side from prescriptions — no dedicated backend endpoint.
+
+  Future<List<MedicationHistory>> getMedicationHistory() async {
+    return await _patientProvider.getMedicationHistory();
+  }
+
+  // ─── Consultations ──────────────────────────────────────────
+
+  Future<List<Consultation>> getConsultations(
+      {int page = 1, int limit = 20}) async {
+    return await _patientProvider.getConsultations(page: page, limit: limit);
+  }
+
+  Future<Consultation> getConsultationById(String id) async {
+    return await _patientProvider.getConsultationById(id);
+  }
+
+  // ─── Documents ──────────────────────────────────────────────
+
+  Future<List<MedicalDocument>> getDocuments() async {
+    return await _patientProvider.getDocuments();
+  }
+
+  Future<MedicalDocument> uploadDocument(FormData formData) async {
+    return await _patientProvider.uploadDocument(formData);
+  }
+
+  Future<void> deleteDocument(String id) async {
+    await _patientProvider.deleteDocument(id);
+  }
+
+  // ─── Allergies ──────────────────────────────────────────────
+
+  /// Returns typed List<Allergy> (not raw Maps)
+  Future<List<Allergy>> getAllergies() async {
+    return await _patientProvider.getAllergies();
+  }
+
+  // ─── Stats ──────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getStats() async {
+    return await _patientProvider.getStats();
+  }
+}
+// lib/data/repositories/doctor_repository.dart
+import '../providers/doctor_provider.dart';
+import '../../core/services/location_service.dart';
+import '../../core/models/doctor_model.dart';
+import '../../core/models/specialty_model.dart';
+
+/// Doctor repository
+/// Handles doctor directory operations
+class DoctorRepository {
+  final DoctorProvider _doctorProvider;
+  final LocationService _locationService;
+
+  DoctorRepository({
+    required DoctorProvider doctorProvider,
+    required LocationService locationService,
+  })  : _doctorProvider = doctorProvider,
+        _locationService = locationService;
+
+  /// Get all medical specialties
+  Future<List<SpecialtyModel>> getSpecialties() async {
+    try {
+      return await _doctorProvider.getSpecialties();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Search doctors with filters
+  /// ✅ CORRIGÉ: Utilise directement String (UUID)
+  Future<List<DoctorModel>> searchDoctors({
+    String? specialtyId, // ✅ String? (UUID)
+    String? wilaya,
+    bool useLocation = false,
+    double radius = 10,
+  }) async {
+    try {
+      double? latitude;
+      double? longitude;
+
+      if (useLocation) {
+        try {
+          final position = await _locationService.getCurrentLocation();
+          if (position != null) {
+            latitude = position.latitude;
+            longitude = position.longitude;
+          }
+        } catch (e) {
+          print('Failed to get location: $e');
+        }
+      }
+
+      // ✅ Passage direct String au provider (sans conversion)
+      final doctors = await _doctorProvider.searchDoctors(
+        specialtyId: specialtyId, // ✅ String? direct
+        wilaya: wilaya,
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
+
+      return doctors;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Search doctors near a specific location
+  Future<List<DoctorModel>> searchDoctorsAt({
+    required double latitude,
+    required double longitude,
+    String? specialtyId,
+    String? wilaya,
+    double radius = 10,
+  }) async {
+    try {
+      return await _doctorProvider.searchDoctors(
+        specialtyId: specialtyId,
+        wilaya: wilaya,
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get doctor details by ID
+  Future<DoctorModel> getDoctorDetails(String id) async {
+    try {
+      return await _doctorProvider.getDoctorById(id);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get all doctors (sorted by rating)
+  Future<List<DoctorModel>> getAllDoctors() async {
+    try {
+      return await _doctorProvider.getAllDoctors();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get doctors by specialty
+  Future<List<DoctorModel>> getDoctorsBySpecialty(String specialtyId) async {
+    try {
+      return await _doctorProvider.getDoctorsBySpecialty(specialtyId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get doctors by wilaya
+  Future<List<DoctorModel>> getDoctorsByWilaya(String wilaya) async {
+    try {
+      if (wilaya.isEmpty) {
+        throw Exception('Wilaya requise');
+      }
+      return await _doctorProvider.getDoctorsByWilaya(wilaya);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get top rated doctors
+  Future<List<DoctorModel>> getTopRatedDoctors({int limit = 10}) async {
+    try {
+      return await _doctorProvider.getTopRatedDoctors(limit: limit);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Search doctors by name
+  Future<List<DoctorModel>> searchByName(String query) async {
+    try {
+      if (query.isEmpty) {
+        return await getAllDoctors();
+      }
+
+      if (query.length < 2) {
+        throw Exception('Veuillez entrer au moins 2 caractères');
+      }
+
+      return await _doctorProvider.searchByName(query);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get specialty by ID (filters client-side from the specialties list)
+  Future<SpecialtyModel> getSpecialtyById(String id) async {
+    try {
+      final specialties = await _doctorProvider.getSpecialties();
+      return specialties.firstWhere(
+        (s) => s.id == id,
+        orElse: () => throw Exception('Specialty $id not found'),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Check if location services are available
+  Future<bool> isLocationAvailable() async {
+    try {
+      return await _locationService.isLocationServiceEnabled();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Request location permission
+  Future<bool> requestLocationPermission() async {
+    try {
+      return await _locationService.requestPermission();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get distance from current location to doctor's clinic
+  Future<double?> getDistanceToDoctor(DoctorModel doctor) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (position == null) return null;
+
+      return _locationService.calculateDistance(
+        position.latitude,
+        position.longitude,
+        doctor.latitude,
+        doctor.longitude,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Sort doctors by distance from current location
+  Future<List<DoctorModel>> sortByDistance(List<DoctorModel> doctors) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (position == null) return doctors;
+
+      final doctorsWithDistance = doctors.map((doctor) {
+        final distance = _locationService.calculateDistance(
+          position.latitude,
+          position.longitude,
+          doctor.latitude,
+          doctor.longitude,
+        );
+        return doctor.copyWith(distance: distance);
+      }).toList();
+
+      doctorsWithDistance.sort((a, b) {
+        if (a.distance == null && b.distance == null) return 0;
+        if (a.distance == null) return 1;
+        if (b.distance == null) return -1;
+        return a.distance!.compareTo(b.distance!);
+      });
+
+      return doctorsWithDistance;
+    } catch (e) {
+      return doctors;
+    }
+  }
+
+  /// Sort doctors by rating (highest first)
+  List<DoctorModel> sortByRating(List<DoctorModel> doctors) {
+    final sorted = List<DoctorModel>.from(doctors);
+    sorted.sort((a, b) {
+      final ratingA = a.averageRating ?? 0;
+      final ratingB = b.averageRating ?? 0;
+      return ratingB.compareTo(ratingA);
+    });
+    return sorted;
+  }
+
+  /// Sort doctors by experience (most experienced first)
+  List<DoctorModel> sortByExperience(List<DoctorModel> doctors) {
+    final sorted = List<DoctorModel>.from(doctors);
+    sorted.sort((a, b) {
+      final expA = a.yearsOfExperience ?? 0;
+      final expB = b.yearsOfExperience ?? 0;
+      return expB.compareTo(expA);
+    });
+    return sorted;
+  }
+
+  /// Sort doctors by consultation fee (lowest first)
+  List<DoctorModel> sortByFee(List<DoctorModel> doctors) {
+    final sorted = List<DoctorModel>.from(doctors);
+    sorted.sort((a, b) {
+      final feeA = a.consultationFee ?? double.infinity;
+      final feeB = b.consultationFee ?? double.infinity;
+      return feeA.compareTo(feeB);
+    });
+    return sorted;
+  }
+}
+// lib/data/repositories/pharmacy_repository.dart
+import '../providers/pharmacy_provider.dart';
+import '../../core/services/location_service.dart';
+import '../../core/models/pharmacy_model.dart';
+
+/// Pharmacy repository
+/// Handles pharmacy data operations and location-based queries
+/// Coordinates between PharmacyProvider and LocationService
+class PharmacyRepository {
+  final PharmacyProvider _pharmacyProvider;
+  final LocationService _locationService;
+
+  PharmacyRepository({
+    required PharmacyProvider pharmacyProvider,
+    required LocationService locationService,
+  })  : _pharmacyProvider = pharmacyProvider,
+        _locationService = locationService;
+
+  /// Get all pharmacies with optional wilaya filter
+  Future<List<PharmacyModel>> getAllPharmacies({String? wilaya}) async {
+    try {
+      return await _pharmacyProvider.getAllPharmacies(wilaya: wilaya);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get nearby pharmacies using current location
+  Future<List<PharmacyModel>> getNearbyPharmacies({
+    double radius = 5,
+    String? wilaya,
+  }) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+
+      if (position == null) {
+        throw Exception(
+          'Permission de localisation requise.\n'
+          'Veuillez activer la localisation dans les paramètres.',
+        );
+      }
+
+      return await _pharmacyProvider.getNearbyPharmacies(
+        position.latitude,
+        position.longitude,
+        radius: radius,
+        wilaya: wilaya,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get nearby pharmacies with custom location
+  Future<List<PharmacyModel>> getNearbyPharmaciesAt({
+    required double latitude,
+    required double longitude,
+    double radius = 5,
+    String? wilaya,
+  }) async {
+    try {
+      return await _pharmacyProvider.getNearbyPharmacies(
+        latitude,
+        longitude,
+        radius: radius,
+        wilaya: wilaya,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get pharmacy details by ID
+  Future<PharmacyModel> getPharmacyDetails(String id) async {
+    try {
+      return await _pharmacyProvider.getPharmacyById(id);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get pharmacies on duty tonight
+  Future<List<PharmacyModel>> getDutyPharmacies({
+    String? wilaya,
+    bool useLocation = true,
+    double radius = 10,
+  }) async {
+    try {
+      double? latitude;
+      double? longitude;
+
+      if (useLocation) {
+        try {
+          final position = await _locationService.getCurrentLocation();
+          if (position != null) {
+            latitude = position.latitude;
+            longitude = position.longitude;
+          }
+        } catch (e) {
+          print('Failed to get location: $e');
+        }
+      }
+
+      return await _pharmacyProvider.getDutyPharmacies(
+        wilaya: wilaya,
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get pharmacies by wilaya
+  Future<List<PharmacyModel>> getPharmaciesByWilaya(String wilaya) async {
+    try {
+      if (wilaya.isEmpty) {
+        throw Exception('Wilaya requise');
+      }
+      return await _pharmacyProvider.getPharmaciesByWilaya(wilaya);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Search pharmacies by name or address
+  Future<List<PharmacyModel>> searchPharmacies(String query) async {
+    try {
+      if (query.isEmpty) {
+        return await _pharmacyProvider.getAllPharmacies();
+      }
+
+      if (query.length < 2) {
+        throw Exception('Veuillez entrer au moins 2 caractères');
+      }
+
+      return await _pharmacyProvider.searchPharmacies(query);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Check if location services are available
+  Future<bool> isLocationAvailable() async {
+    try {
+      return await _locationService.isLocationServiceEnabled();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Request location permission
+  Future<bool> requestLocationPermission() async {
+    try {
+      return await _locationService.requestPermission();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get distance from current location to pharmacy
+  Future<double?> getDistanceToPharmacy(PharmacyModel pharmacy) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (position == null) return null;
+
+      return _locationService.calculateDistance(
+        position.latitude,
+        position.longitude,
+        pharmacy.latitude,
+        pharmacy.longitude,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Sort pharmacies by distance from current location
+  Future<List<PharmacyModel>> sortByDistance(
+    List<PharmacyModel> pharmacies,
+  ) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (position == null) return pharmacies;
+
+      final pharmaciesWithDistance = pharmacies.map((pharmacy) {
+        final distance = _locationService.calculateDistance(
+          position.latitude,
+          position.longitude,
+          pharmacy.latitude,
+          pharmacy.longitude,
+        );
+        return pharmacy.copyWith(distance: distance);
+      }).toList();
+
+      pharmaciesWithDistance.sort((a, b) {
+        if (a.distance == null && b.distance == null) return 0;
+        if (a.distance == null) return 1;
+        if (b.distance == null) return -1;
+        return a.distance!.compareTo(b.distance!);
+      });
+
+      return pharmaciesWithDistance;
+    } catch (e) {
+      return pharmacies;
+    }
+  }
+}
+import 'package:sihati_mobile/core/models/pharmacy_with_stock.dart';
+
+import '../providers/medication_provider.dart';
+import '../../core/services/location_service.dart';
+import '../../core/models/medication_model.dart';
+import '../../core/models/medication_search_result.dart';
+
+/// Medication repository
+/// Handles medication search operations
+/// Coordinates between MedicationProvider and LocationService
+class MedicationRepository {
+  final MedicationProvider _medicationProvider;
+  final LocationService _locationService;
+
+  MedicationRepository({
+    required MedicationProvider medicationProvider,
+    required LocationService locationService,
+  })  : _medicationProvider = medicationProvider,
+        _locationService = locationService;
+
+  /// Search for medication by name
+  /// Optionally uses current location to sort results by distance
+  Future<List<MedicationSearchResult>> searchMedication(
+    String searchTerm, {
+    bool useLocation = true,
+    String? wilaya,
+    double radius = 10,
+  }) async {
+    try {
+      if (searchTerm.isEmpty) {
+        throw Exception('Veuillez entrer un nom de médicament');
+      }
+
+      if (searchTerm.length < 2) {
+        throw Exception('Veuillez entrer au moins 2 caractères');
+      }
+
+      double? latitude;
+      double? longitude;
+
+      if (useLocation) {
+        try {
+          final position = await _locationService.getCurrentLocation();
+          if (position != null) {
+            latitude = position.latitude;
+            longitude = position.longitude;
+          }
+        } catch (e) {
+          print('Failed to get location: $e');
+        }
+      }
+
+      final results = await _medicationProvider.searchMedication(
+        searchTerm,
+        latitude: latitude,
+        longitude: longitude,
+        wilaya: wilaya,
+        radius: radius,
+      );
+
+      return results;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Search medication with specific location
+  Future<List<MedicationSearchResult>> searchMedicationAt(
+    String searchTerm, {
+    required double latitude,
+    required double longitude,
+    String? wilaya,
+    double radius = 10,
+  }) async {
+    try {
+      if (searchTerm.isEmpty || searchTerm.length < 2) {
+        throw Exception('Veuillez entrer au moins 2 caractères');
+      }
+
+      return await _medicationProvider.searchMedication(
+        searchTerm,
+        latitude: latitude,
+        longitude: longitude,
+        wilaya: wilaya,
+        radius: radius,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get medication details by ID
+  Future<MedicationModel> getMedicationById(String id) async {
+    try {
+      return await _medicationProvider.getMedicationById(id);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Search medication by barcode
+  Future<MedicationModel?> searchByBarcode(String barcode) async {
+    try {
+      return await _medicationProvider.searchByBarcode(barcode);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Get pharmacies that have a specific medication
+  Future<List<PharmacyWithStock>> getPharmaciesWithStock(
+    String medicationId, {
+    bool useLocation = true,
+    double radius = 10,
+  }) async {
+    try {
+      double? latitude;
+      double? longitude;
+
+      if (useLocation) {
+        try {
+          final position = await _locationService.getCurrentLocation();
+          if (position != null) {
+            latitude = position.latitude;
+            longitude = position.longitude;
+          }
+        } catch (e) {
+          print('Failed to get location: $e');
+        }
+      }
+
+      return await _medicationProvider.getPharmaciesWithStock(
+        medicationId,
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Get all medications
+  Future<List<MedicationModel>> getAllMedications({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      return await _medicationProvider.getAllMedications(
+          page: page, limit: limit);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get popular medications
+  Future<List<MedicationModel>> getPopularMedications({int limit = 10}) async {
+    try {
+      return await _medicationProvider.getPopularMedications(limit: limit);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Check drug interactions
+  /// NOTE: The real drug-drug interaction check is handled by AiRepository.checkInteraction().
+  /// This method is a stub that always returns safe to keep the app from crashing.
+  Future<Map<String, dynamic>> checkInteractions({
+    required List<String> currentMedicationIds,
+    required String newMedicationId,
+  }) async {
+    // Use AiRepository.checkInteraction(med1, med2) for the actual check.
+    return {'hasInteractions': false, 'interactions': [], 'safeToTake': true};
+  }
+
+  /// Check if location services are available
+  Future<bool> isLocationAvailable() async {
+    try {
+      return await _locationService.isLocationServiceEnabled();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Request location permission
+  Future<bool> requestLocationPermission() async {
+    try {
+      return await _locationService.requestPermission();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Validate search term
+  bool isValidSearchTerm(String term) {
+    return term.isNotEmpty && term.length >= 2;
+  }
+
+  /// Sort medication search results by distance from current location
+  Future<List<MedicationSearchResult>> sortResultsByDistance(
+    List<MedicationSearchResult> results,
+  ) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+
+      if (position == null) {
+        return results;
+      }
+
+      final sortedResults = <MedicationSearchResult>[];
+
+      for (var result in results) {
+        final sortedPharmacies = List<PharmacyWithStock>.from(result.pharmacies)
+          ..sort((a, b) {
+            if (a.distance == null && b.distance == null) return 0;
+            if (a.distance == null) return 1;
+            if (b.distance == null) return -1;
+            return a.distance!.compareTo(b.distance!);
+          });
+
+        sortedResults.add(
+          MedicationSearchResult(
+            medication: result.medication,
+            pharmacies: sortedPharmacies,
+          ),
+        );
+      }
+
+      sortedResults.sort((a, b) {
+        final aNearestDistance = a.pharmacies
+            .where((p) => p.distance != null)
+            .map((p) => p.distance!)
+            .fold<double?>(
+                null,
+                (prev, curr) =>
+                    prev == null ? curr : (curr < prev ? curr : prev));
+
+        final bNearestDistance = b.pharmacies
+            .where((p) => p.distance != null)
+            .map((p) => p.distance!)
+            .fold<double?>(
+                null,
+                (prev, curr) =>
+                    prev == null ? curr : (curr < prev ? curr : prev));
+
+        if (aNearestDistance == null && bNearestDistance == null) return 0;
+        if (aNearestDistance == null) return 1;
+        if (bNearestDistance == null) return -1;
+        return aNearestDistance.compareTo(bNearestDistance);
+      });
+
+      return sortedResults;
+    } catch (e) {
+      print('Error sorting results by distance: $e');
+      return results;
+    }
+  }
+}
+// lib/data/repositories/favorite_repository.dart
+import '../providers/favorite_provider.dart';
+import '../../core/models/doctor_model.dart';
+import '../../core/models/pharmacy_model.dart';
+
+/// Favorite repository
+///
+/// Wraps FavoriteProvider with error handling and exposes clean methods to
+/// controllers. This repository is the single source of truth for favorites
+/// synced with the backend.
+///
+/// Note: the app also has a local FavoritesService (GetStorage) that was used
+/// before the backend was available. Going forward, this repository should be
+/// the primary favorites source when the user is authenticated.
+class FavoriteRepository {
+  final FavoriteProvider _favoriteProvider;
+
+  FavoriteRepository({required FavoriteProvider favoriteProvider})
+      : _favoriteProvider = favoriteProvider;
+
+  // ─── Doctor Favorites ─────────────────────────────────────────────────
+
+  /// Get all favorited doctors from the backend
+  Future<List<DoctorModel>> getFavoriteDoctors() async {
+    try {
+      return await _favoriteProvider.getFavoriteDoctors();
+    } catch (e) {
+      print('FavoriteRepository.getFavoriteDoctors error: $e');
+      return [];
+    }
+  }
+
+  /// Add a doctor to backend favorites
+  /// Returns true on success
+  Future<bool> addFavoriteDoctor(String doctorId) async {
+    try {
+      return await _favoriteProvider.addFavoriteDoctor(doctorId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Remove a doctor from backend favorites
+  /// Returns true on success
+  Future<bool> removeFavoriteDoctor(String doctorId) async {
+    try {
+      return await _favoriteProvider.removeFavoriteDoctor(doctorId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Toggle doctor favorite status
+  /// Returns the new isFavorite state
+  Future<bool> toggleFavoriteDoctor(String doctorId) async {
+    try {
+      final isFav = await _favoriteProvider.checkDoctorFavorite(doctorId);
+      if (isFav) {
+        await _favoriteProvider.removeFavoriteDoctor(doctorId);
+        return false;
+      } else {
+        await _favoriteProvider.addFavoriteDoctor(doctorId);
+        return true;
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Check if a doctor is in favorites
+  Future<bool> isDoctorFavorite(String doctorId) async {
+    try {
+      return await _favoriteProvider.checkDoctorFavorite(doctorId);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ─── Pharmacy Favorites ───────────────────────────────────────────────
+
+  /// Get all favorited pharmacies from the backend
+  Future<List<PharmacyModel>> getFavoritePharmacies() async {
+    try {
+      return await _favoriteProvider.getFavoritePharmacies();
+    } catch (e) {
+      print('FavoriteRepository.getFavoritePharmacies error: $e');
+      return [];
+    }
+  }
+
+  /// Add a pharmacy to backend favorites
+  /// Returns true on success
+  Future<bool> addFavoritePharmacy(String pharmacyId) async {
+    try {
+      return await _favoriteProvider.addFavoritePharmacy(pharmacyId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Remove a pharmacy from backend favorites
+  /// Returns true on success
+  Future<bool> removeFavoritePharmacy(String pharmacyId) async {
+    try {
+      return await _favoriteProvider.removeFavoritePharmacy(pharmacyId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Toggle pharmacy favorite status
+  /// Returns the new isFavorite state
+  Future<bool> toggleFavoritePharmacy(String pharmacyId) async {
+    try {
+      final isFav = await _favoriteProvider.checkPharmacyFavorite(pharmacyId);
+      if (isFav) {
+        await _favoriteProvider.removeFavoritePharmacy(pharmacyId);
+        return false;
+      } else {
+        await _favoriteProvider.addFavoritePharmacy(pharmacyId);
+        return true;
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Check if a pharmacy is in favorites
+  Future<bool> isPharmacyFavorite(String pharmacyId) async {
+    try {
+      return await _favoriteProvider.checkPharmacyFavorite(pharmacyId);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ─── Stats ────────────────────────────────────────────────────────────
+
+  /// Get counts of favorite doctors and pharmacies
+  Future<Map<String, int>> getFavoriteStats() async {
+    try {
+      return await _favoriteProvider.getFavoriteStats();
+    } catch (e) {
+      return {'doctors': 0, 'pharmacies': 0};
+    }
+  }
+}
+// lib/data/repositories/ai_repository.dart
+import '../providers/ai_provider.dart';
+
+/// AI repository — wraps AiProvider with error handling.
+///
+/// Currently wired:
+///   - checkInteractions(med1, med2) → POST /ai/interaction
+///   - chat(message, history?, location?) → POST /ai/chat
+///
+/// Not yet wired (backend routes exist, not exposed in app):
+///   - POST /ai/ask-medication
+///   - POST /ai/medication-info
+///   - POST /ai/specialty
+///   - GET  /ai/history
+class AiRepository {
+  final AiProvider _aiProvider;
+
+  AiRepository({required AiProvider aiProvider})
+      : _aiProvider = aiProvider;
+
+  /// Check drug interactions between two medications
+  /// Backend: POST /ai/interaction
+  /// [med1] and [med2] are medication NAMES (not IDs)
+  Future<Map<String, dynamic>> checkDrugInteractions({
+    required String med1,
+    required String med2,
+  }) async {
+    try {
+      return await _aiProvider.checkInteractions(
+        med1: med1,
+        med2: med2,
+      );
+    } catch (e) {
+      print('AiRepository.checkDrugInteractions error: $e');
+      return {
+        'hasInteractions': false,
+        'interactions': [],
+        'safeToTake': true,
+      };
+    }
+  }
+
+  /// Send a message to the AI chat assistant
+  /// Backend: POST /ai/chat
+  /// [history] format: [{ role: 'user'|'model', parts: [{ text }] }]
+  Future<Map<String, dynamic>> chat({
+    required String message,
+    List<Map<String, dynamic>>? history,
+    Map<String, double>? location,
+  }) async {
+    try {
+      return await _aiProvider.chat(
+        message: message,
+        history: history,
+        location: location,
+      );
+    } catch (e) {
+      print('AiRepository.chat error: $e');
+      return {
+        'reply': 'Désolé, une erreur est survenue. Veuillez réessayer.',
+      };
+    }
+  }
+}

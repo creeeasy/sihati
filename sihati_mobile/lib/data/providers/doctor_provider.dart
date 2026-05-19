@@ -5,12 +5,23 @@ import '../../app/constants/api_constants.dart';
 import '../../core/models/doctor_model.dart';
 import '../../core/models/specialty_model.dart';
 
+/// Doctor provider — communicates with the Sihati backend
+///
+/// Available backend routes used (patient-only):
+///   GET /doctors             → all doctors
+///   GET /doctors/:id         → doctor detail
+///   GET /doctors/search      → search with filters
+///   GET /doctors/top-rated   → top rated doctors
+///   GET /doctors/specialties → all specialties
 class DoctorProvider {
   final ApiService _apiService;
 
   DoctorProvider(this._apiService);
 
+  // ─── Specialties ────────────────────────────────────────────────────
+
   /// Get all medical specialties
+  /// Backend: GET /doctors/specialties
   Future<List<SpecialtyModel>> getSpecialties() async {
     try {
       final response = await _apiService.get(ApiConstants.SPECIALTIES);
@@ -29,10 +40,12 @@ class DoctorProvider {
     }
   }
 
+  // ─── Search ─────────────────────────────────────────────────────────
+
   /// Search doctors with filters
-  /// ✅ CORRIGÉ: specialtyId est String? (UUID)
+  /// Backend: GET /doctors/search
   Future<List<DoctorModel>> searchDoctors({
-    String? specialtyId, // ✅ String?
+    String? specialtyId,
     String? wilaya,
     double? latitude,
     double? longitude,
@@ -67,73 +80,8 @@ class DoctorProvider {
     }
   }
 
-  /// Get doctor by ID
-  Future<DoctorModel> getDoctorById(String id) async {
-    try {
-      final response = await _apiService.get(
-        '${ApiConstants.DOCTOR_DETAIL}/$id',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final doctorJson = data['doctor'] ?? data;
-        return DoctorModel.fromJson(doctorJson);
-      }
-      throw Exception('Doctor not found');
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message);
-    }
-  }
-
-  /// Get all doctors
-  Future<List<DoctorModel>> getAllDoctors() async {
-    try {
-      final response = await _apiService.get(ApiConstants.DOCTORS);
-
-      if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> doctorsJson = data['doctors'] ?? data;
-
-        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
-      }
-      throw Exception('Failed to load doctors');
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message);
-    }
-  }
-
-  /// Get doctors by specialty
-  Future<List<DoctorModel>> getDoctorsBySpecialty(String specialtyId) async {
-    return searchDoctors(specialtyId: specialtyId);
-  }
-
-  /// Get doctors by wilaya
-  Future<List<DoctorModel>> getDoctorsByWilaya(String wilaya) async {
-    return searchDoctors(wilaya: wilaya);
-  }
-
-  /// Get top rated doctors
-  Future<List<DoctorModel>> getTopRatedDoctors({int limit = 10}) async {
-    try {
-      final response = await _apiService.get(
-        '/doctors/top-rated',
-        queryParameters: {'limit': limit},
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> doctorsJson = data['doctors'] ?? data;
-
-        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
-      }
-      return [];
-    } on DioException catch (e) {
-      print('Error getting top rated doctors: ${e.message}');
-      return [];
-    }
-  }
-
   /// Search doctors by name
+  /// Backend: GET /doctors/search?q=
   Future<List<DoctorModel>> searchByName(String query) async {
     try {
       final response = await _apiService.get(
@@ -154,48 +102,74 @@ class DoctorProvider {
     }
   }
 
-  /// Get available time slots
-  Future<List<String>> getAvailableSlots({
-    required String doctorId,
-    required DateTime date,
-    String? officeId,
-  }) async {
-    try {
-      final queryParams = {
-        'date': date.toIso8601String().split('T')[0],
-        if (officeId != null) 'officeId': officeId,
-      };
+  // ─── List ────────────────────────────────────────────────────────────
 
+  /// Get all doctors
+  /// Backend: GET /doctors
+  Future<List<DoctorModel>> getAllDoctors() async {
+    try {
+      final response = await _apiService.get(ApiConstants.DOCTORS);
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        final List<dynamic> doctorsJson = data['doctors'] ?? data;
+
+        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
+      }
+      throw Exception('Failed to load doctors');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message);
+    }
+  }
+
+  /// Get doctor by ID
+  /// Backend: GET /doctors/:id
+  Future<DoctorModel> getDoctorById(String id) async {
+    try {
       final response = await _apiService.get(
-        '/doctors/$doctorId/available-slots',
-        queryParameters: queryParams,
+        '${ApiConstants.DOCTOR_DETAIL}/$id',
       );
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> slots = data['slots'] ?? data;
-        return slots
-            .map((slot) => (slot['time'] ?? slot.toString()).toString())
-            .toList();
+        final doctorJson = data['doctor'] ?? data;
+        return DoctorModel.fromJson(doctorJson);
       }
-      return [];
+      throw Exception('Doctor not found');
     } on DioException catch (e) {
-      print('Error getting available slots: ${e.message}');
-      return [];
+      throw Exception(e.response?.data['message'] ?? e.message);
     }
   }
 
-  /// Get specialty by ID
-  Future<SpecialtyModel> getSpecialtyById(String id) async {
+  /// Get doctors by specialty (convenience)
+  Future<List<DoctorModel>> getDoctorsBySpecialty(String specialtyId) async {
+    return searchDoctors(specialtyId: specialtyId);
+  }
+
+  /// Get doctors by wilaya (convenience)
+  Future<List<DoctorModel>> getDoctorsByWilaya(String wilaya) async {
+    return searchDoctors(wilaya: wilaya);
+  }
+
+  /// Get top rated doctors
+  /// Backend: GET /doctors/top-rated
+  Future<List<DoctorModel>> getTopRatedDoctors({int limit = 10}) async {
     try {
-      final specialties = await getSpecialties();
-      final specialty = specialties.firstWhere(
-        (s) => s.id == id,
-        orElse: () => throw Exception('Specialty not found'),
+      final response = await _apiService.get(
+        ApiConstants.DOCTOR_TOP_RATED,
+        queryParameters: {'limit': limit},
       );
-      return specialty;
-    } catch (e) {
-      throw Exception('Spécialité non trouvée');
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        final List<dynamic> doctorsJson = data['doctors'] ?? data;
+
+        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      print('Error getting top rated doctors: ${e.message}');
+      return [];
     }
   }
 }

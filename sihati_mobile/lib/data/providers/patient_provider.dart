@@ -1,21 +1,47 @@
+// lib/data/providers/patient_provider.dart
 import 'package:dio/dio.dart';
 import '../../core/services/api_service.dart';
+import '../../app/constants/api_constants.dart';
 import '../../core/models/patient_profile_model.dart';
 import '../../core/models/prescription_model.dart';
 import '../../core/models/consultation_model.dart';
 import '../../core/models/medical_document_model.dart';
 import '../../core/models/medication_history_model.dart';
+import '../../core/models/allergy_model.dart';
 
+/// Patient provider — communicates with the Sihati backend
+///
+/// Available backend routes used (patient-only):
+///   GET    /patient/profile           → get patient profile
+///   PUT    /patient/profile           → update patient profile
+///   GET    /patient/prescriptions     → list prescriptions (paginated)
+///   GET    /patient/prescriptions/:id → single prescription with medications
+///   GET    /patient/consultations     → list consultations (paginated)
+///   GET    /patient/consultations/:id → single consultation
+///   GET    /patient/documents         → list medical documents
+///   POST   /patient/documents         → upload document (multipart)
+///   DELETE /patient/documents/:id     → delete document
+///   GET    /patient/allergies         → list patient allergies (read-only)
+///   GET    /patient/stats             → dashboard stats
+///
+/// NOTE: Medication history is derived client-side from prescriptions.
+///       The backend has no dedicated /patient/medications/history endpoint.
+///
+/// Not available via patient routes (use allergyController if needed):
+///   - POST   /allergies (separate route, not /patient/allergies)
+///   - DELETE /allergies/:id
 class PatientProvider {
   final ApiService _apiService;
 
   PatientProvider(this._apiService);
 
-  // ─── Profile ────────────────────────────────────────────────
+  // ─── Profile ────────────────────────────────────────────────────────
 
+  /// Get patient profile
+  /// Backend: GET /patient/profile
   Future<PatientProfile> getPatientProfile() async {
     try {
-      final response = await _apiService.get('/patient/profile');
+      final response = await _apiService.get(ApiConstants.PATIENT_PROFILE);
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
         return PatientProfile.fromJson(data['profile'] ?? data);
@@ -26,9 +52,17 @@ class PatientProvider {
     }
   }
 
-  Future<PatientProfile> updatePatientProfile(Map<String, dynamic> data) async {
+  /// Update patient profile
+  /// Backend: PUT /patient/profile
+  /// Accepted fields: dateOfBirth, gender, bloodType,
+  ///   emergencyContactName, emergencyContactPhone
+  Future<PatientProfile> updatePatientProfile(
+      Map<String, dynamic> updateData) async {
     try {
-      final response = await _apiService.put('/patient/profile', data: data);
+      final response = await _apiService.put(
+        ApiConstants.PATIENT_PROFILE,
+        data: updateData,
+      );
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
         return PatientProfile.fromJson(data['profile'] ?? data);
@@ -39,18 +73,23 @@ class PatientProvider {
     }
   }
 
-  // ─── Prescriptions ──────────────────────────────────────────
+  // ─── Prescriptions ───────────────────────────────────────────────────
 
-  Future<List<Prescription>> getPrescriptions(
-      {int page = 1, int limit = 20}) async {
+  /// Get all prescriptions for the authenticated patient
+  /// Backend: GET /patient/prescriptions
+  Future<List<Prescription>> getPrescriptions({
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
       final response = await _apiService.get(
-        '/patient/prescriptions',
+        ApiConstants.PATIENT_PRESCRIPTIONS,
         queryParameters: {'page': page, 'limit': limit},
       );
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> list = data['prescriptions'] ?? data;
+        final List<dynamic> list =
+            data is List ? data : (data['prescriptions'] ?? data);
         return list.map((json) => Prescription.fromJson(json)).toList();
       }
       return [];
@@ -60,12 +99,15 @@ class PatientProvider {
     }
   }
 
+  /// Get prescription by ID
+  /// Backend: GET /patient/prescriptions/:id
   Future<Prescription> getPrescriptionById(String id) async {
     try {
-      final response = await _apiService.get('/patient/prescriptions/$id');
+      final response =
+          await _apiService.get('${ApiConstants.PATIENT_PRESCRIPTIONS}/$id');
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        return Prescription.fromJson(data['prescription'] ?? data);
+        return Prescription.fromJson(data is Map ? data : data);
       }
       throw Exception('Prescription not found');
     } on DioException catch (e) {
@@ -73,32 +115,54 @@ class PatientProvider {
     }
   }
 
-  Future<String> downloadPrescriptionPDF(String id) async {
+  // ─── Medication History ──────────────────────────────────────────────
+
+  /// Get medication history derived client-side from prescriptions.
+  /// Backend has no dedicated /patient/medications/history endpoint.
+  /// Backend: GET /patient/prescriptions → extract PrescriptionMedications
+  Future<List<MedicationHistory>> getMedicationHistory() async {
     try {
       final response = await _apiService.get(
-        '/patient/prescriptions/$id/pdf',
-        options: Options(responseType: ResponseType.bytes),
-      );
-      // Return the file path or URL
-      return response.data;
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message);
-    }
-  }
-
-  // ─── Medication History ─────────────────────────────────────
-
-  Future<List<MedicationHistory>> getMedicationHistory({bool? active}) async {
-    try {
-      final queryParams = active != null ? {'active': active} : null;
-      final response = await _apiService.get(
-        '/patient/medications/history',
-        queryParameters: queryParams,
+        ApiConstants.PATIENT_PRESCRIPTIONS,
+        queryParameters: {'limit': 50},
       );
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> list = data['medications'] ?? data;
-        return list.map((json) => MedicationHistory.fromJson(json)).toList();
+        final List<dynamic> prescList =
+            data is List ? data : (data['prescriptions'] ?? data);
+
+        final allMedications = <MedicationHistory>[];
+        for (final prescJson in prescList) {
+          final meds = prescJson['medications'] as List? ??
+              prescJson['PrescriptionMedications'] as List? ??
+              [];
+          for (final med in meds) {
+            try {
+              // Build a MedicationHistory-compatible map from prescription + medication data
+              allMedications.add(MedicationHistory.fromJson({
+                ...Map<String, dynamic>.from(med),
+                'patientId': prescJson['patientId'] ?? prescJson['patient_id'] ?? '',
+                'prescriptionId': prescJson['id'],
+                'startDate': prescJson['prescriptionDate'] ??
+                    prescJson['prescription_date'] ??
+                    prescJson['createdAt'] ??
+                    prescJson['created_at'],
+                'createdAt': prescJson['createdAt'] ?? prescJson['created_at'],
+                if ((med as Map)['durationDays'] != null ||
+                    med['duration_days'] != null)
+                  'endDate': _computeEndDate(
+                    prescJson['prescriptionDate'] ??
+                        prescJson['prescription_date'] ??
+                        prescJson['createdAt'],
+                    med['durationDays'] ?? med['duration_days'],
+                  ),
+              }));
+            } catch (_) {
+              // Skip malformed entries
+            }
+          }
+        }
+        return allMedications;
       }
       return [];
     } on DioException catch (e) {
@@ -107,22 +171,37 @@ class PatientProvider {
     }
   }
 
-  Future<List<MedicationHistory>> getActiveMedications() async {
-    return getMedicationHistory(active: true);
+  static String? _computeEndDate(dynamic startStr, dynamic durationDays) {
+    if (startStr == null || durationDays == null) return null;
+    try {
+      final start = DateTime.parse(startStr.toString());
+      final days = (durationDays is int)
+          ? durationDays
+          : int.tryParse(durationDays.toString());
+      if (days == null) return null;
+      return start.add(Duration(days: days)).toIso8601String();
+    } catch (_) {
+      return null;
+    }
   }
 
-  // ─── Consultations ─────────────────────────────────────────
+  // ─── Consultations ────────────────────────────────────────────────────
 
-  Future<List<Consultation>> getConsultations(
-      {int page = 1, int limit = 20}) async {
+  /// Get consultations for the authenticated patient
+  /// Backend: GET /patient/consultations
+  Future<List<Consultation>> getConsultations({
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
       final response = await _apiService.get(
-        '/patient/consultations',
+        ApiConstants.PATIENT_CONSULTATIONS,
         queryParameters: {'page': page, 'limit': limit},
       );
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> list = data['consultations'] ?? data;
+        final List<dynamic> list =
+            data is List ? data : (data['consultations'] ?? data);
         return list.map((json) => Consultation.fromJson(json)).toList();
       }
       return [];
@@ -132,12 +211,15 @@ class PatientProvider {
     }
   }
 
+  /// Get consultation by ID
+  /// Backend: GET /patient/consultations/:id
   Future<Consultation> getConsultationById(String id) async {
     try {
-      final response = await _apiService.get('/patient/consultations/$id');
+      final response =
+          await _apiService.get('${ApiConstants.PATIENT_CONSULTATIONS}/$id');
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        return Consultation.fromJson(data['consultation'] ?? data);
+        return Consultation.fromJson(data is Map ? data : data);
       }
       throw Exception('Consultation not found');
     } on DioException catch (e) {
@@ -145,14 +227,17 @@ class PatientProvider {
     }
   }
 
-  // ─── Documents ──────────────────────────────────────────────
+  // ─── Documents ────────────────────────────────────────────────────────
 
+  /// Get all medical documents
+  /// Backend: GET /patient/documents
   Future<List<MedicalDocument>> getDocuments() async {
     try {
-      final response = await _apiService.get('/patient/documents');
+      final response = await _apiService.get(ApiConstants.PATIENT_DOCUMENTS);
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> list = data['documents'] ?? data;
+        final List<dynamic> list =
+            data is List ? data : (data['documents'] ?? data);
         return list.map((json) => MedicalDocument.fromJson(json)).toList();
       }
       return [];
@@ -162,12 +247,15 @@ class PatientProvider {
     }
   }
 
+  /// Upload a medical document (multipart)
+  /// Backend: POST /patient/documents
   Future<MedicalDocument> uploadDocument(FormData formData) async {
     try {
-      final response = await _apiService.upload('/patient/documents', formData);
+      final response =
+          await _apiService.upload(ApiConstants.PATIENT_DOCUMENTS, formData);
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data['data'] ?? response.data;
-        return MedicalDocument.fromJson(data['document'] ?? data);
+        return MedicalDocument.fromJson(data is Map ? data : data);
       }
       throw Exception('Failed to upload document');
     } on DioException catch (e) {
@@ -175,23 +263,28 @@ class PatientProvider {
     }
   }
 
+  /// Delete a document
+  /// Backend: DELETE /patient/documents/:id
   Future<void> deleteDocument(String id) async {
     try {
-      await _apiService.delete('/patient/documents/$id');
+      await _apiService.delete('${ApiConstants.PATIENT_DOCUMENTS}/$id');
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? e.message);
     }
   }
 
-  // ─── Allergies ──────────────────────────────────────────────
+  // ─── Allergies ────────────────────────────────────────────────────────
 
-  Future<List<Map<String, dynamic>>> getAllergies() async {
+  /// Get all allergies for the authenticated patient (read-only via patient route)
+  /// Backend: GET /patient/allergies
+  Future<List<Allergy>> getAllergies() async {
     try {
-      final response = await _apiService.get('/patient/allergies');
+      final response = await _apiService.get(ApiConstants.PATIENT_ALLERGIES);
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> list = data['allergies'] ?? data;
-        return list.map((json) => json as Map<String, dynamic>).toList();
+        final List<dynamic> list =
+            data is List ? data : (data['allergies'] ?? data);
+        return list.map((json) => Allergy.fromJson(json)).toList();
       }
       return [];
     } on DioException catch (e) {
@@ -200,29 +293,17 @@ class PatientProvider {
     }
   }
 
-  Future<void> addAllergy(Map<String, dynamic> allergy) async {
-    try {
-      await _apiService.post('/patient/allergies', data: allergy);
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message);
-    }
-  }
+  // ─── Stats ────────────────────────────────────────────────────────────
 
-  Future<void> deleteAllergy(String id) async {
-    try {
-      await _apiService.delete('/patient/allergies/$id');
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message);
-    }
-  }
-
-  // ─── Stats ──────────────────────────────────────────────────
-
+  /// Get patient dashboard statistics
+  /// Backend: GET /patient/stats
+  /// Returns: { prescriptionsCount, medicationsCount, consultationsCount, documentsCount }
   Future<Map<String, dynamic>> getStats() async {
     try {
-      final response = await _apiService.get('/patient/stats');
+      final response = await _apiService.get(ApiConstants.PATIENT_STATS);
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
+
         return {
           'prescriptionsCount': data['prescriptionsCount'] ?? 0,
           'medicationsCount': data['medicationsCount'] ?? 0,
@@ -230,37 +311,17 @@ class PatientProvider {
           'documentsCount': data['documentsCount'] ?? 0,
         };
       }
-      return {
-        'prescriptionsCount': 0,
-        'medicationsCount': 0,
-        'consultationsCount': 0,
-        'documentsCount': 0,
-      };
+      return _emptyStats();
     } on DioException catch (e) {
       print('Error loading stats: ${e.message}');
-      return {
+      return _emptyStats();
+    }
+  }
+
+  Map<String, dynamic> _emptyStats() => {
         'prescriptionsCount': 0,
         'medicationsCount': 0,
         'consultationsCount': 0,
         'documentsCount': 0,
       };
-    }
-  }
-
-  /// Download a document by ID
-  Future<List<int>> downloadDocument(String documentId) async {
-    try {
-      final response = await _apiService.get(
-        '/patient/documents/$documentId/download',
-        options: Options(responseType: ResponseType.bytes),
-      );
-
-      if (response.statusCode == 200) {
-        return List<int>.from(response.data);
-      }
-      throw Exception('Failed to download document');
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message);
-    }
-  }
 }

@@ -1,10 +1,23 @@
 // lib/core/models/doctor_model.dart
+//
+// Matches backend: Doctor.ts + /doctors responses (underscored: true)
+// Fields: id, userId, specialtyId, doctorName→doctor_name, clinicName→clinic_name,
+//   clinicAddress→clinic_address, wilaya, commune, latitude, longitude, phone,
+//   whatsappNumber→whatsapp_number, consultationFee→consultation_fee, bio,
+//   yearsOfExperience→years_of_experience, averageRating→average_rating,
+//   totalReviews→total_reviews, isVerified→is_verified,
+//   createdAt→created_at, updatedAt→updated_at
+//
+// Virtual (computed by backend service): distance
+// Included via association: specialty (SpecialtyModel)
 import 'specialty_model.dart';
 
 class DoctorModel {
-  final String id; // ✅ Changed from int to String (UUID)
+  final String id;
+  final String? userId;
+  final String? specialtyId;
   final String doctorName;
-  final SpecialtyModel specialty;
+  final SpecialtyModel? specialty;
   final String clinicName;
   final String clinicAddress;
   final String wilaya;
@@ -14,20 +27,21 @@ class DoctorModel {
   final String phone;
   final String? whatsappNumber;
   final double? consultationFee;
-  final Map<String, dynamic>? workingHours;
-  final String? profilePhotoUrl;
   final String? bio;
   final int? yearsOfExperience;
   final double? averageRating;
   final int? totalReviews;
+  final bool isVerified;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final double? distance;
 
   DoctorModel({
     required this.id,
+    this.userId,
+    this.specialtyId,
     required this.doctorName,
-    required this.specialty,
+    this.specialty,
     required this.clinicName,
     required this.clinicAddress,
     required this.wilaya,
@@ -37,12 +51,11 @@ class DoctorModel {
     required this.phone,
     this.whatsappNumber,
     this.consultationFee,
-    this.workingHours,
-    this.profilePhotoUrl,
     this.bio,
     this.yearsOfExperience,
     this.averageRating,
     this.totalReviews,
+    this.isVerified = false,
     this.createdAt,
     this.updatedAt,
     this.distance,
@@ -50,73 +63,77 @@ class DoctorModel {
 
   factory DoctorModel.fromJson(Map<String, dynamic> json) {
     return DoctorModel(
-      id: json['id'].toString(), // ✅ Convert to String
+      id: json['id'].toString(),
+      userId: json['userId']?.toString() ?? json['user_id']?.toString(),
+      specialtyId:
+          json['specialtyId']?.toString() ?? json['specialty_id']?.toString(),
       doctorName: json['doctorName'] ?? json['doctor_name'] ?? '',
-      specialty:
-          SpecialtyModel.fromJson(json['specialty'] as Map<String, dynamic>),
+      specialty: json['specialty'] != null
+          ? SpecialtyModel.fromJson(json['specialty'] as Map<String, dynamic>)
+          : null,
       clinicName: json['clinicName'] ?? json['clinic_name'] ?? '',
       clinicAddress: json['clinicAddress'] ?? json['clinic_address'] ?? '',
-      wilaya: json['wilaya'] as String,
+      wilaya: json['wilaya'] as String? ?? '',
       commune: json['commune'] as String?,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      phone: json['phone'] as String,
+      latitude: _toDouble(json['latitude']) ?? 0.0,
+      longitude: _toDouble(json['longitude']) ?? 0.0,
+      phone: json['phone'] as String? ?? '',
       whatsappNumber: json['whatsappNumber'] ?? json['whatsapp_number'],
-      consultationFee: json['consultationFee'] != null
-          ? (json['consultationFee'] as num).toDouble()
-          : json['consultation_fee'] != null
-              ? (json['consultation_fee'] as num).toDouble()
-              : null,
-      workingHours: json['workingHours'] ?? json['working_hours'],
-      profilePhotoUrl: json['profilePhotoUrl'] ?? json['profile_photo_url'],
+      consultationFee: _toDouble(
+          json['consultationFee'] ?? json['consultation_fee']),
       bio: json['bio'] as String?,
       yearsOfExperience:
           json['yearsOfExperience'] ?? json['years_of_experience'],
-      averageRating: json['averageRating'] != null
-          ? (json['averageRating'] as num).toDouble()
-          : json['average_rating'] != null
-              ? (json['average_rating'] as num).toDouble()
-              : null,
+      averageRating: _toDouble(
+          json['averageRating'] ?? json['average_rating']),
       totalReviews: json['totalReviews'] ?? json['total_reviews'],
+      isVerified: json['isVerified'] ?? json['is_verified'] ?? false,
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
+          ? DateTime.tryParse(json['createdAt'] as String)
           : json['created_at'] != null
-              ? DateTime.parse(json['created_at'] as String)
+              ? DateTime.tryParse(json['created_at'] as String)
               : null,
       updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
+          ? DateTime.tryParse(json['updatedAt'] as String)
           : json['updated_at'] != null
-              ? DateTime.parse(json['updated_at'] as String)
+              ? DateTime.tryParse(json['updated_at'] as String)
               : null,
-      distance: json['distance'] != null
-          ? (json['distance'] as num).toDouble()
-          : null,
+      distance: _toDouble(json['distance']),
     );
+  }
+
+  static double? _toDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      if (userId != null) 'userId': userId,
+      if (specialtyId != null) 'specialtyId': specialtyId,
       'doctorName': doctorName,
-      'specialty': specialty.toJson(),
+      if (specialty != null) 'specialty': specialty!.toJson(),
       'clinicName': clinicName,
       'clinicAddress': clinicAddress,
       'wilaya': wilaya,
-      'commune': commune,
+      if (commune != null) 'commune': commune,
       'latitude': latitude,
       'longitude': longitude,
       'phone': phone,
-      'whatsappNumber': whatsappNumber,
-      'consultationFee': consultationFee,
-      'workingHours': workingHours,
-      'profilePhotoUrl': profilePhotoUrl,
-      'bio': bio,
-      'yearsOfExperience': yearsOfExperience,
-      'averageRating': averageRating,
-      'totalReviews': totalReviews,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
-      'distance': distance,
+      if (whatsappNumber != null) 'whatsappNumber': whatsappNumber,
+      if (consultationFee != null) 'consultationFee': consultationFee,
+      if (bio != null) 'bio': bio,
+      if (yearsOfExperience != null) 'yearsOfExperience': yearsOfExperience,
+      if (averageRating != null) 'averageRating': averageRating,
+      if (totalReviews != null) 'totalReviews': totalReviews,
+      'isVerified': isVerified,
+      if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+      if (distance != null) 'distance': distance,
     };
   }
 
@@ -148,7 +165,7 @@ class DoctorModel {
 
   String get ratingText {
     if (averageRating == null || totalReviews == null) return 'Pas d\'avis';
-    return '${averageRating!.toStringAsFixed(1)} (${totalReviews} avis)';
+    return '${averageRating!.toStringAsFixed(1)} ($totalReviews avis)';
   }
 
   bool get hasWhatsapp => whatsappNumber != null && whatsappNumber!.isNotEmpty;
@@ -160,31 +177,10 @@ class DoctorModel {
     return averageRating!.round();
   }
 
-  Map<String, String>? getHoursForDay(String day) {
-    if (workingHours == null) return null;
-
-    final dayLower = day.toLowerCase();
-    if (workingHours!.containsKey(dayLower)) {
-      final hours = workingHours![dayLower];
-      if (hours is Map) {
-        return {
-          'morning': hours['morning']?.toString() ?? '',
-          'afternoon': hours['afternoon']?.toString() ?? '',
-        };
-      }
-    }
-    return null;
-  }
-
-  bool isWorkingOnDay(String day) {
-    final hours = getHoursForDay(day);
-    if (hours == null) return false;
-    return (hours['morning'] != null && hours['morning']!.isNotEmpty) ||
-        (hours['afternoon'] != null && hours['afternoon']!.isNotEmpty);
-  }
-
   DoctorModel copyWith({
     String? id,
+    String? userId,
+    String? specialtyId,
     String? doctorName,
     SpecialtyModel? specialty,
     String? clinicName,
@@ -196,18 +192,19 @@ class DoctorModel {
     String? phone,
     String? whatsappNumber,
     double? consultationFee,
-    Map<String, dynamic>? workingHours,
-    String? profilePhotoUrl,
     String? bio,
     int? yearsOfExperience,
     double? averageRating,
     int? totalReviews,
+    bool? isVerified,
     DateTime? createdAt,
     DateTime? updatedAt,
     double? distance,
   }) {
     return DoctorModel(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
+      specialtyId: specialtyId ?? this.specialtyId,
       doctorName: doctorName ?? this.doctorName,
       specialty: specialty ?? this.specialty,
       clinicName: clinicName ?? this.clinicName,
@@ -219,12 +216,11 @@ class DoctorModel {
       phone: phone ?? this.phone,
       whatsappNumber: whatsappNumber ?? this.whatsappNumber,
       consultationFee: consultationFee ?? this.consultationFee,
-      workingHours: workingHours ?? this.workingHours,
-      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       bio: bio ?? this.bio,
       yearsOfExperience: yearsOfExperience ?? this.yearsOfExperience,
       averageRating: averageRating ?? this.averageRating,
       totalReviews: totalReviews ?? this.totalReviews,
+      isVerified: isVerified ?? this.isVerified,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       distance: distance ?? this.distance,
@@ -233,7 +229,7 @@ class DoctorModel {
 
   @override
   String toString() {
-    return 'DoctorModel(id: $id, name: $doctorName, specialty: ${specialty.nameFr}, wilaya: $wilaya)';
+    return 'DoctorModel(id: $id, name: $doctorName, specialty: ${specialty?.nameFr}, wilaya: $wilaya)';
   }
 
   @override

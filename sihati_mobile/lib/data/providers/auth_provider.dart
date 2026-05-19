@@ -1,28 +1,40 @@
+// lib/data/providers/auth_provider.dart
 import 'package:dio/dio.dart';
 import '../../../core/services/api_service.dart';
 import '../../../app/constants/api_constants.dart';
 import '../../../core/models/auth_response.dart';
 import '../../../core/models/user_model.dart';
 
+/// Auth provider — communicates with the Sihati backend
+///
+/// Available backend routes used (patient-only):
+///   POST /auth/register          → create account (role: 'patient')
+///   POST /auth/login             → get access + refresh tokens
+///   GET  /auth/profile           → get user + patient profile
+///   PUT  /auth/profile           → update fullName / phoneNumber
+///   PUT  /auth/profile/chifa     → update Chifa card number
+///   POST /auth/logout            → revoke refresh token
+///
+/// NOTE: JWT is attached automatically by ApiService interceptor.
+/// No need to pass token or userId manually.
 class AuthProvider {
   final ApiService _apiService;
 
   AuthProvider(this._apiService);
 
+  // ─── Login ──────────────────────────────────────────────────────────
+
   /// Login with email and password
+  /// Backend: POST /auth/login
   Future<AuthResponse> login(String email, String password) async {
     try {
       final response = await _apiService.post(
         ApiConstants.LOGIN,
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password, 'role': 'patient'},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data['data'] ?? response.data;
-
         final user = UserModel.fromJson(data['user'] ?? data);
         final token = data['accessToken'] ?? data['token'];
         final refreshToken = data['refreshToken'];
@@ -31,8 +43,6 @@ class AuthProvider {
           user: user,
           token: token,
           refreshToken: refreshToken,
-          pharmacy: null,
-          doctor: null,
         );
       }
       throw Exception('Login failed: ${response.statusCode}');
@@ -43,7 +53,10 @@ class AuthProvider {
     }
   }
 
+  // ─── Register ───────────────────────────────────────────────────────
+
   /// Register new patient
+  /// Backend: POST /auth/register  (role: 'patient' in body)
   Future<AuthResponse> registerPatient({
     required String email,
     required String password,
@@ -53,12 +66,13 @@ class AuthProvider {
   }) async {
     try {
       final response = await _apiService.post(
-        ApiConstants.REGISTER_PATIENT,
+        ApiConstants.REGISTER,
         data: {
           'email': email,
           'password': password,
           'fullName': fullName,
           'phoneNumber': phoneNumber,
+          'role': 'patient',
           if (chifaNumber != null && chifaNumber.isNotEmpty)
             'chifaNumber': chifaNumber,
         },
@@ -66,7 +80,6 @@ class AuthProvider {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data['data'] ?? response.data;
-
         final user = UserModel.fromJson(data['user'] ?? data);
         final token = data['accessToken'] ?? data['token'];
         final refreshToken = data['refreshToken'];
@@ -75,8 +88,6 @@ class AuthProvider {
           user: user,
           token: token,
           refreshToken: refreshToken,
-          pharmacy: null,
-          doctor: null,
         );
       }
       throw Exception('Registration failed: ${response.statusCode}');
@@ -87,13 +98,13 @@ class AuthProvider {
     }
   }
 
-  /// Get user profile
-  Future<UserModel> getProfile(String token) async {
+  // ─── Profile ────────────────────────────────────────────────────────
+
+  /// Get user profile (JWT attached automatically by interceptor)
+  /// Backend: GET /auth/profile
+  Future<UserModel> getProfile() async {
     try {
-      final response = await _apiService.get(
-        ApiConstants.PROFILE,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+      final response = await _apiService.get(ApiConstants.PROFILE);
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
@@ -101,19 +112,19 @@ class AuthProvider {
       }
       throw Exception('Failed to get profile');
     } on DioException catch (e) {
-      throw Exception(e.message);
+      throw Exception(e.response?.data['message'] ?? e.message);
     }
   }
 
-  /// Update user profile
+  /// Update user profile (user identified by JWT — no userId in URL)
+  /// Backend: PUT /auth/profile
   Future<UserModel> updateProfile({
-    required String userId,
     String? fullName,
     String? phoneNumber,
   }) async {
     try {
       final response = await _apiService.put(
-        '${ApiConstants.PROFILE}/$userId',
+        ApiConstants.PROFILE,
         data: {
           if (fullName != null) 'fullName': fullName,
           if (phoneNumber != null) 'phoneNumber': phoneNumber,
@@ -126,13 +137,13 @@ class AuthProvider {
       }
       throw Exception('Failed to update profile');
     } on DioException catch (e) {
-      throw Exception(e.message);
+      throw Exception(e.response?.data['message'] ?? e.message);
     }
   }
 
-  /// Update Chifa number
+  /// Update Chifa card number
+  /// Backend: PUT /auth/profile/chifa
   Future<UserModel> updateChifaNumber({
-    required String userId,
     String? chifaNumber,
   }) async {
     try {
@@ -149,16 +160,19 @@ class AuthProvider {
       }
       throw Exception('Failed to update Chifa number');
     } on DioException catch (e) {
-      throw Exception(e.message);
+      throw Exception(e.response?.data['message'] ?? e.message);
     }
   }
 
-  /// Logout
+  // ─── Logout ─────────────────────────────────────────────────────────
+
+  /// Logout — revoke refresh token on backend
+  /// Backend: POST /auth/logout
   Future<void> logout() async {
     try {
       await _apiService.post(ApiConstants.LOGOUT);
     } catch (e) {
-      // Ignore errors on logout
+      // Silently ignore — local state cleared regardless
     }
   }
 }

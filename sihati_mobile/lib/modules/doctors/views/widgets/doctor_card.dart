@@ -72,7 +72,7 @@ class DoctorCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            doctor.specialty.nameFr,
+                            doctor.specialty?.nameFr ?? 'Spécialiste',
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500,

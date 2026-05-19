@@ -176,7 +176,7 @@ class DoctorDetailController extends GetxController {
 
     final text = '''
 📍 ${doctor.value!.doctorName}
-🏥 ${doctor.value!.specialty.nameFr}
+🏥 ${doctor.value!.specialty?.nameFr ?? 'Spécialiste'}
 📞 ${doctor.value!.phone}
 📍 ${doctor.value!.clinicAddress}, ${doctor.value!.wilaya}
 💰 $formattedFee
@@ -191,77 +191,8 @@ class DoctorDetailController extends GetxController {
     );
   }
 
-  List<MapEntry<String, String>> get workingHoursList {
-    if (doctor.value == null || doctor.value!.workingHours == null) {
-      return [];
-    }
-
-    try {
-      final workingHours = doctor.value!.workingHours!;
-      final List<MapEntry<String, String>> hours = [];
-
-      final dayMapping = {
-        'monday': 'Lundi',
-        'tuesday': 'Mardi',
-        'wednesday': 'Mercredi',
-        'thursday': 'Jeudi',
-        'friday': 'Vendredi',
-        'saturday': 'Samedi',
-        'sunday': 'Dimanche',
-        'lundi': 'Lundi',
-        'mardi': 'Mardi',
-        'mercredi': 'Mercredi',
-        'jeudi': 'Jeudi',
-        'vendredi': 'Vendredi',
-        'samedi': 'Samedi',
-        'dimanche': 'Dimanche',
-      };
-
-      workingHours.forEach((key, value) {
-        final frenchDay = dayMapping[key.toLowerCase()] ?? key;
-
-        if (value == null) {
-          hours.add(MapEntry(frenchDay, 'Fermé'));
-        } else if (value is String) {
-          hours.add(MapEntry(frenchDay, value));
-        } else if (value is Map) {
-          final periods = <String>[];
-          if (value['morning'] != null &&
-              value['morning'].toString().isNotEmpty) {
-            periods.add(value['morning'].toString());
-          }
-          if (value['afternoon'] != null &&
-              value['afternoon'].toString().isNotEmpty) {
-            periods.add(value['afternoon'].toString());
-          }
-          hours.add(MapEntry(
-            frenchDay,
-            periods.isEmpty ? 'Fermé' : periods.join(' / '),
-          ));
-        }
-      });
-
-      final dayOrder = [
-        'Lundi',
-        'Mardi',
-        'Mercredi',
-        'Jeudi',
-        'Vendredi',
-        'Samedi',
-        'Dimanche'
-      ];
-      hours.sort((a, b) {
-        final indexA = dayOrder.indexOf(a.key);
-        final indexB = dayOrder.indexOf(b.key);
-        return indexA.compareTo(indexB);
-      });
-
-      return hours;
-    } catch (e) {
-      print('Error parsing working hours: $e');
-      return [];
-    }
-  }
+  // workingHoursList removed — Doctor model has no workingHours field in backend.
+  // Available slots are queried via GET /doctors/:id/available-slots?date=YYYY-MM-DD
 
   String get formattedFee {
     if (doctor.value == null) return '';

@@ -125,11 +125,6 @@ class LoginScreen extends GetView<LoginController> {
                     ),
 
                     const SizedBox(height: AppSpacing.xl),
-
-                    // Test credentials
-                    _TestCredentials(),
-
-                    const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
               ),
@@ -527,92 +522,6 @@ class _GuestButton extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 // TEST CREDENTIALS
 // ═══════════════════════════════════════════════════════════════
-
-class _TestCredentials extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.primarySoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withOpacity(0.25)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.info_rounded,
-                  color: AppColors.primary,
-                  size: 14,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Compte de test',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withOpacity(0.15)),
-            ),
-            child: const Column(
-              children: [
-                _CredRow(icon: Icons.email_rounded, value: 'patient@test.com'),
-                SizedBox(height: 8),
-                _CredRow(icon: Icons.lock_rounded, value: 'password123'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CredRow extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  const _CredRow({required this.icon, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: AppColors.textSecondary),
-        const SizedBox(width: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS

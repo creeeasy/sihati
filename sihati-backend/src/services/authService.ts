@@ -35,6 +35,8 @@ class AuthService {
       chifaNumber?: string;
       pharmacyData?: any;
       doctorProfile?: any;
+       patientProfile?: any;
+      
     }
   ): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
     const existing = await User.findOne({ where: { email: data.email } });
@@ -86,6 +88,17 @@ class AuthService {
         isVerified: false,
       });
     }
+   if (data.role === 'patient') {
+    const { PatientProfile } = await import('../models');
+    await PatientProfile.create({
+      userId: user.id,
+      dateOfBirth: data.patientProfile?.dateOfBirth,
+      gender: data.patientProfile?.gender,
+      bloodType: data.patientProfile?.bloodType,
+      emergencyContactName: data.patientProfile?.emergencyContactName,
+      emergencyContactPhone: data.patientProfile?.emergencyContactPhone,
+    });
+  }
 
     const accessToken = user.generateToken();
     const refreshToken = await this.createRefreshToken(user.id);
@@ -95,14 +108,13 @@ class AuthService {
 
   async login(
     email: string,
-    password: string
-  ): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
+    password: string,
+    role:'patient' | 'pharmacy' | 'doctor',
+   ): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
     const user = await User.findOne({
-      where: { email },
+      where: { email,role },
       attributes: { include: ['password'] },
     });
-console.log("user")
-console.log(user)
     if (!user) {
       throw new AuthenticationError('Email ou mot de passe incorrect.');
     }

@@ -168,7 +168,7 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _formatDate(prescription.date),
+                        _formatDate(prescription.prescriptionDate),
                         style: const TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 16,
@@ -221,7 +221,7 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      prescription.doctor?.specialty.nameFr ??
+                      prescription.doctor?.specialty?.nameFr ??
                           'Spécialité non spécifiée',
                       style: const TextStyle(
                         fontFamily: 'Poppins',
@@ -445,23 +445,19 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
     // TODO: Navigate to prescription detail screen
     Get.snackbar(
       'Ordonnance',
-      'Détails de l\'ordonnance du ${_formatDate(prescription.date)}',
+      'Détails de l\'ordonnance du ${_formatDate(prescription.prescriptionDate)}',
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
     );
   }
 
+  // NOTE: downloadPrescriptionPDF removed — backend returns JSON not PDF file stream.
+  // For prescriptions with fileUrl, open the URL directly:
   Future<void> _downloadPrescriptionPDF(String prescriptionId) async {
-    try {
-      await controller.downloadPrescriptionPDF(prescriptionId);
-    } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible de télécharger l\'ordonnance',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
+    Get.snackbar(
+      'Téléchargement',
+      'Fonctionnalité à venir (URL directe)',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 }

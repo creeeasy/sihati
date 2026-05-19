@@ -22,8 +22,9 @@ class PharmacyApiService {
       const data = await response.json();
       if (!response.ok) {
         if (response.status === 401) {
-          const onLoginPage = window.location.pathname.includes('pharmacy-login') ||
-                              window.location.pathname.includes('pharmacy-forgot');
+          const onLoginPage =
+            window.location.pathname.includes("pharmacy-login") ||
+            window.location.pathname.includes("pharmacy-forgot");
           if (!onLoginPage) {
             STORAGE.clear();
             localStorage.removeItem("pharmacyId");
@@ -52,7 +53,7 @@ class PharmacyApiService {
   async login(email, password) {
     const data = await this.request("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, role: "pharmacy" }),
     });
     if (data.success) {
       STORAGE.setToken(data.data.accessToken);

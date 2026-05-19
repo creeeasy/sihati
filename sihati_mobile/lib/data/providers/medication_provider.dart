@@ -1,3 +1,4 @@
+// lib/data/providers/medication_provider.dart
 import 'package:dio/dio.dart';
 import 'package:sihati_mobile/core/models/pharmacy_with_stock.dart';
 import '../../core/services/api_service.dart';
@@ -5,12 +6,24 @@ import '../../app/constants/api_constants.dart';
 import '../../core/models/medication_model.dart';
 import '../../core/models/medication_search_result.dart';
 
+/// Medication provider — communicates with the Sihati backend
+///
+/// Available backend routes used (patient-only):
+///   GET  /medications                → all medications (paginated)
+///   GET  /medications/:id            → medication detail
+///   GET  /medications/search         → search by name
+///   GET  /medications/popular        → popular medications
+///   POST /medications/barcode        → search by barcode
+///   GET  /medications/:id/pharmacies → pharmacies with stock
 class MedicationProvider {
   final ApiService _apiService;
 
   MedicationProvider(this._apiService);
 
+  // ─── Search ─────────────────────────────────────────────────────────
+
   /// Search medications by name and return results with pharmacies
+  /// Backend: GET /medications/search
   Future<List<MedicationSearchResult>> searchMedication(
     String searchTerm, {
     double? latitude,
@@ -46,7 +59,32 @@ class MedicationProvider {
     }
   }
 
+  /// Search medications by barcode
+  /// Backend: POST /medications/barcode
+  Future<MedicationModel?> searchByBarcode(String barcode) async {
+    try {
+      final response = await _apiService.post(
+        ApiConstants.MEDICATION_BARCODE,
+        data: {'barcode': barcode},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        if (data['medication'] != null) {
+          return MedicationModel.fromJson(data['medication']);
+        }
+      }
+      return null;
+    } on DioException catch (e) {
+      print('Barcode search error: ${e.message}');
+      return null;
+    }
+  }
+
+  // ─── Detail ─────────────────────────────────────────────────────────
+
   /// Get medication by ID
+  /// Backend: GET /medications/:id
   Future<MedicationModel> getMedicationById(String id) async {
     try {
       final response = await _apiService.get(
@@ -64,62 +102,10 @@ class MedicationProvider {
     }
   }
 
-  /// Search medications by barcode
-  Future<MedicationModel?> searchByBarcode(String barcode) async {
-    try {
-      final response = await _apiService.post(
-        '/medications/barcode',
-        data: {'barcode': barcode},
-      );
+  // ─── List ────────────────────────────────────────────────────────────
 
-      if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        if (data['medication'] != null) {
-          return MedicationModel.fromJson(data['medication']);
-        }
-      }
-      return null;
-    } on DioException catch (e) {
-      print('Barcode search error: ${e.message}');
-      return null;
-    }
-  }
-
-  /// Get pharmacies that have a specific medication in stock
-  Future<List<PharmacyWithStock>> getPharmaciesWithStock(
-    String medicationId, {
-    double? latitude,
-    double? longitude,
-    double radius = 10,
-  }) async {
-    try {
-      final queryParams = <String, dynamic>{
-        if (latitude != null) 'lat': latitude,
-        if (longitude != null) 'lng': longitude,
-        'radius': radius,
-      };
-
-      final response = await _apiService.get(
-        '/medications/$medicationId/pharmacies',
-        queryParameters: queryParams,
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
-
-        return pharmaciesJson
-            .map((json) => PharmacyWithStock.fromJson(json))
-            .toList();
-      }
-      return [];
-    } on DioException catch (e) {
-      print('Error getting pharmacies with stock: ${e.message}');
-      return [];
-    }
-  }
-
-  /// Get all medications (for browsing)
+  /// Get all medications (paginated)
+  /// Backend: GET /medications
   Future<List<MedicationModel>> getAllMedications({
     int page = 1,
     int limit = 20,
@@ -146,10 +132,11 @@ class MedicationProvider {
   }
 
   /// Get popular medications
+  /// Backend: GET /medications/popular
   Future<List<MedicationModel>> getPopularMedications({int limit = 10}) async {
     try {
       final response = await _apiService.get(
-        '/medications/popular',
+        ApiConstants.MEDICATION_POPULAR,
         queryParameters: {'limit': limit},
       );
 
@@ -168,32 +155,40 @@ class MedicationProvider {
     }
   }
 
-  /// Check drug interactions
-  Future<Map<String, dynamic>> checkInteractions({
-    required List<String> medicationIds,
-    required String newMedicationId,
+  // ─── Pharmacy Stock ──────────────────────────────────────────────────
+
+  /// Get pharmacies that have a specific medication in stock
+  /// Backend: GET /medications/:id/pharmacies
+  Future<List<PharmacyWithStock>> getPharmaciesWithStock(
+    String medicationId, {
+    double? latitude,
+    double? longitude,
+    double radius = 10,
   }) async {
     try {
-      final response = await _apiService.post(
-        '/ai/check-interactions',
-        data: {
-          'currentMedications': medicationIds,
-          'newMedication': newMedicationId,
-        },
+      final queryParams = <String, dynamic>{
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
+        'radius': radius,
+      };
+
+      final response = await _apiService.get(
+        '${ApiConstants.MEDICATION_PHARMACIES}/$medicationId/pharmacies',
+        queryParameters: queryParams,
       );
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        return {
-          'hasInteractions': data['hasInteractions'] ?? false,
-          'interactions': data['interactions'] ?? [],
-          'safeToTake': data['safeToTake'] ?? true,
-        };
+        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
+
+        return pharmaciesJson
+            .map((json) => PharmacyWithStock.fromJson(json))
+            .toList();
       }
-      return {'hasInteractions': false, 'interactions': [], 'safeToTake': true};
+      return [];
     } on DioException catch (e) {
-      print('Interaction check error: ${e.message}');
-      return {'hasInteractions': false, 'interactions': [], 'safeToTake': true};
+      print('Error getting pharmacies with stock: ${e.message}');
+      return [];
     }
   }
 }

@@ -186,7 +186,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          doctor.specialty.nameFr,
+                          doctor.specialty?.nameFr ?? 'Spécialiste',
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,
@@ -393,74 +393,22 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
             const SizedBox(height: 16),
             _buildSectionTitle('Horaires de travail'),
             const SizedBox(height: 12),
-            Obx(() {
-              final hours = controller.workingHoursList;
-              if (hours.isEmpty) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Horaires non spécifiés',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                );
-              }
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
+            // NOTE: workingHours removed from backend Doctor model.
+            // Slots are available via GET /doctors/:id/available-slots?date=
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Text(
+                'Voir les créneaux disponibles en réservant un rendez-vous',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Colors.grey[600],
                 ),
-                child: Column(
-                  children: hours.map((entry) {
-                    final isToday = _isToday(entry.key);
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 90,
-                            child: Text(
-                              entry.key,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: isToday
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color:
-                                    isToday ? AppColors.primary : Colors.black,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              entry.value,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: isToday
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                                color: isToday
-                                    ? AppColors.primary
-                                    : entry.value
-                                            .toLowerCase()
-                                            .contains('fermé')
-                                        ? Colors.grey[600]
-                                        : Colors.black,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
-            }),
+              ),
+            ),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),

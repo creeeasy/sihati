@@ -150,10 +150,14 @@ class DoctorRepository {
     }
   }
 
-  /// Get specialty by ID
+  /// Get specialty by ID (filters client-side from the specialties list)
   Future<SpecialtyModel> getSpecialtyById(String id) async {
     try {
-      return await _doctorProvider.getSpecialtyById(id);
+      final specialties = await _doctorProvider.getSpecialties();
+      return specialties.firstWhere(
+        (s) => s.id == id,
+        orElse: () => throw Exception('Specialty $id not found'),
+      );
     } catch (e) {
       rethrow;
     }

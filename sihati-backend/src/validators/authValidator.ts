@@ -130,6 +130,22 @@ export const validateRegister = Joi.object({
     otherwise: Joi.forbidden().messages({
       'any.unknown': 'Les données du médecin ne sont pas autorisées pour ce rôle.',
     }),
+    
+  }),
+    patientProfile: Joi.when('role', {
+    is: 'patient',
+    then: Joi.object({
+      dateOfBirth: Joi.date().iso().optional(),
+      gender: Joi.string().valid('male', 'female', 'other').optional(),
+      bloodType: Joi.string().max(5).optional(),
+      emergencyContactName: Joi.string().optional(),
+      emergencyContactPhone: Joi.string().pattern(algerianPhone).optional().messages({
+        'string.pattern.base': 'Numéro de téléphone invalide.',
+      }),
+    }).optional(),
+    otherwise: Joi.forbidden().messages({
+      'any.unknown': 'Les données patient ne sont pas autorisées pour ce rôle.',
+    }),
   }),
 });
 
@@ -141,6 +157,7 @@ export const validateLogin = Joi.object({
   password: Joi.string().required().messages({
     'any.required': 'Le mot de passe est requis.',
   }),
+   role: Joi.string().valid('patient', 'pharmacy', 'doctor').optional(),
 });
 
 export const validateRefreshToken = Joi.object({

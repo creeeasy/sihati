@@ -21,7 +21,12 @@ class ProfileController extends GetxController {
   final isEditing = false.obs;
   final errorMessage = ''.obs;
   final successMessage = ''.obs;
-  final isUpdatingChifa = false.obs; // 🆕 Chifa update state
+  final isUpdatingChifa = false.obs;
+
+  // Stats (loaded separately from /patient/stats)
+  final prescriptionsCount = 0.obs;
+  final medicationsCount = 0.obs;
+  final consultationsCount = 0.obs;
 
   // Form controllers
   final fullNameController = TextEditingController();

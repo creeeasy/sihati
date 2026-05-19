@@ -1,10 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart' show SnackPosition;
-import 'package:get/route_manager.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 import '../providers/patient_provider.dart';
 import '../../core/services/storage_service.dart';
 import '../../core/models/user_model.dart';
@@ -13,7 +7,19 @@ import '../../core/models/prescription_model.dart';
 import '../../core/models/consultation_model.dart';
 import '../../core/models/medical_document_model.dart';
 import '../../core/models/medication_history_model.dart';
+import '../../core/models/allergy_model.dart';
 
+/// Patient repository
+///
+/// Wraps PatientProvider with business logic and error handling.
+///
+/// Design decisions:
+///   - No getActiveMedications() — backend has no isActive field
+///   - No downloadPrescriptionPDF() — backend returns JSON, not a file stream
+///   - No downloadDocument() — requires native file handling outside this scope
+///   - No addAllergy() / deleteAllergy() — not exposed via patient routes
+///   - getAllergies() returns List<Allergy> (typed model, not raw Map)
+///   - getMedicationHistory() is derived from prescriptions client-side
 class PatientRepository {
   final PatientProvider _patientProvider;
   final StorageService _storageService;
@@ -36,7 +42,8 @@ class PatientRepository {
     return await _patientProvider.getPatientProfile();
   }
 
-  Future<PatientProfile> updatePatientProfile(Map<String, dynamic> data) async {
+  Future<PatientProfile> updatePatientProfile(
+      Map<String, dynamic> data) async {
     return await _patientProvider.updatePatientProfile(data);
   }
 
@@ -51,18 +58,11 @@ class PatientRepository {
     return await _patientProvider.getPrescriptionById(id);
   }
 
-  Future<void> downloadPrescriptionPDF(String id) async {
-    await _patientProvider.downloadPrescriptionPDF(id);
-  }
-
   // ─── Medication History ─────────────────────────────────────
+  // Derived client-side from prescriptions — no dedicated backend endpoint.
 
-  Future<List<MedicationHistory>> getMedicationHistory({bool? active}) async {
-    return await _patientProvider.getMedicationHistory(active: active);
-  }
-
-  Future<List<MedicationHistory>> getActiveMedications() async {
-    return await _patientProvider.getActiveMedications();
+  Future<List<MedicationHistory>> getMedicationHistory() async {
+    return await _patientProvider.getMedicationHistory();
   }
 
   // ─── Consultations ──────────────────────────────────────────
@@ -92,48 +92,14 @@ class PatientRepository {
 
   // ─── Allergies ──────────────────────────────────────────────
 
-  Future<List<Map<String, dynamic>>> getAllergies() async {
+  /// Returns typed List<Allergy> (not raw Maps)
+  Future<List<Allergy>> getAllergies() async {
     return await _patientProvider.getAllergies();
-  }
-
-  Future<void> addAllergy(Map<String, dynamic> allergy) async {
-    await _patientProvider.addAllergy(allergy);
-  }
-
-  Future<void> deleteAllergy(String id) async {
-    await _patientProvider.deleteAllergy(id);
   }
 
   // ─── Stats ──────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getStats() async {
     return await _patientProvider.getStats();
-  }
-
-  /// Download a document by ID
-  Future<void> downloadDocument(String documentId) async {
-    try {
-      // Call the provider to get the file
-      final fileData = await _patientProvider.downloadDocument(documentId);
-
-      // Save to device
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/document_$documentId.pdf';
-      final file = File(filePath);
-      await file.writeAsBytes(fileData);
-
-      // Open the file
-      await OpenFile.open(filePath);
-
-      Get.snackbar(
-        'Succès',
-        'Document téléchargé avec succès',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      throw Exception('Impossible de télécharger le document: $e');
-    }
   }
 }

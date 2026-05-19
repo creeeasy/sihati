@@ -1,26 +1,30 @@
 // lib/core/models/specialty_model.dart
+//
+// Matches backend: Specialty.ts (underscored: true)
+// Fields: id, nameFr→name_fr, nameAr→name_ar, icon, description
 class SpecialtyModel {
-  final String id; // ✅ Changed from int to String (UUID)
+  final String id;
   final String nameFr;
   final String nameAr;
-  final String? iconUrl;
+  final String? icon; // backend field name is 'icon' (not iconUrl)
   final String? description;
 
   SpecialtyModel({
     required this.id,
     required this.nameFr,
     required this.nameAr,
-    this.iconUrl,
+    this.icon,
     this.description,
   });
 
   factory SpecialtyModel.fromJson(Map<String, dynamic> json) {
     return SpecialtyModel(
-      id: json['id'].toString(), // ✅ Convert to String
+      id: json['id'].toString(),
       nameFr: json['nameFr'] ?? json['name_fr'] ?? '',
       nameAr: json['nameAr'] ?? json['name_ar'] ?? '',
-      iconUrl: json['iconUrl'] ?? json['icon_url'],
-      description: json['description'],
+      // Backend stores as 'icon' (not iconUrl)
+      icon: json['icon'] ?? json['iconUrl'] ?? json['icon_url'],
+      description: json['description'] as String?,
     );
   }
 
@@ -29,8 +33,8 @@ class SpecialtyModel {
       'id': id,
       'nameFr': nameFr,
       'nameAr': nameAr,
-      'iconUrl': iconUrl,
-      'description': description,
+      if (icon != null) 'icon': icon,
+      if (description != null) 'description': description,
     };
   }
 

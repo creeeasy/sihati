@@ -115,7 +115,7 @@ class AppointmentCard extends StatelessWidget {
                           style: AppTextStyles.subtitle2,
                         ),
                         Text(
-                          appointment.doctor!.specialty.nameFr,
+                          appointment.doctor!.specialty?.nameFr ?? 'Spécialiste',
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.textSecondary,
                           ),

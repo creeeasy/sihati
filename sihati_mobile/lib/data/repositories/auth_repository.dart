@@ -4,12 +4,17 @@ import 'package:get/get.dart';
 import '../../core/services/storage_service.dart';
 import '../../core/models/auth_response.dart';
 import '../../core/models/user_model.dart';
-import '../providers/auth_provider.dart'; // ✅ Changed to REAL
+import '../providers/auth_provider.dart';
 
 /// Authentication repository
-/// Handles login, register, logout and token management
+/// Handles login, register, logout and token management.
+///
+/// NOTE on provider signatures:
+///   - getProfile()             → no args (JWT from interceptor)
+///   - updateProfile(...)       → no userId param (JWT identifies user)
+///   - updateChifaNumber(...)   → no userId param (JWT identifies user)
 class AuthRepository {
-  final AuthProvider _authProvider; // ✅ Changed to REAL
+  final AuthProvider _authProvider;
   final StorageService _storageService;
 
   AuthRepository({
@@ -170,13 +175,15 @@ class AuthRepository {
     return await _storageService.getToken();
   }
 
-  /// Verify token and get user profile
+  /// Verify token and get user profile from backend
+  /// NOTE: getProfile() takes NO token parameter — JWT handled by interceptor.
   Future<UserModel?> verifyToken() async {
     try {
       final token = await getToken();
       if (token == null) return null;
 
-      final user = await _authProvider.getProfile(token);
+      // getProfile() uses JWT from interceptor — no token arg
+      final user = await _authProvider.getProfile();
       await _storageService.saveUser(user);
       return user;
     } catch (e) {
@@ -185,15 +192,13 @@ class AuthRepository {
     }
   }
 
-  /// Update user profile
+  /// Update user profile (fullName, phoneNumber)
+  /// NOTE: updateProfile() takes NO userId param — backend uses JWT.
   Future<UserModel> updateProfile({
     String? fullName,
     String? phoneNumber,
   }) async {
     try {
-      final user = await getCurrentUser();
-      if (user == null) throw Exception('Utilisateur non connecté');
-
       if (fullName != null && fullName.length < 3) {
         throw Exception('Nom doit contenir au moins 3 caractères');
       }
@@ -201,8 +206,8 @@ class AuthRepository {
         throw Exception('Numéro de téléphone invalide');
       }
 
+      // No userId param — provider uses JWT interceptor
       final updatedUser = await _authProvider.updateProfile(
-        userId: user.id,
         fullName: fullName,
         phoneNumber: phoneNumber,
       );
@@ -215,11 +220,9 @@ class AuthRepository {
   }
 
   /// Update user's Chifa number
+  /// NOTE: updateChifaNumber() takes NO userId param — backend uses JWT.
   Future<UserModel> updateChifaNumber(String? chifaNumber) async {
     try {
-      final user = await getCurrentUser();
-      if (user == null) throw Exception('Utilisateur non connecté');
-
       if (chifaNumber != null && chifaNumber.isNotEmpty) {
         if (chifaNumber.length < 13 || chifaNumber.length > 15) {
           throw Exception(
@@ -231,8 +234,8 @@ class AuthRepository {
         }
       }
 
+      // No userId param — provider uses JWT interceptor
       final updatedUser = await _authProvider.updateChifaNumber(
-        userId: user.id,
         chifaNumber: chifaNumber,
       );
 

@@ -1,15 +1,29 @@
 // lib/core/models/appointment_model.dart
+//
+// Matches backend: Appointment.ts (underscored: true)
+// Fields: id, patientId→patient_id, doctorId→doctor_id, officeId→office_id,
+//   appointmentDate→appointment_date, appointmentTime→appointment_time,
+//   status (ENUM: pending|confirmed|cancelled|completed|no_show),
+//   reason, notes, cancelledAt→cancelled_at, cancelledBy→cancelled_by,
+//   cancellationReason→cancellation_reason,
+//   createdAt→created_at, updatedAt→updated_at
+//
+// Booking body (POST /appointments) expects: appointmentDate, appointmentTime
 import 'doctor_model.dart';
 
 class AppointmentModel {
-  final String id; // ✅ Changed from int to String (UUID)
-  final String patientId; // ✅ Changed from int to String (UUID)
-  final String doctorId; // ✅ Changed from int to String (UUID)
+  final String id;
+  final String patientId;
+  final String doctorId;
+  final String? officeId;
   final DateTime appointmentDate;
   final String appointmentTime;
   final AppointmentStatus status;
   final String? reason;
   final String? notes;
+  final DateTime? cancelledAt;
+  final String? cancelledBy;
+  final String? cancellationReason;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final DoctorModel? doctor;
@@ -18,11 +32,15 @@ class AppointmentModel {
     required this.id,
     required this.patientId,
     required this.doctorId,
+    this.officeId,
     required this.appointmentDate,
     required this.appointmentTime,
     required this.status,
     this.reason,
     this.notes,
+    this.cancelledAt,
+    this.cancelledBy,
+    this.cancellationReason,
     required this.createdAt,
     this.updatedAt,
     this.doctor,
@@ -30,25 +48,36 @@ class AppointmentModel {
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
     return AppointmentModel(
-      id: json['id'].toString(), // ✅ Convert to String
+      id: json['id'].toString(),
       patientId: (json['patientId'] ?? json['patient_id'] ?? '').toString(),
       doctorId: (json['doctorId'] ?? json['doctor_id'] ?? '').toString(),
-      appointmentDate:
-          DateTime.parse(json['appointmentDate'] ?? json['appointment_date']),
+      officeId:
+          json['officeId']?.toString() ?? json['office_id']?.toString(),
+      appointmentDate: DateTime.parse(
+          (json['appointmentDate'] ?? json['appointment_date']).toString()),
       appointmentTime:
           json['appointmentTime'] ?? json['appointment_time'] ?? '',
       status: _statusFromString(json['status'] as String?),
       reason: json['reason'] as String?,
       notes: json['notes'] as String?,
+      cancelledAt: json['cancelledAt'] != null
+          ? DateTime.tryParse(json['cancelledAt'].toString())
+          : json['cancelled_at'] != null
+              ? DateTime.tryParse(json['cancelled_at'].toString())
+              : null,
+      cancelledBy:
+          json['cancelledBy']?.toString() ?? json['cancelled_by']?.toString(),
+      cancellationReason:
+          json['cancellationReason'] ?? json['cancellation_reason'],
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : json['created_at'] != null
               ? DateTime.parse(json['created_at'] as String)
               : DateTime.now(),
       updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
+          ? DateTime.tryParse(json['updatedAt'] as String)
           : json['updated_at'] != null
-              ? DateTime.parse(json['updated_at'] as String)
+              ? DateTime.tryParse(json['updated_at'] as String)
               : null,
       doctor: json['doctor'] != null
           ? DoctorModel.fromJson(json['doctor'] as Map<String, dynamic>)
@@ -61,30 +90,21 @@ class AppointmentModel {
       'id': id,
       'patientId': patientId,
       'doctorId': doctorId,
+      if (officeId != null) 'officeId': officeId,
       'appointmentDate': appointmentDate.toIso8601String().split('T')[0],
       'appointmentTime': appointmentTime,
       'status': status.toShortString(),
-      'reason': reason,
-      'notes': notes,
+      if (reason != null) 'reason': reason,
+      if (notes != null) 'notes': notes,
       'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     };
   }
 
   String get formattedDate {
     final months = [
-      'Janvier',
-      'Février',
-      'Mars',
-      'Avril',
-      'Mai',
-      'Juin',
-      'Juillet',
-      'Août',
-      'Septembre',
-      'Octobre',
-      'Novembre',
-      'Décembre'
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
     ];
     return '${appointmentDate.day} ${months[appointmentDate.month - 1]} ${appointmentDate.year}';
   }
@@ -94,12 +114,13 @@ class AppointmentModel {
 
   bool get isUpcoming {
     final now = DateTime.now();
+    final timeParts = appointmentTime.split(':');
     final appointmentDateTime = DateTime(
       appointmentDate.year,
       appointmentDate.month,
       appointmentDate.day,
-      int.parse(appointmentTime.split(':')[0]),
-      int.parse(appointmentTime.split(':')[1]),
+      int.tryParse(timeParts[0]) ?? 0,
+      int.tryParse(timeParts.length > 1 ? timeParts[1] : '0') ?? 0,
     );
     return appointmentDateTime.isAfter(now) &&
         (status == AppointmentStatus.pending ||
@@ -108,12 +129,13 @@ class AppointmentModel {
 
   bool get isPast {
     final now = DateTime.now();
+    final timeParts = appointmentTime.split(':');
     final appointmentDateTime = DateTime(
       appointmentDate.year,
       appointmentDate.month,
       appointmentDate.day,
-      int.parse(appointmentTime.split(':')[0]),
-      int.parse(appointmentTime.split(':')[1]),
+      int.tryParse(timeParts[0]) ?? 0,
+      int.tryParse(timeParts.length > 1 ? timeParts[1] : '0') ?? 0,
     );
     return appointmentDateTime.isBefore(now) ||
         status == AppointmentStatus.completed;
@@ -145,12 +167,6 @@ class AppointmentModel {
         isUpcoming;
   }
 
-  bool get canReschedule {
-    return (status == AppointmentStatus.pending ||
-            status == AppointmentStatus.confirmed) &&
-        isUpcoming;
-  }
-
   static AppointmentStatus _statusFromString(String? status) {
     switch (status?.toLowerCase()) {
       case 'confirmed':
@@ -159,6 +175,8 @@ class AppointmentModel {
         return AppointmentStatus.cancelled;
       case 'completed':
         return AppointmentStatus.completed;
+      case 'no_show':
+        return AppointmentStatus.noShow;
       case 'pending':
       default:
         return AppointmentStatus.pending;
@@ -169,11 +187,15 @@ class AppointmentModel {
     String? id,
     String? patientId,
     String? doctorId,
+    String? officeId,
     DateTime? appointmentDate,
     String? appointmentTime,
     AppointmentStatus? status,
     String? reason,
     String? notes,
+    DateTime? cancelledAt,
+    String? cancelledBy,
+    String? cancellationReason,
     DateTime? createdAt,
     DateTime? updatedAt,
     DoctorModel? doctor,
@@ -182,11 +204,15 @@ class AppointmentModel {
       id: id ?? this.id,
       patientId: patientId ?? this.patientId,
       doctorId: doctorId ?? this.doctorId,
+      officeId: officeId ?? this.officeId,
       appointmentDate: appointmentDate ?? this.appointmentDate,
       appointmentTime: appointmentTime ?? this.appointmentTime,
       status: status ?? this.status,
       reason: reason ?? this.reason,
       notes: notes ?? this.notes,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      cancelledBy: cancelledBy ?? this.cancelledBy,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       doctor: doctor ?? this.doctor,
@@ -203,6 +229,8 @@ class AppointmentModel {
         return 0xFFEF5350; // Red
       case AppointmentStatus.completed:
         return 0xFF42A5F5; // Blue
+      case AppointmentStatus.noShow:
+        return 0xFF9E9E9E; // Grey
     }
   }
 
@@ -216,6 +244,8 @@ class AppointmentModel {
         return 'Annulé';
       case AppointmentStatus.completed:
         return 'Terminé';
+      case AppointmentStatus.noShow:
+        return 'Non présenté';
     }
   }
 
@@ -239,10 +269,16 @@ enum AppointmentStatus {
   confirmed,
   cancelled,
   completed,
+  noShow, // backend: 'no_show'
 }
 
 extension AppointmentStatusExtension on AppointmentStatus {
   String toShortString() {
-    return toString().split('.').last;
+    switch (this) {
+      case AppointmentStatus.noShow:
+        return 'no_show';
+      default:
+        return toString().split('.').last;
+    }
   }
 }
