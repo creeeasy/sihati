@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:sihati_mobile/core/models/pharmacy_model.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -13,6 +14,23 @@ class PharmacyCard extends StatelessWidget {
     required this.pharmacy,
     required this.onTap,
   }) : super(key: key);
+
+  Future<void> _callPharmacy(BuildContext context) async {
+    final uri = Uri(scheme: 'tel', path: pharmacy.phone);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Impossible d\'appeler ce numéro')),
+        );
+      }
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur lors de l\'appel')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +57,7 @@ class PharmacyCard extends StatelessWidget {
                     ? AppColors.primary.withOpacity(0.15)
                     : Colors.black.withOpacity(0.04)),
             blurRadius: 12,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -53,11 +71,12 @@ class PharmacyCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Top row: icon + name/status + favorite ──
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: isOpenNow
                             ? AppColors.success
@@ -81,57 +100,68 @@ class PharmacyCard extends StatelessWidget {
                         children: [
                           Text(
                             pharmacy.pharmacyName,
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                           SizedBox(height: 6),
                           Row(
                             children: [
+                              // Open/Closed badge
                               Container(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: pharmacy.statusColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                      color: pharmacy.statusColor
-                                          .withOpacity(0.3)),
+                                    color:
+                                        pharmacy.statusColor.withOpacity(0.3),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(pharmacy.statusIcon,
                                         size: 12, color: pharmacy.statusColor),
-                                    SizedBox(width: 4),
-                                    Text(pharmacy.statusText,
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                            color: pharmacy.statusColor)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      pharmacy.statusText,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: pharmacy.statusColor,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
+                              // De garde badge
                               if (pharmacy.isOnDutyTonight && !isOpenNow) ...[
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                      gradient: AppColors.primaryGradient,
-                                      borderRadius: BorderRadius.circular(12)),
+                                    gradient: AppColors.primaryGradient,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    children: [
+                                    children: const [
                                       Icon(Icons.nightlight_round,
                                           size: 10, color: Colors.white),
                                       SizedBox(width: 4),
-                                      Text('GARDE',
-                                          style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white)),
+                                      Text(
+                                        'GARDE',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -144,108 +174,182 @@ class PharmacyCard extends StatelessWidget {
                     PharmacyFavoriteButton(pharmacy: pharmacy, size: 20),
                   ],
                 ),
+
                 SizedBox(height: AppSpacing.sm),
+
+                // ── Today's hours ──
                 Row(
                   children: [
                     Icon(Icons.schedule_rounded,
                         size: 14, color: AppColors.textTertiary),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Expanded(
-                        child: Text(pharmacy.todayHours,
-                            style: TextStyle(
-                                fontSize: 12, color: AppColors.textSecondary))),
+                      child: Text(
+                        pharmacy.todayHours,
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ),
                   ],
                 ),
+
                 SizedBox(height: AppSpacing.sm),
+
+                // ── Address ──
                 Row(
                   children: [
                     Container(
-                        padding: EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Icon(Icons.location_on_rounded,
-                            size: 14, color: AppColors.error)),
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.location_on_rounded,
+                          size: 14, color: AppColors.error),
+                    ),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
-                        child: Text(pharmacy.fullAddress,
-                            style: TextStyle(
-                                fontSize: 12, color: AppColors.textSecondary),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis)),
-                  ],
-                ),
-                SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Container(
-                              padding: EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                  color: AppColors.secondary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: Icon(Icons.phone_rounded,
-                                  size: 14, color: AppColors.secondary)),
-                          SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                              child: Text(pharmacy.phone,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.textSecondary))),
-                        ],
+                      child: Text(
+                        pharmacy.fullAddress,
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (pharmacy.hasWhatsapp)
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                            color: Color(0xFF25D366),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.chat_rounded,
-                                size: 12, color: Colors.white),
-                            SizedBox(width: 4),
-                            Text('WhatsApp',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white)),
-                          ],
-                        ),
-                      ),
                   ],
                 ),
+
+                SizedBox(height: AppSpacing.sm),
+
+                // ── Distance badge (if available) ──
                 if (pharmacy.distance != null) ...[
-                  SizedBox(height: AppSpacing.sm),
                   Container(
                     padding: EdgeInsets.symmetric(
                         horizontal: AppSpacing.sm + 4,
                         vertical: AppSpacing.sm - 2),
                     decoration: BoxDecoration(
-                        color: AppColors.primarySoft,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                            color: AppColors.primary.withOpacity(0.2))),
+                      color: AppColors.primarySoft,
+                      borderRadius: BorderRadius.circular(10),
+                      border:
+                          Border.all(color: AppColors.primary.withOpacity(0.2)),
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.near_me_rounded,
                             size: 14, color: AppColors.primary),
-                        SizedBox(width: 6),
-                        Text(pharmacy.formattedDistance,
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary)),
+                        const SizedBox(width: 6),
+                        Text(
+                          pharmacy.formattedDistance,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
+                  SizedBox(height: AppSpacing.sm),
                 ],
+
+                // ── Bottom action row: phone + call button + WhatsApp ──
+                Row(
+                  children: [
+                    // Phone number
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(Icons.phone_rounded,
+                                size: 14, color: AppColors.secondary),
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              pharmacy.phone,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ── CALL button (new) ──
+                    GestureDetector(
+                      onTap: () => _callPharmacy(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.call_rounded,
+                                size: 14, color: Colors.white),
+                            SizedBox(width: 5),
+                            Text(
+                              'Appeler',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // WhatsApp badge
+                    if (pharmacy.hasWhatsapp) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF25D366),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.chat_rounded,
+                                size: 12, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text(
+                              'WA',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
           ),

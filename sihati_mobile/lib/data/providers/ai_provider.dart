@@ -32,8 +32,8 @@ class AiProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        return Map<String, dynamic>.from(data);
+        final data = response.data['data'] as Map<String, dynamic>;
+        return data;
       }
       return {'hasInteractions': false, 'interactions': [], 'safeToTake': true};
     } on DioException catch (e) {
@@ -64,8 +64,8 @@ class AiProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        return Map<String, dynamic>.from(data);
+        final data = response.data['data'] as Map<String, dynamic>;
+        return data;
       }
       return {'reply': 'Désolé, je ne peux pas répondre pour le moment.'};
     } on DioException catch (e) {

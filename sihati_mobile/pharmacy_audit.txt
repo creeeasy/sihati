@@ -1,0 +1,2981 @@
+=== lib/core/models/pharmacy_model.dart ===
+// lib/core/models/pharmacy_model.dart
+import 'package:flutter/material.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+
+class PharmacyModel {
+  final String id; // ✅ Changed from int to String (UUID)
+  final String pharmacyName;
+  final String address;
+  final String wilaya;
+  final String? commune;
+  final double latitude;
+  final double longitude;
+  final String phone;
+  final String? whatsappNumber;
+  final Map<String, dynamic>? openingHours;
+  final bool isOnDutyTonight;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final double? distance;
+
+  PharmacyModel({
+    required this.id,
+    required this.pharmacyName,
+    required this.address,
+    required this.wilaya,
+    this.commune,
+    required this.latitude,
+    required this.longitude,
+    required this.phone,
+    this.whatsappNumber,
+    this.openingHours,
+    this.isOnDutyTonight = false,
+    this.createdAt,
+    this.updatedAt,
+    this.distance,
+  });
+
+  factory PharmacyModel.fromJson(Map<String, dynamic> json) {
+    return PharmacyModel(
+      id: json['id'].toString(), // ✅ Convert to String
+      pharmacyName: json['pharmacyName'] ?? json['pharmacy_name'] ?? '',
+      address: json['address'] as String,
+      wilaya: json['wilaya'] as String,
+      commune: json['commune'] as String?,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+      phone: json['phone'] as String,
+      whatsappNumber: json['whatsappNumber'] ?? json['whatsapp_number'],
+      openingHours: json['openingHours'] ?? json['opening_hours'],
+      isOnDutyTonight:
+          json['isOnDutyTonight'] ?? json['is_on_duty_tonight'] ?? false,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : json['created_at'] != null
+              ? DateTime.parse(json['created_at'] as String)
+              : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : json['updated_at'] != null
+              ? DateTime.parse(json['updated_at'] as String)
+              : null,
+      distance: json['distance'] != null
+          ? (json['distance'] as num).toDouble()
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'pharmacyName': pharmacyName,
+      'address': address,
+      'wilaya': wilaya,
+      'commune': commune,
+      'latitude': latitude,
+      'longitude': longitude,
+      'phone': phone,
+      'whatsappNumber': whatsappNumber,
+      'openingHours': openingHours,
+      'isOnDutyTonight': isOnDutyTonight,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+      'distance': distance,
+    };
+  }
+
+  String get fullAddress {
+    if (commune != null && commune!.isNotEmpty) {
+      return '$address, $commune, $wilaya';
+    }
+    return '$address, $wilaya';
+  }
+
+  String get formattedDistance {
+    if (distance == null) return '';
+    if (distance! < 1) {
+      return '${(distance! * 1000).toStringAsFixed(0)} m';
+    }
+    return '${distance!.toStringAsFixed(1)} km';
+  }
+
+  bool get hasWhatsapp => whatsappNumber != null && whatsappNumber!.isNotEmpty;
+
+  Map<String, String>? getHoursForDay(String day) {
+    if (openingHours == null) return null;
+    final dayLower = day.toLowerCase();
+    if (openingHours!.containsKey(dayLower)) {
+      final hours = openingHours![dayLower];
+      if (hours is Map) {
+        return {
+          'open': hours['open']?.toString() ?? '',
+          'close': hours['close']?.toString() ?? '',
+        };
+      }
+    }
+    return null;
+  }
+
+  bool isOpenOnDay(String day) {
+    final hours = getHoursForDay(day);
+    if (hours == null) return false;
+    return hours['open'] != null &&
+        hours['open']!.isNotEmpty &&
+        hours['open'] != 'null';
+  }
+
+  bool get isOpenNow {
+    if (openingHours == null || openingHours!.isEmpty) {
+      return isOnDutyTonight;
+    }
+    final now = DateTime.now();
+    final currentDay = _getDayOfWeek(now.weekday);
+    final currentTime = _timeToMinutes(now.hour, now.minute);
+    final hours = getHoursForDay(currentDay);
+    if (hours == null) return isOnDutyTonight;
+    final openTime = _timeStringToMinutes(hours['open']);
+    final closeTime = _timeStringToMinutes(hours['close']);
+    if (openTime == null || closeTime == null) return isOnDutyTonight;
+    if (closeTime < openTime) {
+      return currentTime >= openTime || currentTime <= closeTime;
+    } else {
+      return currentTime >= openTime && currentTime <= closeTime;
+    }
+  }
+
+  String get statusText {
+    return isOpenNow ? 'Ouverte' : 'Fermée';
+  }
+
+  Color get statusColor {
+    return isOpenNow ? AppColors.success : AppColors.error;
+  }
+
+  IconData get statusIcon {
+    return isOpenNow ? Icons.check_circle_rounded : Icons.cancel_rounded;
+  }
+
+  String _getDayOfWeek(int weekday) {
+    const days = {
+      1: 'monday',
+      2: 'tuesday',
+      3: 'wednesday',
+      4: 'thursday',
+      5: 'friday',
+      6: 'saturday',
+      7: 'sunday',
+    };
+    return days[weekday] ?? 'monday';
+  }
+
+  int? _timeStringToMinutes(String? timeString) {
+    if (timeString == null || timeString.isEmpty) return null;
+    final parts = timeString.split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    return hour * 60 + minute;
+  }
+
+  int _timeToMinutes(int hour, int minute) {
+    return hour * 60 + minute;
+  }
+
+  String get todayHours {
+    if (openingHours == null) return 'Horaires non disponibles';
+    final currentDay = _getDayOfWeek(DateTime.now().weekday);
+    final hours = getHoursForDay(currentDay);
+    if (hours == null) return 'Fermé aujourd\'hui';
+    final open = hours['open'] ?? '--:--';
+    final close = hours['close'] ?? '--:--';
+    return '$open - $close';
+  }
+
+  PharmacyModel copyWith({
+    String? id,
+    String? pharmacyName,
+    String? address,
+    String? wilaya,
+    String? commune,
+    double? latitude,
+    double? longitude,
+    String? phone,
+    String? whatsappNumber,
+    Map<String, dynamic>? openingHours,
+    bool? isOnDutyTonight,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    double? distance,
+  }) {
+    return PharmacyModel(
+      id: id ?? this.id,
+      pharmacyName: pharmacyName ?? this.pharmacyName,
+      address: address ?? this.address,
+      wilaya: wilaya ?? this.wilaya,
+      commune: commune ?? this.commune,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      phone: phone ?? this.phone,
+      whatsappNumber: whatsappNumber ?? this.whatsappNumber,
+      openingHours: openingHours ?? this.openingHours,
+      isOnDutyTonight: isOnDutyTonight ?? this.isOnDutyTonight,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      distance: distance ?? this.distance,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'PharmacyModel(id: $id, name: $pharmacyName, wilaya: $wilaya, onDuty: $isOnDutyTonight)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is PharmacyModel && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+}
+=== lib/data/providers/pharmacy_provider.dart ===
+// lib/data/providers/pharmacy_provider.dart
+import 'package:dio/dio.dart';
+import '../../core/services/api_service.dart';
+import '../../app/constants/api_constants.dart';
+import '../../core/models/pharmacy_model.dart';
+
+/// Pharmacy provider — communicates with the Sihati backend
+///
+/// Available backend routes used (patient-only):
+///   GET /pharmacies         → all pharmacies (with filters)
+///   GET /pharmacies/:id     → pharmacy detail
+///   GET /pharmacies/nearby  → nearby pharmacies
+///   GET /pharmacies/duty    → duty pharmacies (de garde)
+class PharmacyProvider {
+  final ApiService _apiService;
+
+  PharmacyProvider(this._apiService);
+
+  // ─── List ────────────────────────────────────────────────────────────
+
+  /// Get all pharmacies with optional filters
+  /// Backend: GET /pharmacies
+  Future<List<PharmacyModel>> getAllPharmacies({
+    String? wilaya,
+    bool? isOnDuty,
+    double? latitude,
+    double? longitude,
+    double radius = 10,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+
+      if (wilaya != null && wilaya.isNotEmpty) queryParams['wilaya'] = wilaya;
+      if (isOnDuty != null) queryParams['onDuty'] = isOnDuty;
+      if (latitude != null) queryParams['lat'] = latitude;
+      if (longitude != null) queryParams['lng'] = longitude;
+      if (radius != 10) queryParams['radius'] = radius;
+
+      final response = await _apiService.get(
+        ApiConstants.PHARMACIES,
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
+
+        return pharmaciesJson
+            .map((json) => PharmacyModel.fromJson(json))
+            .toList();
+      }
+      throw Exception('Failed to load pharmacies');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message);
+    }
+  }
+
+  /// Search pharmacies by name or address
+  /// Backend: GET /pharmacies?q=
+  Future<List<PharmacyModel>> searchPharmacies(String query) async {
+    try {
+      final response = await _apiService.get(
+        ApiConstants.PHARMACIES,
+        queryParameters: {'q': query},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
+
+        return pharmaciesJson
+            .map((json) => PharmacyModel.fromJson(json))
+            .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      print('Error searching pharmacies: ${e.message}');
+      return [];
+    }
+  }
+
+  /// Get pharmacies by wilaya (convenience)
+  Future<List<PharmacyModel>> getPharmaciesByWilaya(String wilaya) async {
+    return getAllPharmacies(wilaya: wilaya);
+  }
+
+  // ─── Detail ─────────────────────────────────────────────────────────
+
+  /// Get pharmacy by ID
+  /// Backend: GET /pharmacies/:id
+  Future<PharmacyModel> getPharmacyById(String id) async {
+    try {
+      final response = await _apiService.get(
+        '${ApiConstants.PHARMACY_DETAIL}/$id',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        final pharmacyJson = data['pharmacy'] ?? data;
+        return PharmacyModel.fromJson(pharmacyJson);
+      }
+      throw Exception('Pharmacy not found');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message);
+    }
+  }
+
+  // ─── Nearby ──────────────────────────────────────────────────────────
+
+  /// Get nearby pharmacies within radius (km)
+  /// Backend: GET /pharmacies/nearby
+  Future<List<PharmacyModel>> getNearbyPharmacies(
+    double latitude,
+    double longitude, {
+    double radius = 5,
+    String? wilaya,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'lat': latitude,
+        'lng': longitude,
+        'radius': radius,
+        if (wilaya != null && wilaya.isNotEmpty) 'wilaya': wilaya,
+      };
+
+      final response = await _apiService.get(
+        ApiConstants.NEARBY_PHARMACIES,
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
+
+        return pharmaciesJson
+            .map((json) => PharmacyModel.fromJson(json))
+            .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      print('Error getting nearby pharmacies: ${e.message}');
+      return [];
+    }
+  }
+
+  // ─── Duty ────────────────────────────────────────────────────────────
+
+  /// Get pharmacies on duty (de garde)
+  /// Backend: GET /pharmacies/duty
+  Future<List<PharmacyModel>> getDutyPharmacies({
+    String? wilaya,
+    double? latitude,
+    double? longitude,
+    double radius = 10,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+
+      if (wilaya != null && wilaya.isNotEmpty) queryParams['wilaya'] = wilaya;
+      if (latitude != null) queryParams['lat'] = latitude;
+      if (longitude != null) queryParams['lng'] = longitude;
+      if (radius != 10) queryParams['radius'] = radius;
+
+      final response = await _apiService.get(
+        ApiConstants.DUTY_PHARMACIES,
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
+
+        return pharmaciesJson
+            .map((json) => PharmacyModel.fromJson(json))
+            .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      print('Error getting duty pharmacies: ${e.message}');
+      return [];
+    }
+  }
+}
+=== lib/data/repositories/pharmacy_repository.dart ===
+// lib/data/repositories/pharmacy_repository.dart
+import '../providers/pharmacy_provider.dart';
+import '../../core/services/location_service.dart';
+import '../../core/models/pharmacy_model.dart';
+
+/// Pharmacy repository
+/// Handles pharmacy data operations and location-based queries
+/// Coordinates between PharmacyProvider and LocationService
+class PharmacyRepository {
+  final PharmacyProvider _pharmacyProvider;
+  final LocationService _locationService;
+
+  PharmacyRepository({
+    required PharmacyProvider pharmacyProvider,
+    required LocationService locationService,
+  })  : _pharmacyProvider = pharmacyProvider,
+        _locationService = locationService;
+
+  /// Get all pharmacies with optional wilaya filter
+  Future<List<PharmacyModel>> getAllPharmacies({String? wilaya}) async {
+    try {
+      return await _pharmacyProvider.getAllPharmacies(wilaya: wilaya);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get nearby pharmacies using current location
+  Future<List<PharmacyModel>> getNearbyPharmacies({
+    double radius = 5,
+    String? wilaya,
+  }) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+
+      if (position == null) {
+        throw Exception(
+          'Permission de localisation requise.\n'
+          'Veuillez activer la localisation dans les paramètres.',
+        );
+      }
+
+      return await _pharmacyProvider.getNearbyPharmacies(
+        position.latitude,
+        position.longitude,
+        radius: radius,
+        wilaya: wilaya,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get nearby pharmacies with custom location
+  Future<List<PharmacyModel>> getNearbyPharmaciesAt({
+    required double latitude,
+    required double longitude,
+    double radius = 5,
+    String? wilaya,
+  }) async {
+    try {
+      return await _pharmacyProvider.getNearbyPharmacies(
+        latitude,
+        longitude,
+        radius: radius,
+        wilaya: wilaya,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get pharmacy details by ID
+  Future<PharmacyModel> getPharmacyDetails(String id) async {
+    try {
+      return await _pharmacyProvider.getPharmacyById(id);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get pharmacies on duty tonight
+  Future<List<PharmacyModel>> getDutyPharmacies({
+    String? wilaya,
+    bool useLocation = true,
+    double radius = 10,
+  }) async {
+    try {
+      double? latitude;
+      double? longitude;
+
+      if (useLocation) {
+        try {
+          final position = await _locationService.getCurrentLocation();
+          if (position != null) {
+            latitude = position.latitude;
+            longitude = position.longitude;
+          }
+        } catch (e) {
+          print('Failed to get location: $e');
+        }
+      }
+
+      return await _pharmacyProvider.getDutyPharmacies(
+        wilaya: wilaya,
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get pharmacies by wilaya
+  Future<List<PharmacyModel>> getPharmaciesByWilaya(String wilaya) async {
+    try {
+      if (wilaya.isEmpty) {
+        throw Exception('Wilaya requise');
+      }
+      return await _pharmacyProvider.getPharmaciesByWilaya(wilaya);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Search pharmacies by name or address
+  Future<List<PharmacyModel>> searchPharmacies(String query) async {
+    try {
+      if (query.isEmpty) {
+        return await _pharmacyProvider.getAllPharmacies();
+      }
+
+      if (query.length < 2) {
+        throw Exception('Veuillez entrer au moins 2 caractères');
+      }
+
+      return await _pharmacyProvider.searchPharmacies(query);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Check if location services are available
+  Future<bool> isLocationAvailable() async {
+    try {
+      return await _locationService.isLocationServiceEnabled();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Request location permission
+  Future<bool> requestLocationPermission() async {
+    try {
+      return await _locationService.requestPermission();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get distance from current location to pharmacy
+  Future<double?> getDistanceToPharmacy(PharmacyModel pharmacy) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (position == null) return null;
+
+      return _locationService.calculateDistance(
+        position.latitude,
+        position.longitude,
+        pharmacy.latitude,
+        pharmacy.longitude,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Sort pharmacies by distance from current location
+  Future<List<PharmacyModel>> sortByDistance(
+    List<PharmacyModel> pharmacies,
+  ) async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (position == null) return pharmacies;
+
+      final pharmaciesWithDistance = pharmacies.map((pharmacy) {
+        final distance = _locationService.calculateDistance(
+          position.latitude,
+          position.longitude,
+          pharmacy.latitude,
+          pharmacy.longitude,
+        );
+        return pharmacy.copyWith(distance: distance);
+      }).toList();
+
+      pharmaciesWithDistance.sort((a, b) {
+        if (a.distance == null && b.distance == null) return 0;
+        if (a.distance == null) return 1;
+        if (b.distance == null) return -1;
+        return a.distance!.compareTo(b.distance!);
+      });
+
+      return pharmaciesWithDistance;
+    } catch (e) {
+      return pharmacies;
+    }
+  }
+}
+=== lib/modules/pharmacies/bindings/pharmacy_binding.dart ===
+// lib/modules/pharmacies/bindings/pharmacy_binding.dart
+import 'package:get/get.dart';
+import '../../../core/services/api_service.dart';
+import '../../../core/services/location_service.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../data/providers/pharmacy_provider.dart';
+import '../../../data/repositories/pharmacy_repository.dart';
+import '../controllers/pharmacy_list_controller.dart';
+import '../controllers/pharmacy_detail_controller.dart';
+import '../controllers/duty_pharmacy_controller.dart';
+
+class PharmacyBinding extends Bindings {
+  @override
+  void dependencies() {
+    // Core services
+    if (!Get.isRegistered<ApiService>()) {
+      Get.put(ApiService(), permanent: true);
+    }
+    if (!Get.isRegistered<LocationService>()) {
+      Get.put(LocationService(), permanent: true);
+    }
+    if (!Get.isRegistered<StorageService>()) {
+      Get.put(StorageService(), permanent: true);
+    }
+
+    // Real Provider
+    if (!Get.isRegistered<PharmacyProvider>()) {
+      Get.put(
+        PharmacyProvider(Get.find<ApiService>()),
+        permanent: true,
+      );
+    }
+
+    // Repository
+    if (!Get.isRegistered<PharmacyRepository>()) {
+      Get.put(
+        PharmacyRepository(
+          pharmacyProvider: Get.find<PharmacyProvider>(),
+          locationService: Get.find<LocationService>(),
+        ),
+        permanent: true,
+      );
+    }
+
+    // Controllers
+    Get.lazyPut(() => PharmacyListController(
+          pharmacyRepository: Get.find<PharmacyRepository>(),
+        ));
+
+    Get.lazyPut(() => PharmacyDetailController(
+          pharmacyRepository: Get.find<PharmacyRepository>(),
+        ));
+
+    Get.lazyPut(() => DutyPharmacyController(
+          pharmacyRepository: Get.find<PharmacyRepository>(),
+        ));
+  }
+}
+=== lib/modules/pharmacies/controllers/duty_pharmacy_controller.dart ===
+import 'package:get/get.dart';
+import 'package:sihati_mobile/core/models/pharmacy_model.dart';
+import '../../../data/repositories/pharmacy_repository.dart';
+import '../../../app/routes/app_routes.dart';
+
+class DutyPharmacyController extends GetxController {
+  final PharmacyRepository pharmacyRepository;
+
+  DutyPharmacyController({required this.pharmacyRepository});
+
+  // State
+  final pharmacies = <PharmacyModel>[].obs;
+  final isLoading = false.obs;
+  final errorMessage = ''.obs;
+  final selectedWilaya = Rxn<String>();
+
+  // Wilayas list
+  final List<String> wilayas = [
+    'Tous',
+    'Alger',
+    'Oran',
+    'Constantine',
+    'Annaba',
+    'Blida',
+    'Batna',
+    'Djelfa',
+    'Sétif',
+    'Sidi Bel Abbès',
+    'Biskra',
+    'Tébessa',
+    'El Oued',
+    'Skikda',
+    'Tiaret',
+    'Béjaïa',
+    'Tlemcen',
+    'Ouargla',
+    'Béchar',
+    'Mostaganem',
+    'Bordj Bou Arréridj',
+    'Chlef',
+    'Souk Ahras',
+    'Tizi Ouzou',
+    'Médéa',
+    'El Tarf',
+    'Jijel',
+    'Relizane',
+    'M\'Sila',
+    'Aïn Defla',
+    'Naâma',
+    'Aïn Témouchent',
+    'Ghardaïa',
+    'Mascara',
+  ];
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadDutyPharmacies();
+  }
+
+  /// Load duty pharmacies
+  Future<void> loadDutyPharmacies() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final wilaya = selectedWilaya.value;
+      final result = await pharmacyRepository.getDutyPharmacies(
+        wilaya: (wilaya == null || wilaya == 'Tous') ? null : wilaya,
+      );
+
+      pharmacies.value = result;
+
+      if (result.isEmpty) {
+        errorMessage.value = 'Aucune pharmacie de garde trouvée';
+      }
+    } catch (e) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar(
+        'Erreur',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Filter by wilaya
+  void filterByWilaya(String? wilaya) {
+    selectedWilaya.value = wilaya;
+    loadDutyPharmacies();
+  }
+
+  /// ✅ CORRIGÉ: Navigate to pharmacy details with String ID
+  void goToPharmacyDetail(String pharmacyId) {
+    Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
+  }
+
+  /// Refresh
+  Future<void> refresh() async {
+    await loadDutyPharmacies();
+  }
+
+  /// Get current date/time string
+  String get currentDateTime {
+    final now = DateTime.now();
+    final days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    final months = [
+      'Jan',
+      'Fév',
+      'Mar',
+      'Avr',
+      'Mai',
+      'Juin',
+      'Juil',
+      'Août',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Déc'
+    ];
+
+    final day = days[now.weekday - 1];
+    final month = months[now.month - 1];
+
+    return '$day ${now.day} $month ${now.year} - ${now.hour}h${now.minute.toString().padLeft(2, '0')}';
+  }
+}
+=== lib/modules/pharmacies/controllers/pharmacy_detail_controller.dart ===
+import 'package:get/get.dart';
+import 'package:sihati_mobile/core/models/pharmacy_model.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../data/repositories/pharmacy_repository.dart';
+
+class PharmacyDetailController extends GetxController {
+  final PharmacyRepository pharmacyRepository;
+
+  PharmacyDetailController({required this.pharmacyRepository});
+
+  // State
+  final pharmacy = Rxn<PharmacyModel>();
+  final isLoading = false.obs;
+  final errorMessage = ''.obs;
+
+  // ✅ CORRIGÉ: Get pharmacy ID from route as String
+  String get pharmacyId => Get.parameters['id'] ?? '';
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadPharmacyDetails();
+  }
+
+  /// Load pharmacy details
+  Future<void> loadPharmacyDetails() async {
+    // ✅ CORRIGÉ: Check if ID is empty
+    if (pharmacyId.isEmpty) {
+      errorMessage.value = 'ID de pharmacie invalide';
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final result = await pharmacyRepository.getPharmacyDetails(pharmacyId);
+      pharmacy.value = result;
+    } catch (e) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar(
+        'Erreur',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Call pharmacy
+  Future<void> callPharmacy() async {
+    final phone = pharmacy.value?.phone;
+    if (phone == null) return;
+
+    final uri = Uri(scheme: 'tel', path: phone);
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        Get.snackbar(
+          'Erreur',
+          'Impossible d\'appeler ce numéro',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Erreur lors de l\'appel',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  /// Open WhatsApp
+  Future<void> openWhatsApp() async {
+    final whatsapp = pharmacy.value?.whatsappNumber;
+    if (whatsapp == null) return;
+
+    // Remove spaces and format
+    final number = whatsapp.replaceAll(RegExp(r'\s+'), '');
+    final uri = Uri.parse('https://wa.me/$number');
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Get.snackbar(
+          'Erreur',
+          'WhatsApp non disponible',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Erreur lors de l\'ouverture de WhatsApp',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  /// Get directions
+  Future<void> getDirections() async {
+    final lat = pharmacy.value?.latitude;
+    final lng = pharmacy.value?.longitude;
+
+    if (lat == null || lng == null) return;
+
+    final uri = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Get.snackbar(
+          'Erreur',
+          'Impossible d\'ouvrir Google Maps',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Erreur lors de l\'ouverture des directions',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  /// Get opening hours for each day
+  List<MapEntry<String, String>> get openingHoursList {
+    final hours = pharmacy.value?.openingHours;
+    if (hours == null) return [];
+
+    final days = [
+      'Lundi',
+      'Mardi',
+      'Mercredi',
+      'Jeudi',
+      'Vendredi',
+      'Samedi',
+      'Dimanche',
+    ];
+
+    final result = <MapEntry<String, String>>[];
+
+    for (var i = 0; i < days.length; i++) {
+      final dayKey = days[i].toLowerCase();
+      if (hours.containsKey(dayKey)) {
+        final dayHours = hours[dayKey];
+        if (dayHours is Map && dayHours.isNotEmpty) {
+          final open = dayHours['open'] ?? '';
+          final close = dayHours['close'] ?? '';
+
+          if (open.isNotEmpty && close.isNotEmpty) {
+            result.add(MapEntry(days[i], '$open - $close'));
+          } else {
+            result.add(MapEntry(days[i], 'Fermé'));
+          }
+        } else {
+          result.add(MapEntry(days[i], 'Fermé'));
+        }
+      } else {
+        result.add(MapEntry(days[i], 'Fermé'));
+      }
+    }
+
+    return result;
+  }
+}
+=== lib/modules/pharmacies/controllers/pharmacy_list_controller.dart ===
+import 'package:get/get.dart';
+import 'package:sihati_mobile/core/models/pharmacy_model.dart';
+import '../../../data/repositories/pharmacy_repository.dart';
+import '../../../app/routes/app_routes.dart';
+
+class PharmacyListController extends GetxController {
+  final PharmacyRepository pharmacyRepository;
+
+  PharmacyListController({required this.pharmacyRepository});
+
+  final pharmacies = <PharmacyModel>[].obs;
+  final filteredPharmacies = <PharmacyModel>[].obs;
+  final isLoading = false.obs;
+  final errorMessage = ''.obs;
+  final selectedWilaya = Rxn<String>();
+  final showNearbyOnly = false.obs;
+  final showActiveOnly = false.obs;
+  final searchQuery = ''.obs;
+  final isSearchFocused = false.obs;
+
+  final List<String> wilayas = [
+    'Tous',
+    'Adrar',
+    'Chlef',
+    'Laghouat',
+    'Oum El Bouaghi',
+    'Batna',
+    'Béjaïa',
+    'Biskra',
+    'Béchar',
+    'Blida',
+    'Bouira',
+    'Tamanrasset',
+    'Tébessa',
+    'Tlemcen',
+    'Tiaret',
+    'Tizi Ouzou',
+    'Alger',
+    'Djelfa',
+    'Jijel',
+    'Sétif',
+    'Saïda',
+    'Skikda',
+    'Sidi Bel Abbès',
+    'Annaba',
+    'Guelma',
+    'Constantine',
+    'Médéa',
+    'Mostaganem',
+    'M\'Sila',
+    'Mascara',
+    'Ouargla',
+    'Oran',
+    'El Bayadh',
+    'Illizi',
+    'Bordj Bou Arréridj',
+    'Boumerdès',
+    'El Tarf',
+    'Tindouf',
+    'Tissemsilt',
+    'El Oued',
+    'Khenchela',
+    'Souk Ahras',
+    'Tipaza',
+    'Mila',
+    'Aïn Defla',
+    'Naâma',
+    'Aïn Témouchent',
+    'Ghardaïa',
+    'Relizane'
+  ];
+
+  int get activeFiltersCount {
+    int count = 0;
+    if (showActiveOnly.value) count++;
+    if (showNearbyOnly.value) count++;
+    if (selectedWilaya.value != null && selectedWilaya.value != 'Tous') count++;
+    if (searchQuery.value.isNotEmpty) count++;
+    return count;
+  }
+
+  String get activePharmaciesCount {
+    final openCount = pharmacies.where((p) => p.isOpenNow).length;
+    return '$openCount ouvertes sur ${pharmacies.length}';
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadPharmacies();
+  }
+
+  Future<void> loadPharmacies() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      if (showNearbyOnly.value) {
+        await loadNearbyPharmacies();
+      } else {
+        final wilaya = selectedWilaya.value;
+        final result = await pharmacyRepository.getAllPharmacies(
+          wilaya: (wilaya == null || wilaya == 'Tous') ? null : wilaya,
+        );
+        pharmacies.value = result;
+      }
+
+      _applyFilters();
+    } catch (e) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar('Erreur', errorMessage.value,
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loadNearbyPharmacies() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      final result = await pharmacyRepository.getNearbyPharmacies(radius: 10);
+      pharmacies.value = result;
+      _applyFilters();
+      Get.snackbar(
+          'Succès', '${result.length} pharmacie(s) trouvée(s) à proximité',
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      if (errorMessage.value.contains('permission')) {
+        Get.snackbar('Permission requise',
+            'Activez la localisation pour voir les pharmacies proches',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 4));
+      } else {
+        Get.snackbar('Erreur', errorMessage.value,
+            snackPosition: SnackPosition.BOTTOM);
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void filterByWilaya(String? wilaya) {
+    selectedWilaya.value = wilaya;
+    showNearbyOnly.value = false;
+    loadPharmacies();
+  }
+
+  void toggleNearbyFilter() {
+    showNearbyOnly.value = !showNearbyOnly.value;
+    if (showNearbyOnly.value) {
+      selectedWilaya.value = null;
+    }
+    loadPharmacies();
+  }
+
+  void toggleActiveFilter() {
+    showActiveOnly.value = !showActiveOnly.value;
+    _applyFilters();
+  }
+
+  void showOnlyOpenPharmacies() {
+    if (showActiveOnly.value) {
+      clearFilters();
+    } else {
+      showActiveOnly.value = true;
+      showNearbyOnly.value = false;
+      selectedWilaya.value = null;
+      searchQuery.value = '';
+      _applyFilters();
+    }
+  }
+
+  void searchPharmacies(String query) {
+    searchQuery.value = query;
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    var results = pharmacies.toList();
+
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      results = results.where((pharmacy) {
+        return pharmacy.pharmacyName.toLowerCase().contains(query) ||
+            pharmacy.address.toLowerCase().contains(query) ||
+            pharmacy.wilaya.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    if (showActiveOnly.value) {
+      results = results.where((pharmacy) => pharmacy.isOpenNow).toList();
+    }
+
+    filteredPharmacies.value = results;
+  }
+
+  void clearFilters() {
+    selectedWilaya.value = null;
+    showNearbyOnly.value = false;
+    showActiveOnly.value = false;
+    searchQuery.value = '';
+    loadPharmacies();
+  }
+
+  /// ✅ CORRIGÉ: Navigate to pharmacy detail with String ID
+  void goToPharmacyDetail(String pharmacyId) {
+    Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
+  }
+
+  Future<void> refresh() async {
+    await loadPharmacies();
+  }
+}
+=== lib/modules/pharmacies/views/duty_pharmacy_screen.dart ===
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../core/widgets/loading_indicator.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_widget.dart';
+import '../controllers/duty_pharmacy_controller.dart';
+import 'widgets/pharmacy_card.dart';
+
+class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
+  const DutyPharmacyScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildHeader(),
+          SliverToBoxAdapter(child: _buildFilterChip()),
+          _buildPharmacyList(),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // BLUE GRADIENT HEADER
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildHeader() {
+    return SliverAppBar(
+      expandedHeight: 200,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: AppColors.primary,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+        onPressed: () => Get.back(),
+      ),
+      actions: [
+        Container(
+          margin: EdgeInsets.only(right: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: PopupMenuButton<String>(
+            icon: Icon(Icons.location_on_rounded, color: Colors.white),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            onSelected: controller.filterByWilaya,
+            itemBuilder: (context) => controller.wilayas
+                .map((wilaya) => PopupMenuItem(
+                      value: wilaya,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.place_rounded,
+                            size: 20,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(width: 8),
+                          Text(wilaya),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+        ),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          children: [
+            // Primary gradient background
+            Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.primaryGradient,
+              ),
+            ),
+
+            // Wave decoration
+            Positioned(
+              bottom: -2,
+              left: 0,
+              right: 0,
+              child: CustomPaint(
+                size: Size(Get.width, 30),
+                painter: WavePainter(),
+              ),
+            ),
+
+            // Decorative circles
+            Positioned(
+              top: 60,
+              right: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.1),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 100,
+              left: 30,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.08),
+                ),
+              ),
+            ),
+
+            // Content
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            Icons.local_pharmacy_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Pharmacies de garde',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  height: 1.2,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.25),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.nightlight_round,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Ouvertes cette nuit',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          color: Colors.white.withOpacity(0.9),
+                          size: 16,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          controller.currentDateTime,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // FILTER CHIP
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildFilterChip() {
+    return Obx(() {
+      final wilaya = controller.selectedWilaya.value;
+      if (wilaya == null || wilaya == 'Tous') {
+        return const SizedBox();
+      }
+
+      return Container(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.sm,
+        ),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primarySoft,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.location_on_rounded,
+                size: 18,
+                color: AppColors.primary,
+              ),
+              SizedBox(width: 6),
+              Text(
+                wilaya,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+              SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => controller.filterByWilaya(null),
+                child: Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // PHARMACY LIST
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildPharmacyList() {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return SliverFillRemaining(
+          child: const LoadingIndicator(
+            message: 'Chargement des pharmacies...',
+          ),
+        );
+      }
+
+      if (controller.errorMessage.value.isNotEmpty &&
+          controller.pharmacies.isEmpty) {
+        return SliverFillRemaining(
+          child: ErrorDisplayWidget(
+            message: controller.errorMessage.value,
+            onRetry: controller.refresh,
+          ),
+        );
+      }
+
+      final pharmacies = controller.pharmacies;
+
+      if (pharmacies.isEmpty) {
+        return SliverFillRemaining(
+          child: EmptyState(
+            message: 'Aucune pharmacie de garde',
+            submessage: 'Aucune pharmacie de garde dans cette zone',
+            icon: Icons.local_pharmacy_rounded,
+            onRetry: controller.refresh,
+          ),
+        );
+      }
+
+      return SliverList(
+        delegate: SliverChildListDelegate([
+          // Success banner
+          Container(
+            margin: EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.md,
+            ),
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.successLight,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.success.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.success,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${pharmacies.length} pharmacie${pharmacies.length > 1 ? 's' : ''}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.successDark,
+                        ),
+                      ),
+                      Text(
+                        'Disponible${pharmacies.length > 1 ? 's' : ''} cette nuit',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.successDark.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Pharmacy cards
+          ...pharmacies.map((pharmacy) => Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  0,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                ),
+                child: PharmacyCard(
+                  pharmacy: pharmacy,
+                  onTap: () => controller.goToPharmacyDetail(pharmacy.id),
+                ),
+              )),
+
+          SizedBox(height: AppSpacing.lg),
+        ]),
+      );
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WAVE PAINTER
+// ═══════════════════════════════════════════════════════════════
+
+class WavePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color(0xFFF9FAFB)
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height * 0.5)
+      ..quadraticBezierTo(
+        size.width * 0.25,
+        size.height * 0.2,
+        size.width * 0.5,
+        size.height * 0.5,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.75,
+        size.height * 0.8,
+        size.width,
+        size.height * 0.5,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+=== lib/modules/pharmacies/views/pharmacy_detail_screen.dart ===
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../core/widgets/loading_indicator.dart';
+import '../../../core/widgets/error_widget.dart';
+import '../../../core/widgets/sihati_mapbox.dart';
+import '../controllers/pharmacy_detail_controller.dart';
+
+class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
+  const PharmacyDetailScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const LoadingIndicator();
+        }
+
+        if (controller.errorMessage.value.isNotEmpty) {
+          return ErrorDisplayWidget(
+            message: controller.errorMessage.value,
+            onRetry: controller.loadPharmacyDetails,
+          );
+        }
+
+        final pharmacy = controller.pharmacy.value;
+        if (pharmacy == null) {
+          return const ErrorDisplayWidget(
+            message: 'Pharmacie non trouvée',
+          );
+        }
+
+        return Stack(
+          children: [
+            Column(
+              children: [
+                // Big Map
+                Expanded(
+                  flex: 5,
+                  child: SihatiMapbox(
+                    latitude: pharmacy.latitude,
+                    longitude: pharmacy.longitude,
+                    markerTitle: pharmacy.pharmacyName,
+                    height: double.infinity,
+                    zoom: 15,
+                  ),
+                ),
+                // Details Sheet
+                Expanded(
+                  flex: 5,
+                  child: _buildDetailsSheet(pharmacy),
+                ),
+              ],
+            ),
+
+            // Back Button
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              left: 8,
+              child: _buildBackButton(),
+            ),
+
+            // De Garde Badge
+            if (pharmacy.isOnDutyTonight)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 8,
+                child: _buildOnDutyBadge(),
+              ),
+          ],
+        );
+      }),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // BACK BUTTON
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildBackButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+        onPressed: () => Get.back(),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // DE GARDE BADGE
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildOnDutyBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm + 2,
+      ),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.nightlight_round,
+            size: 18,
+            color: Colors.white,
+          ),
+          SizedBox(width: 6),
+          Text(
+            'DE GARDE',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // DETAILS SHEET
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildDetailsSheet(pharmacy) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            SizedBox(height: AppSpacing.lg),
+
+            // Header with icon
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: pharmacy.isOnDutyTonight
+                        ? AppColors.primary
+                        : AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.local_pharmacy_rounded,
+                    size: 28,
+                    color: pharmacy.isOnDutyTonight
+                        ? Colors.white
+                        : AppColors.primary,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        pharmacy.pharmacyName,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      _buildInfoChip(
+                        icon: Icons.location_on_rounded,
+                        text: pharmacy.fullAddress,
+                        iconColor: AppColors.error,
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            // Distance badge
+            if (pharmacy.distance != null) ...[
+              SizedBox(height: AppSpacing.md),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.near_me_rounded,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'À ${pharmacy.formattedDistance}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            SizedBox(height: AppSpacing.xl),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.phone_rounded,
+                    label: 'Appeler',
+                    color: AppColors.primary,
+                    onPressed: controller.callPharmacy,
+                  ),
+                ),
+                if (pharmacy.hasWhatsapp) ...[
+                  SizedBox(width: AppSpacing.sm + 4),
+                  Expanded(
+                    child: _buildActionButton(
+                      icon: Icons.chat_rounded,
+                      label: 'WhatsApp',
+                      color: Color(0xFF25D366),
+                      onPressed: controller.openWhatsApp,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+
+            SizedBox(height: AppSpacing.sm + 4),
+
+            _buildActionButton(
+              icon: Icons.directions_rounded,
+              label: 'Obtenir l\'itinéraire',
+              color: AppColors.primary,
+              isOutlined: true,
+              onPressed: controller.getDirections,
+            ),
+
+            // Opening Hours Section
+            if (controller.openingHoursList.isNotEmpty) ...[
+              SizedBox(height: AppSpacing.xl),
+              _buildSectionCard(
+                icon: Icons.access_time_rounded,
+                title: 'Horaires d\'ouverture',
+                iconColor: AppColors.primary,
+                child: Column(
+                  children: controller.openingHoursList.map((entry) {
+                    final isClosed = entry.value == 'Fermé';
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            entry.key,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isClosed
+                                  ? AppColors.errorLight
+                                  : AppColors.successLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              entry.value,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isClosed
+                                    ? AppColors.error
+                                    : AppColors.success,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+
+            // Contact Section
+            SizedBox(height: AppSpacing.md),
+            _buildSectionCard(
+              icon: Icons.phone_rounded,
+              title: 'Contact',
+              iconColor: AppColors.primary,
+              child: Column(
+                children: [
+                  _buildContactRow(
+                    icon: Icons.phone_rounded,
+                    label: 'Téléphone',
+                    value: pharmacy.phone,
+                    color: AppColors.primary,
+                  ),
+                  if (pharmacy.hasWhatsapp) ...[
+                    SizedBox(height: AppSpacing.md),
+                    _buildContactRow(
+                      icon: Icons.chat_rounded,
+                      label: 'WhatsApp',
+                      value: pharmacy.whatsappNumber!,
+                      color: Color(0xFF25D366),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            SizedBox(height: AppSpacing.lg),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HELPER WIDGETS
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String text,
+    required Color iconColor,
+    int maxLines = 1,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(icon, size: 14, color: iconColor),
+        ),
+        SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+            maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+    bool isOutlined = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: isOutlined ? Colors.white : color,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isOutlined ? color : Colors.transparent,
+              width: 2,
+            ),
+            boxShadow: isOutlined
+                ? null
+                : [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: isOutlined ? color : Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isOutlined ? color : Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required IconData icon,
+    required String title,
+    required Color iconColor,
+    required Widget child,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md + 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              SizedBox(width: AppSpacing.sm + 4),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: AppSpacing.md),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, size: 20, color: color),
+        ),
+        SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+=== lib/modules/pharmacies/views/pharmacy_list_screen.dart ===
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../core/widgets/loading_indicator.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_widget.dart';
+import '../controllers/pharmacy_list_controller.dart';
+import 'widgets/pharmacy_card.dart';
+
+class PharmacyListScreen extends GetView<PharmacyListController> {
+  const PharmacyListScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      floatingActionButton: Obx(() => FloatingActionButton.extended(
+            onPressed: controller.showOnlyOpenPharmacies,
+            icon: Icon(controller.showActiveOnly.value
+                ? Icons.clear_all_rounded
+                : Icons.storefront_rounded),
+            label: Text(
+                controller.showActiveOnly.value ? 'Afficher tout' : 'Ouvertes'),
+            backgroundColor: controller.showActiveOnly.value
+                ? AppColors.error
+                : AppColors.success,
+          )),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildHeader(),
+          SliverToBoxAdapter(child: _buildSearchBar()),
+          SliverToBoxAdapter(child: _buildActiveFilterBar()),
+          SliverToBoxAdapter(child: _buildFilterChips()),
+          _buildPharmacyList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return SliverAppBar(
+      expandedHeight: 160,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: AppColors.primary,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+        onPressed: () => Get.back(),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          children: [
+            Container(
+                decoration:
+                    const BoxDecoration(gradient: AppColors.primaryGradient)),
+            Positioned(
+              bottom: -2,
+              left: 0,
+              right: 0,
+              child: CustomPaint(
+                  size: Size(Get.width, 30), painter: WavePainter()),
+            ),
+            Positioned(
+              top: 60,
+              right: -20,
+              child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.1))),
+            ),
+            Positioned(
+              top: 90,
+              left: 30,
+              child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.08))),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                    AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xl),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(14)),
+                          child: Icon(Icons.store_rounded,
+                              color: Colors.white, size: 28),
+                        ),
+                        SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Pharmacies',
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      height: 1.2)),
+                              SizedBox(height: 4),
+                              Obx(() => Text(
+                                    controller.activePharmaciesCount,
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white.withOpacity(0.9),
+                                        fontWeight: FontWeight.w500),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+          AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+                color: AppColors.primary.withOpacity(0.08),
+                blurRadius: 12,
+                offset: Offset(0, 4))
+          ],
+        ),
+        child: TextField(
+          onChanged: controller.searchPharmacies,
+          onTap: () => controller.isSearchFocused.value = true,
+          decoration: InputDecoration(
+            hintText: 'Rechercher une pharmacie...',
+            hintStyle: TextStyle(color: AppColors.textTertiary, fontSize: 15),
+            prefixIcon: Container(
+                padding: EdgeInsets.all(12),
+                child: Icon(Icons.search_rounded,
+                    color: AppColors.primary, size: 22)),
+            suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.close_rounded,
+                        color: AppColors.textSecondary, size: 20),
+                    onPressed: () => controller.searchPharmacies(''))
+                : const SizedBox()),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md, vertical: AppSpacing.md),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActiveFilterBar() {
+    return Obx(() {
+      if (controller.activeFiltersCount == 0) return const SizedBox();
+
+      return Container(
+        margin: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: AppColors.primarySoft,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.filter_list_rounded, size: 16, color: AppColors.primary),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${controller.activeFiltersCount} filtre${controller.activeFiltersCount > 1 ? 's' : ''} actif${controller.activeFiltersCount > 1 ? 's' : ''}',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+            GestureDetector(
+              onTap: controller.clearFilters,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                    color: AppColors.errorLight,
+                    borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  children: [
+                    Icon(Icons.close_rounded, size: 14, color: AppColors.error),
+                    SizedBox(width: 4),
+                    Text('Effacer',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.error)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildFilterChips() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            Obx(() => _buildFilterChip(
+                  label: 'Ouvertes',
+                  icon: Icons.storefront_rounded,
+                  isSelected: controller.showActiveOnly.value,
+                  onTap: controller.toggleActiveFilter,
+                  color: AppColors.success,
+                )),
+            SizedBox(width: AppSpacing.sm),
+            Obx(() => _buildFilterChip(
+                  label: 'À proximité',
+                  icon: Icons.near_me_rounded,
+                  isSelected: controller.showNearbyOnly.value,
+                  onTap: controller.toggleNearbyFilter,
+                  color: AppColors.primary,
+                )),
+            SizedBox(width: AppSpacing.sm),
+            Obx(() => _buildFilterChip(
+                  label: controller.selectedWilaya.value ?? 'Wilaya',
+                  icon: Icons.location_on_rounded,
+                  isSelected: controller.selectedWilaya.value != null,
+                  onTap: _showWilayaDialog,
+                  color: AppColors.secondary,
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? color : AppColors.border),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                      color: color.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: Offset(0, 2))
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: isSelected ? Colors.white : color),
+            SizedBox(width: 6),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : AppColors.textPrimary)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPharmacyList() {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return SliverFillRemaining(
+            child: const LoadingIndicator(
+                message: 'Chargement des pharmacies...'));
+      }
+
+      if (controller.errorMessage.value.isNotEmpty) {
+        return SliverFillRemaining(
+            child: ErrorDisplayWidget(
+                message: controller.errorMessage.value,
+                onRetry: controller.refresh));
+      }
+
+      final pharmacies = controller.filteredPharmacies;
+
+      if (pharmacies.isEmpty) {
+        String message = 'Aucune pharmacie trouvée';
+        String submessage = 'Essayez de modifier vos filtres';
+
+        if (controller.showActiveOnly.value) {
+          message = 'Aucune pharmacie ouverte';
+          submessage = 'Toutes les pharmacies sont fermées pour le moment';
+        } else if (controller.showNearbyOnly.value) {
+          message = 'Aucune pharmacie à proximité';
+          submessage = 'Essayez d\'élargir votre recherche';
+        }
+
+        return SliverFillRemaining(
+          child: EmptyState(
+            message: message,
+            submessage: submessage,
+            icon: controller.showActiveOnly.value
+                ? Icons.storefront_rounded
+                : Icons.store_rounded,
+            onRetry: controller.clearFilters,
+            retryText: 'Réinitialiser',
+          ),
+        );
+      }
+
+      return SliverPadding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final pharmacy = pharmacies[index];
+              return PharmacyCard(
+                  pharmacy: pharmacy,
+                  onTap: () => controller.goToPharmacyDetail(pharmacy.id));
+            },
+            childCount: pharmacies.length,
+          ),
+        ),
+      );
+    });
+  }
+
+  void _showWilayaDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: EdgeInsets.all(AppSpacing.lg),
+          constraints: BoxConstraints(maxHeight: Get.height * 0.7),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: AppColors.primarySoft,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Icon(Icons.location_on_rounded,
+                        color: AppColors.primary, size: 24),
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  Text('Sélectionner une wilaya',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary)),
+                ],
+              ),
+              SizedBox(height: AppSpacing.md),
+              Divider(color: AppColors.border),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: controller.wilayas.length,
+                  itemBuilder: (context, index) {
+                    final wilaya = controller.wilayas[index];
+                    final isSelected =
+                        controller.selectedWilaya.value == wilaya;
+                    return InkWell(
+                      onTap: () {
+                        controller
+                            .filterByWilaya(wilaya == 'Tous' ? null : wilaya);
+                        Get.back();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm + 4),
+                        margin: EdgeInsets.only(bottom: 4),
+                        decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primarySoft
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isSelected
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textTertiary,
+                              size: 20,
+                            ),
+                            SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Text(
+                                wilaya,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class WavePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color(0xFFF9FAFB)
+      ..style = PaintingStyle.fill;
+    final path = Path()
+      ..moveTo(0, size.height * 0.5)
+      ..quadraticBezierTo(size.width * 0.25, size.height * 0.2,
+          size.width * 0.5, size.height * 0.5)
+      ..quadraticBezierTo(
+          size.width * 0.75, size.height * 0.8, size.width, size.height * 0.5)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+=== lib/modules/pharmacies/views/widgets/pharmacy_card.dart ===
+import 'package:flutter/material.dart';
+import 'package:sihati_mobile/core/models/pharmacy_model.dart';
+import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_spacing.dart';
+import '../../../../core/widgets/favorite_button.dart';
+
+class PharmacyCard extends StatelessWidget {
+  final PharmacyModel pharmacy;
+  final VoidCallback onTap;
+
+  const PharmacyCard({
+    Key? key,
+    required this.pharmacy,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final isOpenNow = pharmacy.isOpenNow;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isOpenNow
+              ? AppColors.success
+              : (pharmacy.isOnDutyTonight
+                  ? AppColors.primary
+                  : AppColors.border),
+          width: (isOpenNow || pharmacy.isOnDutyTonight) ? 2 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isOpenNow
+                ? AppColors.success.withOpacity(0.15)
+                : (pharmacy.isOnDutyTonight
+                    ? AppColors.primary.withOpacity(0.15)
+                    : Colors.black.withOpacity(0.04)),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isOpenNow
+                            ? AppColors.success
+                            : (pharmacy.isOnDutyTonight
+                                ? AppColors.primary
+                                : AppColors.primarySoft),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.local_pharmacy_rounded,
+                        size: 22,
+                        color: (isOpenNow || pharmacy.isOnDutyTonight)
+                            ? Colors.white
+                            : AppColors.primary,
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.sm + 4),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            pharmacy.pharmacyName,
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary),
+                          ),
+                          SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: pharmacy.statusColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: pharmacy.statusColor
+                                          .withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(pharmacy.statusIcon,
+                                        size: 12, color: pharmacy.statusColor),
+                                    SizedBox(width: 4),
+                                    Text(pharmacy.statusText,
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: pharmacy.statusColor)),
+                                  ],
+                                ),
+                              ),
+                              if (pharmacy.isOnDutyTonight && !isOpenNow) ...[
+                                SizedBox(width: 6),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                      gradient: AppColors.primaryGradient,
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.nightlight_round,
+                                          size: 10, color: Colors.white),
+                                      SizedBox(width: 4),
+                                      Text('GARDE',
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    PharmacyFavoriteButton(pharmacy: pharmacy, size: 20),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 14, color: AppColors.textTertiary),
+                    SizedBox(width: 4),
+                    Expanded(
+                        child: Text(pharmacy.todayHours,
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.textSecondary))),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Icon(Icons.location_on_rounded,
+                            size: 14, color: AppColors.error)),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                        child: Text(pharmacy.fullAddress,
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.textSecondary),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                              padding: EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                  color: AppColors.secondary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: Icon(Icons.phone_rounded,
+                                  size: 14, color: AppColors.secondary)),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                              child: Text(pharmacy.phone,
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary))),
+                        ],
+                      ),
+                    ),
+                    if (pharmacy.hasWhatsapp)
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: Color(0xFF25D366),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.chat_rounded,
+                                size: 12, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text('WhatsApp',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                if (pharmacy.distance != null) ...[
+                  SizedBox(height: AppSpacing.sm),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm + 4,
+                        vertical: AppSpacing.sm - 2),
+                    decoration: BoxDecoration(
+                        color: AppColors.primarySoft,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: AppColors.primary.withOpacity(0.2))),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.near_me_rounded,
+                            size: 14, color: AppColors.primary),
+                        SizedBox(width: 6),
+                        Text(pharmacy.formattedDistance,
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary)),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

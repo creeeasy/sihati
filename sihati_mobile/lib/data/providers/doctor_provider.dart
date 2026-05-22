@@ -27,12 +27,12 @@ class DoctorProvider {
       final response = await _apiService.get(ApiConstants.SPECIALTIES);
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> specialtiesJson = data['specialties'] ?? data;
-
-        return specialtiesJson
-            .map((json) => SpecialtyModel.fromJson(json))
+        final List<SpecialtyModel> list = (response.data['data']
+                as List<dynamic>)
+            .map(
+                (json) => SpecialtyModel.fromJson(json as Map<String, dynamic>))
             .toList();
+        return list;
       }
       throw Exception('Failed to load specialties');
     } on DioException catch (e) {
@@ -69,10 +69,10 @@ class DoctorProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> doctorsJson = data['doctors'] ?? data;
-
-        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
+        final List<DoctorModel> list = (response.data['data'] as List<dynamic>)
+            .map((json) => DoctorModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        return list;
       }
       throw Exception('Failed to search doctors');
     } on DioException catch (e) {
@@ -90,10 +90,10 @@ class DoctorProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> doctorsJson = data['doctors'] ?? data;
-
-        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
+        final List<DoctorModel> list = (response.data['data'] as List<dynamic>)
+            .map((json) => DoctorModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        return list;
       }
       return [];
     } on DioException catch (e) {
@@ -111,10 +111,10 @@ class DoctorProvider {
       final response = await _apiService.get(ApiConstants.DOCTORS);
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> doctorsJson = data['doctors'] ?? data;
-
-        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
+        final List<DoctorModel> list = (response.data['data'] as List<dynamic>)
+            .map((json) => DoctorModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        return list;
       }
       throw Exception('Failed to load doctors');
     } on DioException catch (e) {
@@ -131,9 +131,8 @@ class DoctorProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final doctorJson = data['doctor'] ?? data;
-        return DoctorModel.fromJson(doctorJson);
+        final data = response.data['data'] as Map<String, dynamic>;
+        return DoctorModel.fromJson(data);
       }
       throw Exception('Doctor not found');
     } on DioException catch (e) {
@@ -161,10 +160,10 @@ class DoctorProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> doctorsJson = data['doctors'] ?? data;
-
-        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
+        final List<DoctorModel> list = (response.data['data'] as List<dynamic>)
+            .map((json) => DoctorModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        return list;
       }
       return [];
     } on DioException catch (e) {

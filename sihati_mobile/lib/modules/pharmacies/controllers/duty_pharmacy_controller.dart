@@ -8,48 +8,65 @@ class DutyPharmacyController extends GetxController {
 
   DutyPharmacyController({required this.pharmacyRepository});
 
-  // State
+  // ── State ────────────────────────────────────────────────────
   final pharmacies = <PharmacyModel>[].obs;
   final isLoading = false.obs;
   final errorMessage = ''.obs;
   final selectedWilaya = Rxn<String>();
+  final showNearbyOnly = false.obs;
 
-  // Wilayas list
+  // ── Wilayas ──────────────────────────────────────────────────
+  // Full 48-wilaya list, consistent with PharmacyListController
   final List<String> wilayas = [
     'Tous',
-    'Alger',
-    'Oran',
-    'Constantine',
-    'Annaba',
-    'Blida',
-    'Batna',
-    'Djelfa',
-    'Sétif',
-    'Sidi Bel Abbès',
-    'Biskra',
-    'Tébessa',
-    'El Oued',
-    'Skikda',
-    'Tiaret',
-    'Béjaïa',
-    'Tlemcen',
-    'Ouargla',
-    'Béchar',
-    'Mostaganem',
-    'Bordj Bou Arréridj',
+    'Adrar',
     'Chlef',
-    'Souk Ahras',
+    'Laghouat',
+    'Oum El Bouaghi',
+    'Batna',
+    'Béjaïa',
+    'Biskra',
+    'Béchar',
+    'Blida',
+    'Bouira',
+    'Tamanrasset',
+    'Tébessa',
+    'Tlemcen',
+    'Tiaret',
     'Tizi Ouzou',
-    'Médéa',
-    'El Tarf',
+    'Alger',
+    'Djelfa',
     'Jijel',
-    'Relizane',
+    'Sétif',
+    'Saïda',
+    'Skikda',
+    'Sidi Bel Abbès',
+    'Annaba',
+    'Guelma',
+    'Constantine',
+    'Médéa',
+    'Mostaganem',
     'M\'Sila',
+    'Mascara',
+    'Ouargla',
+    'Oran',
+    'El Bayadh',
+    'Illizi',
+    'Bordj Bou Arréridj',
+    'Boumerdès',
+    'El Tarf',
+    'Tindouf',
+    'Tissemsilt',
+    'El Oued',
+    'Khenchela',
+    'Souk Ahras',
+    'Tipaza',
+    'Mila',
     'Aïn Defla',
     'Naâma',
     'Aïn Témouchent',
     'Ghardaïa',
-    'Mascara',
+    'Relizane',
   ];
 
   @override
@@ -58,7 +75,10 @@ class DutyPharmacyController extends GetxController {
     loadDutyPharmacies();
   }
 
-  /// Load duty pharmacies
+  // ═══════════════════════════════════════════════════════════════
+  // LOAD
+  // ═══════════════════════════════════════════════════════════════
+
   Future<void> loadDutyPharmacies() async {
     try {
       isLoading.value = true;
@@ -67,42 +87,84 @@ class DutyPharmacyController extends GetxController {
       final wilaya = selectedWilaya.value;
       final result = await pharmacyRepository.getDutyPharmacies(
         wilaya: (wilaya == null || wilaya == 'Tous') ? null : wilaya,
+        // FIX: wire showNearbyOnly to useLocation so the repo fetches
+        // lat/lng from LocationService when the nearby toggle is active.
+        useLocation: showNearbyOnly.value,
       );
 
       pharmacies.value = result;
-
-      if (result.isEmpty) {
-        errorMessage.value = 'Aucune pharmacie de garde trouvée';
-      }
+      // FIX: do NOT set errorMessage on empty result — let the EmptyState
+      // widget handle it. The old code set errorMessage here which caused
+      // ErrorDisplayWidget to render instead of EmptyState.
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
-      Get.snackbar(
-        'Erreur',
-        errorMessage.value,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      if (errorMessage.value.contains('permission') ||
+          errorMessage.value.contains('localisation')) {
+        Get.snackbar(
+          'Localisation requise',
+          'Activez la localisation pour voir les pharmacies de garde proches',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 4),
+        );
+        // Fall back to non-location load
+        showNearbyOnly.value = false;
+        errorMessage.value = '';
+        await loadDutyPharmacies();
+      } else {
+        Get.snackbar('Erreur', errorMessage.value,
+            snackPosition: SnackPosition.BOTTOM);
+      }
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Filter by wilaya
+  // ═══════════════════════════════════════════════════════════════
+  // FILTERS
+  // ═══════════════════════════════════════════════════════════════
+
   void filterByWilaya(String? wilaya) {
-    selectedWilaya.value = wilaya;
+    // Normalize 'Tous' to null so the API call omits the wilaya param
+    selectedWilaya.value = (wilaya == null || wilaya == 'Tous') ? null : wilaya;
+    showNearbyOnly.value = false; // nearby and wilaya are mutually exclusive
     loadDutyPharmacies();
   }
 
-  /// ✅ CORRIGÉ: Navigate to pharmacy details with String ID
+  void toggleNearbyFilter() {
+    showNearbyOnly.value = !showNearbyOnly.value;
+    if (showNearbyOnly.value) {
+      selectedWilaya.value = null; // clear wilaya when going nearby
+    }
+    loadDutyPharmacies();
+  }
+
+  void clearFilters() {
+    selectedWilaya.value = null;
+    showNearbyOnly.value = false;
+    loadDutyPharmacies();
+  }
+
+  int get activeFiltersCount {
+    int count = 0;
+    if (showNearbyOnly.value) count++;
+    if (selectedWilaya.value != null) count++;
+    return count;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // NAVIGATION
+  // ═══════════════════════════════════════════════════════════════
+
   void goToPharmacyDetail(String pharmacyId) {
     Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
   }
 
-  /// Refresh
-  Future<void> refresh() async {
-    await loadDutyPharmacies();
-  }
+  Future<void> refresh() async => loadDutyPharmacies();
 
-  /// Get current date/time string
+  // ═══════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════════════════════
+
   String get currentDateTime {
     final now = DateTime.now();
     final days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -118,12 +180,15 @@ class DutyPharmacyController extends GetxController {
       'Sep',
       'Oct',
       'Nov',
-      'Déc'
+      'Déc',
     ];
+    return '${days[now.weekday - 1]} ${now.day} ${months[now.month - 1]} '
+        '${now.year} · ${now.hour}h${now.minute.toString().padLeft(2, '0')}';
+  }
 
-    final day = days[now.weekday - 1];
-    final month = months[now.month - 1];
-
-    return '$day ${now.day} $month ${now.year} - ${now.hour}h${now.minute.toString().padLeft(2, '0')}';
+  String get pharmacyCountLabel {
+    final count = pharmacies.length;
+    if (count == 0) return 'Aucune pharmacie de garde';
+    return '$count pharmacie${count > 1 ? 's' : ''} de garde';
   }
 }

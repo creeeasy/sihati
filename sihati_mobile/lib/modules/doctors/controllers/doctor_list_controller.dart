@@ -1,4 +1,5 @@
 // lib/modules/doctors/controllers/doctor_list_controller.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
@@ -18,26 +19,31 @@ class DoctorListController extends GetxController {
     required this.storageService,
   });
 
-  // State
+  // ─── State ───────────────────────────────────────────────────
   final doctors = <DoctorModel>[].obs;
   final filteredDoctors = <DoctorModel>[].obs;
+  final topRatedDoctors = <DoctorModel>[].obs; // ← getTopRatedDoctors
   final specialties = <SpecialtyModel>[].obs;
   final isLoading = false.obs;
+  final isTopRatedLoading = false.obs;
+  final isNameSearchLoading = false.obs; // spinner for backend search
   final errorMessage = ''.obs;
 
-  // Filters - ✅ String pour specialtyId (UUID)
+  // ─── Filters ─────────────────────────────────────────────────
   final selectedSpecialtyId = Rxn<String>();
   final selectedWilaya = Rxn<String>();
   final useLocation = false.obs;
   final searchQuery = ''.obs;
   final sortBy = 'distance'.obs;
 
-  // Pagination
-  final currentPage = 1.obs;
-  final hasMorePages = true.obs;
-  final pageSize = 10;
+  // ─── View mode ───────────────────────────────────────────────
+  /// 'all' | 'top_rated' | 'by_specialty' | 'by_wilaya' | 'search'
+  final viewMode = 'all'.obs;
 
-  // Wilaya list for Algeria
+  // ─── Debounce ────────────────────────────────────────────────
+  Timer? _searchDebounce;
+
+  // ─── Wilayas ─────────────────────────────────────────────────
   final List<String> algerianWilayas = [
     'Adrar',
     'Chlef',
@@ -86,22 +92,60 @@ class DoctorListController extends GetxController {
     'Naâma',
     'Aïn Témouchent',
     'Ghardaïa',
-    'Relizane'
+    'Relizane',
   ];
+
+  // ─── Pagination ──────────────────────────────────────────────
+  final currentPage = 1.obs;
+  final hasMorePages = true.obs;
+  final pageSize = 10;
 
   @override
   void onInit() {
     super.onInit();
     loadSpecialties();
-    searchDoctors();
+    loadAllDoctors(); // getAllDoctors wired here
+    loadTopRatedDoctors(); // getTopRatedDoctors wired here
     _loadSavedFilters();
   }
 
-  Future<void> _loadSavedFilters() async {
-    final savedWilaya = await storageService.getString(_lastWilayaKey);
-    if (savedWilaya != null && savedWilaya.isNotEmpty) {
-      selectedWilaya.value = savedWilaya;
-      searchDoctors();
+  @override
+  void onClose() {
+    _searchDebounce?.cancel();
+    super.onClose();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // LOADERS
+  // ═══════════════════════════════════════════════════════════════
+
+  /// getAllDoctors — default view
+  Future<void> loadAllDoctors() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      viewMode.value = 'all';
+
+      final results = await doctorRepository.getAllDoctors();
+      doctors.value = results;
+      _applyFilters();
+    } catch (e) {
+      errorMessage.value = 'Erreur lors du chargement: $e';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// getTopRatedDoctors — horizontal strip at top
+  Future<void> loadTopRatedDoctors() async {
+    try {
+      isTopRatedLoading.value = true;
+      final results = await doctorRepository.getTopRatedDoctors(limit: 6);
+      topRatedDoctors.value = results;
+    } catch (e) {
+      print('Top rated load error: $e');
+    } finally {
+      isTopRatedLoading.value = false;
     }
   }
 
@@ -114,7 +158,126 @@ class DoctorListController extends GetxController {
     }
   }
 
-  /// ✅ CORRIGÉ: Utilise directement String sans conversion
+  Future<void> _loadSavedFilters() async {
+    final savedWilaya = await storageService.getString(_lastWilayaKey);
+    if (savedWilaya != null && savedWilaya.isNotEmpty) {
+      selectedWilaya.value = savedWilaya;
+      await filterByWilaya(savedWilaya);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SEARCH  — backend searchByName with 500ms debounce
+  // ═══════════════════════════════════════════════════════════════
+
+  void searchDoctorsByName(String query) {
+    searchQuery.value = query.trim();
+
+    _searchDebounce?.cancel();
+
+    if (query.trim().isEmpty) {
+      // Back to full list
+      _applyFilters();
+      viewMode.value = 'all';
+      return;
+    }
+
+    if (query.trim().length < 2) {
+      _applyClientSideSearch(query.trim());
+      return;
+    }
+
+    // Debounced backend call — searchByName
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () async {
+      try {
+        isNameSearchLoading.value = true;
+        viewMode.value = 'search';
+
+        final results = await doctorRepository.searchByName(query.trim());
+        doctors.value = results;
+        filteredDoctors.value = results;
+      } catch (e) {
+        // Fallback to client-side
+        _applyClientSideSearch(query.trim());
+      } finally {
+        isNameSearchLoading.value = false;
+      }
+    });
+  }
+
+  void _applyClientSideSearch(String query) {
+    final lower = query.toLowerCase();
+    filteredDoctors.value = doctors.where((d) {
+      return d.doctorName.toLowerCase().contains(lower) ||
+          (d.specialty?.nameFr.toLowerCase().contains(lower) ?? false) ||
+          d.clinicName.toLowerCase().contains(lower);
+    }).toList();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // FILTERS
+  // ═══════════════════════════════════════════════════════════════
+
+  /// getDoctorsBySpecialty — called when user picks a specialty
+  Future<void> filterBySpecialty(String? specialtyId) async {
+    selectedSpecialtyId.value = specialtyId;
+    searchQuery.value = '';
+
+    if (specialtyId == null) {
+      viewMode.value = 'all';
+      await loadAllDoctors();
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      viewMode.value = 'by_specialty';
+
+      // getDoctorsBySpecialty wired here
+      final results = await doctorRepository.getDoctorsBySpecialty(specialtyId);
+      doctors.value = results;
+      filteredDoctors.value = results;
+      _applySorting();
+    } catch (e) {
+      errorMessage.value = 'Erreur lors du filtrage: $e';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// getDoctorsByWilaya — called when user picks a wilaya
+  Future<void> filterByWilaya(String? wilaya) async {
+    selectedWilaya.value = wilaya;
+    searchQuery.value = '';
+
+    if (wilaya == null || wilaya.isEmpty) {
+      storageService.remove(_lastWilayaKey);
+      viewMode.value = 'all';
+      await loadAllDoctors();
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      viewMode.value = 'by_wilaya';
+
+      // getDoctorsByWilaya wired here
+      final results = await doctorRepository.getDoctorsByWilaya(wilaya);
+      doctors.value = results;
+      filteredDoctors.value = results;
+      _applySorting();
+
+      storageService.saveString(_lastWilayaKey, wilaya);
+    } catch (e) {
+      errorMessage.value = 'Erreur lors du filtrage par wilaya: $e';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// searchDoctors — used when location + specialty combined
   Future<void> searchDoctors({bool refresh = false}) async {
     if (refresh) {
       currentPage.value = 1;
@@ -127,10 +290,10 @@ class DoctorListController extends GetxController {
     try {
       isLoading.value = true;
       errorMessage.value = '';
+      viewMode.value = 'all';
 
-      // ✅ Passage direct de selectedSpecialtyId.value (String? UUID)
       final results = await doctorRepository.searchDoctors(
-        specialtyId: selectedSpecialtyId.value, // ✅ String? direct
+        specialtyId: selectedSpecialtyId.value,
         wilaya: selectedWilaya.value,
         useLocation: useLocation.value,
       );
@@ -138,26 +301,10 @@ class DoctorListController extends GetxController {
       doctors.value = results;
       _applyFilters();
     } catch (e) {
-      errorMessage.value = 'Erreur lors du chargement des médecins: $e';
+      errorMessage.value = 'Erreur lors du chargement: $e';
     } finally {
       isLoading.value = false;
     }
-  }
-
-  /// ✅ CORRIGÉ: Accepte String ID
-  void filterBySpecialty(String? specialtyId) {
-    selectedSpecialtyId.value = specialtyId;
-    searchDoctors(refresh: true);
-  }
-
-  void filterByWilaya(String? wilaya) {
-    selectedWilaya.value = wilaya;
-    if (wilaya != null && wilaya.isNotEmpty) {
-      storageService.saveString(_lastWilayaKey, wilaya);
-    } else {
-      storageService.remove(_lastWilayaKey);
-    }
-    searchDoctors(refresh: true);
   }
 
   void toggleNearbyFilter() {
@@ -175,7 +322,7 @@ class DoctorListController extends GetxController {
       useLocation.value = false;
       Get.snackbar(
         'Permission requise',
-        'Veuillez activer la localisation pour utiliser le filtre de proximité',
+        'Veuillez activer la localisation',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -185,19 +332,15 @@ class DoctorListController extends GetxController {
     }
   }
 
-  void searchDoctorsByName(String query) {
-    searchQuery.value = query.toLowerCase().trim();
-    _applyFilters();
-  }
-
   void clearFilters() {
     selectedSpecialtyId.value = null;
     selectedWilaya.value = null;
     useLocation.value = false;
     searchQuery.value = '';
     sortBy.value = 'distance';
+    viewMode.value = 'all';
     storageService.remove(_lastWilayaKey);
-    searchDoctors(refresh: true);
+    loadAllDoctors();
   }
 
   void changeSortBy(String sortOption) {
@@ -209,10 +352,11 @@ class DoctorListController extends GetxController {
     var results = List<DoctorModel>.from(doctors);
 
     if (searchQuery.value.isNotEmpty) {
-      results = results.where((doctor) {
-        return doctor.doctorName.toLowerCase().contains(searchQuery.value) ||
-            doctor.specialty?.nameFr.toLowerCase().contains(searchQuery.value) == true ||
-            doctor.clinicName.toLowerCase().contains(searchQuery.value);
+      final lower = searchQuery.value.toLowerCase();
+      results = results.where((d) {
+        return d.doctorName.toLowerCase().contains(lower) ||
+            (d.specialty?.nameFr.toLowerCase().contains(lower) ?? false) ||
+            d.clinicName.toLowerCase().contains(lower);
       }).toList();
     }
 
@@ -225,16 +369,13 @@ class DoctorListController extends GetxController {
 
     switch (sortBy.value) {
       case 'rating':
-        results = doctorRepository.sortByRating(results);
-        filteredDoctors.value = results;
+        filteredDoctors.value = doctorRepository.sortByRating(results);
         break;
       case 'fee':
-        results = doctorRepository.sortByFee(results);
-        filteredDoctors.value = results;
+        filteredDoctors.value = doctorRepository.sortByFee(results);
         break;
       case 'experience':
-        results = doctorRepository.sortByExperience(results);
-        filteredDoctors.value = results;
+        filteredDoctors.value = doctorRepository.sortByExperience(results);
         break;
       case 'distance':
       default:
@@ -245,40 +386,63 @@ class DoctorListController extends GetxController {
         } else {
           filteredDoctors.value = results;
         }
-        break;
     }
   }
 
-  /// ✅ CORRIGÉ: String ID
+  // ═══════════════════════════════════════════════════════════════
+  // NAVIGATION
+  // ═══════════════════════════════════════════════════════════════
+
   void goToDoctorDetail(String doctorId) {
     Get.toNamed('${AppRoutes.DOCTOR_DETAIL}/$doctorId');
   }
 
-  /// ✅ CORRIGÉ: String ID
+  // ═══════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════════════════════
+
   String getSpecialtyName(String? specialtyId) {
     if (specialtyId == null) return 'Toutes spécialités';
-    final specialty = specialties.firstWhereOrNull((s) => s.id == specialtyId);
-    return specialty?.nameFr ?? 'Spécialité';
+    final s = specialties.firstWhereOrNull((s) => s.id == specialtyId);
+    return s?.nameFr ?? 'Spécialité';
   }
 
   String getFilterSummary() {
-    List<String> parts = [];
+    final parts = <String>[];
     if (selectedSpecialtyId.value != null) {
       parts.add(getSpecialtyName(selectedSpecialtyId.value));
     }
     if (selectedWilaya.value != null && selectedWilaya.value!.isNotEmpty) {
       parts.add(selectedWilaya.value!);
     }
-    if (useLocation.value) {
-      parts.add('À proximité');
-    }
-    if (searchQuery.value.isNotEmpty) {
-      parts.add('"${searchQuery.value}"');
-    }
+    if (useLocation.value) parts.add('À proximité');
+    if (searchQuery.value.isNotEmpty) parts.add('"${searchQuery.value}"');
     return parts.isEmpty ? 'Tous les médecins' : parts.join(' • ');
   }
 
+  String get viewModeLabel {
+    switch (viewMode.value) {
+      case 'top_rated':
+        return 'Mieux notés';
+      case 'by_specialty':
+        return getSpecialtyName(selectedSpecialtyId.value);
+      case 'by_wilaya':
+        return selectedWilaya.value ?? '';
+      case 'search':
+        return 'Résultats: "${searchQuery.value}"';
+      default:
+        return 'Tous les médecins';
+    }
+  }
+
+  bool get hasActiveFilters =>
+      selectedSpecialtyId.value != null ||
+      (selectedWilaya.value != null && selectedWilaya.value!.isNotEmpty) ||
+      useLocation.value ||
+      searchQuery.value.isNotEmpty;
+
   Future<void> refreshData() async {
-    await searchDoctors(refresh: true);
+    await loadAllDoctors();
+    await loadTopRatedDoctors();
   }
 }

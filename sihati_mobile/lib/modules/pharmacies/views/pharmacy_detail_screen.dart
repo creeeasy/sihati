@@ -5,6 +5,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/sihati_mapbox.dart';
+import '../../../core/widgets/favorite_button.dart';
 import '../controllers/pharmacy_detail_controller.dart';
 
 class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
@@ -28,16 +29,16 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
 
         final pharmacy = controller.pharmacy.value;
         if (pharmacy == null) {
-          return const ErrorDisplayWidget(
-            message: 'Pharmacie non trouvée',
-          );
+          return const ErrorDisplayWidget(message: 'Pharmacie non trouvée');
         }
+
+        final topPadding = MediaQuery.of(context).padding.top + 8;
 
         return Stack(
           children: [
+            // ── Map (top half) + Details sheet (bottom half) ──
             Column(
               children: [
-                // Big Map
                 Expanded(
                   flex: 5,
                   child: SihatiMapbox(
@@ -48,7 +49,6 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                     zoom: 15,
                   ),
                 ),
-                // Details Sheet
                 Expanded(
                   flex: 5,
                   child: _buildDetailsSheet(pharmacy),
@@ -56,20 +56,30 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               ],
             ),
 
-            // Back Button
+            // ── Back button — always top-left ──
             Positioned(
-              top: MediaQuery.of(context).padding.top + 8,
+              top: topPadding,
               left: 8,
               child: _buildBackButton(),
             ),
 
-            // De Garde Badge
+            // ── De Garde badge — top-right, shifted left when present ──
             if (pharmacy.isOnDutyTonight)
               Positioned(
-                top: MediaQuery.of(context).padding.top + 8,
-                right: 8,
+                top: topPadding,
+                right: 56, // leave room for favorite button
                 child: _buildOnDutyBadge(),
               ),
+
+            // ── Favorite button — always top-right:8 ──
+            // FIX: was rendered twice (once as SizedBox + once real) with
+            // confusing left:null/right:null no-op logic. Now always right:8,
+            // the badge shifts left independently when needed.
+            Positioned(
+              top: topPadding,
+              right: 8,
+              child: _buildFloatingFavorite(pharmacy),
+            ),
           ],
         );
       }),
@@ -77,8 +87,25 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // BACK BUTTON
+  // OVERLAY BUTTONS
   // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildFloatingFavorite(pharmacy) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: PharmacyFavoriteButton(pharmacy: pharmacy, size: 22),
+    );
+  }
 
   Widget _buildBackButton() {
     return Container(
@@ -100,10 +127,6 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // DE GARDE BADGE
-  // ═══════════════════════════════════════════════════════════════
-
   Widget _buildOnDutyBadge() {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -123,17 +146,13 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.nightlight_round,
-            size: 18,
-            color: Colors.white,
-          ),
+        children: const [
+          Icon(Icons.nightlight_round, size: 16, color: Colors.white),
           SizedBox(width: 6),
           Text(
             'DE GARDE',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: Colors.white,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
@@ -152,7 +171,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
         padding: EdgeInsets.all(AppSpacing.lg),
@@ -173,12 +192,12 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
 
             SizedBox(height: AppSpacing.lg),
 
-            // Header with icon
+            // ── Name + address header ──
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: pharmacy.isOnDutyTonight
                         ? AppColors.primary
@@ -200,13 +219,13 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                     children: [
                       Text(
                         pharmacy.pharmacyName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       _buildInfoChip(
                         icon: Icons.location_on_rounded,
                         text: pharmacy.fullAddress,
@@ -219,7 +238,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               ],
             ),
 
-            // Distance badge
+            // ── Distance badge ──
             if (pharmacy.distance != null) ...[
               SizedBox(height: AppSpacing.md),
               Container(
@@ -230,19 +249,14 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                 decoration: BoxDecoration(
                   color: AppColors.primarySoft,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.near_me_rounded,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
-                    SizedBox(width: 6),
+                    Icon(Icons.near_me_rounded,
+                        size: 16, color: AppColors.primary),
+                    const SizedBox(width: 6),
                     Text(
                       'À ${pharmacy.formattedDistance}',
                       style: TextStyle(
@@ -258,7 +272,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
 
             SizedBox(height: AppSpacing.xl),
 
-            // Action Buttons
+            // ── Action buttons ──
             Row(
               children: [
                 Expanded(
@@ -275,7 +289,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                     child: _buildActionButton(
                       icon: Icons.chat_rounded,
                       label: 'WhatsApp',
-                      color: Color(0xFF25D366),
+                      color: const Color(0xFF25D366),
                       onPressed: controller.openWhatsApp,
                     ),
                   ),
@@ -293,60 +307,18 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               onPressed: controller.getDirections,
             ),
 
-            // Opening Hours Section
+            // ── Opening hours ──
             if (controller.openingHoursList.isNotEmpty) ...[
               SizedBox(height: AppSpacing.xl),
               _buildSectionCard(
                 icon: Icons.access_time_rounded,
                 title: 'Horaires d\'ouverture',
                 iconColor: AppColors.primary,
-                child: Column(
-                  children: controller.openingHoursList.map((entry) {
-                    final isClosed = entry.value == 'Fermé';
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            entry.key,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isClosed
-                                  ? AppColors.errorLight
-                                  : AppColors.successLight,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              entry.value,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isClosed
-                                    ? AppColors.error
-                                    : AppColors.success,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
+                child: _buildOpeningHoursTable(),
               ),
             ],
 
-            // Contact Section
+            // ── Contact ──
             SizedBox(height: AppSpacing.md),
             _buildSectionCard(
               icon: Icons.phone_rounded,
@@ -366,7 +338,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                       icon: Icons.chat_rounded,
                       label: 'WhatsApp',
                       value: pharmacy.whatsappNumber!,
-                      color: Color(0xFF25D366),
+                      color: const Color(0xFF25D366),
                     ),
                   ],
                 ],
@@ -377,6 +349,92 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           ],
         ),
       ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // OPENING HOURS TABLE
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildOpeningHoursTable() {
+    final now = DateTime.now();
+    final todayIndex = now.weekday - 1; // 0 = Monday
+    final frenchDays = [
+      'Lundi',
+      'Mardi',
+      'Mercredi',
+      'Jeudi',
+      'Vendredi',
+      'Samedi',
+      'Dimanche'
+    ];
+    final todayLabel = frenchDays[todayIndex];
+
+    return Column(
+      children: controller.openingHoursList.map((entry) {
+        final isClosed = entry.value == 'Fermé';
+        final isToday = entry.key == todayLabel;
+
+        return Container(
+          margin: EdgeInsets.only(bottom: AppSpacing.sm),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm + 4,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: isToday ? AppColors.primarySoft : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: isToday
+                ? Border.all(color: AppColors.primary.withOpacity(0.2))
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  if (isToday)
+                    Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  Text(
+                    entry.key,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                      color:
+                          isToday ? AppColors.primary : AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color:
+                      isClosed ? AppColors.errorLight : AppColors.successLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  entry.value,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isClosed ? AppColors.error : AppColors.success,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -394,14 +452,14 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: EdgeInsets.all(4),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: iconColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Icon(icon, size: 14, color: iconColor),
         ),
-        SizedBox(width: 6),
+        const SizedBox(width: 6),
         Expanded(
           child: Text(
             text,
@@ -431,7 +489,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
             color: isOutlined ? Colors.white : color,
             borderRadius: BorderRadius.circular(14),
@@ -445,19 +503,15 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                     BoxShadow(
                       color: color.withOpacity(0.3),
                       blurRadius: 8,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: isOutlined ? color : Colors.white,
-                size: 20,
-              ),
-              SizedBox(width: 8),
+              Icon(icon, color: isOutlined ? color : Colors.white, size: 20),
+              const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
@@ -489,7 +543,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -499,7 +553,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: iconColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
@@ -509,7 +563,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               SizedBox(width: AppSpacing.sm + 4),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -533,7 +587,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
@@ -545,17 +599,13 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              SizedBox(height: 2),
+              Text(label,
+                  style:
+                      TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              const SizedBox(height: 2),
               Text(
                 value,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,

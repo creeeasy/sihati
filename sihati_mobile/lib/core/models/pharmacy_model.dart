@@ -37,13 +37,13 @@ class PharmacyModel {
 
   factory PharmacyModel.fromJson(Map<String, dynamic> json) {
     return PharmacyModel(
-      id: json['id'].toString(), // ✅ Convert to String
+      id: json['id'].toString(),
       pharmacyName: json['pharmacyName'] ?? json['pharmacy_name'] ?? '',
       address: json['address'] as String,
       wilaya: json['wilaya'] as String,
       commune: json['commune'] as String?,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
+      latitude: _toDouble(json['latitude']),
+      longitude: _toDouble(json['longitude']),
       phone: json['phone'] as String,
       whatsappNumber: json['whatsappNumber'] ?? json['whatsapp_number'],
       openingHours: json['openingHours'] ?? json['opening_hours'],
@@ -59,10 +59,16 @@ class PharmacyModel {
           : json['updated_at'] != null
               ? DateTime.parse(json['updated_at'] as String)
               : null,
-      distance: json['distance'] != null
-          ? (json['distance'] as num).toDouble()
-          : null,
+      distance: json['distance'] != null ? _toDouble(json['distance']) : null,
     );
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   Map<String, dynamic> toJson() {

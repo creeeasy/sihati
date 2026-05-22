@@ -42,12 +42,11 @@ class PharmacyProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
-
-        return pharmaciesJson
-            .map((json) => PharmacyModel.fromJson(json))
+        final List<PharmacyModel> list = (response.data['data']
+                as List<dynamic>)
+            .map((json) => PharmacyModel.fromJson(json as Map<String, dynamic>))
             .toList();
+        return list;
       }
       throw Exception('Failed to load pharmacies');
     } on DioException catch (e) {
@@ -65,12 +64,11 @@ class PharmacyProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
-
-        return pharmaciesJson
-            .map((json) => PharmacyModel.fromJson(json))
+        final List<PharmacyModel> list = (response.data['data']
+                as List<dynamic>)
+            .map((json) => PharmacyModel.fromJson(json as Map<String, dynamic>))
             .toList();
+        return list;
       }
       return [];
     } on DioException catch (e) {
@@ -95,9 +93,8 @@ class PharmacyProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final pharmacyJson = data['pharmacy'] ?? data;
-        return PharmacyModel.fromJson(pharmacyJson);
+        final data = response.data['data'] as Map<String, dynamic>;
+        return PharmacyModel.fromJson(data);
       }
       throw Exception('Pharmacy not found');
     } on DioException catch (e) {
@@ -129,12 +126,11 @@ class PharmacyProvider {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
-
-        return pharmaciesJson
-            .map((json) => PharmacyModel.fromJson(json))
+        final List<PharmacyModel> list = (response.data['data']
+                as List<dynamic>)
+            .map((json) => PharmacyModel.fromJson(json as Map<String, dynamic>))
             .toList();
+        return list;
       }
       return [];
     } on DioException catch (e) {
@@ -155,7 +151,6 @@ class PharmacyProvider {
   }) async {
     try {
       final queryParams = <String, dynamic>{};
-
       if (wilaya != null && wilaya.isNotEmpty) queryParams['wilaya'] = wilaya;
       if (latitude != null) queryParams['lat'] = latitude;
       if (longitude != null) queryParams['lng'] = longitude;
@@ -165,14 +160,12 @@ class PharmacyProvider {
         ApiConstants.DUTY_PHARMACIES,
         queryParameters: queryParams,
       );
-
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
-
-        return pharmaciesJson
-            .map((json) => PharmacyModel.fromJson(json))
+        final List<PharmacyModel> list = (response.data['data']
+                as List<dynamic>)
+            .map((json) => PharmacyModel.fromJson(json as Map<String, dynamic>))
             .toList();
+        return list;
       }
       return [];
     } on DioException catch (e) {
