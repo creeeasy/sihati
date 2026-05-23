@@ -1,5 +1,5 @@
+// lib/modules/medical_record/views/medical_record_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../controllers/medical_record_controller.dart';
@@ -16,24 +16,28 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildWaveHeader(),
-            _buildTabs(),
-            Expanded(
-              child: Obx(() => IndexedStack(
-                    index: controller.tabIndex.value,
-                    children: [
-                      const BilanTab(),
-                      OrdonnancesTabContent(),
-                      HistoriqueMedicamentsTabContent(),
-                      const ConsultationsTab(),
-                      const DocumentsTab(),
-                    ],
-                  )),
-            ),
-          ],
+      body: DefaultTabController(
+        length: 5,
+        initialIndex: controller.tabIndex.value,
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildWaveHeader(),
+              _buildTabs(),
+              Expanded(
+                child: Obx(() => IndexedStack(
+                      index: controller.tabIndex.value,
+                      children: const [
+                        BilanTab(),
+                        OrdonnancesTabContent(),
+                        HistoriqueMedicamentsTabContent(),
+                        ConsultationsTab(),
+                        DocumentsTab(),
+                      ],
+                    )),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -44,14 +48,10 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
       height: 220,
       child: Stack(
         children: [
-          // Gradient Background
           Container(
-            decoration: const BoxDecoration(
-              gradient: AppColors.primaryGradient,
-            ),
+            decoration:
+                const BoxDecoration(gradient: AppColors.primaryGradient),
           ),
-
-          // Decorative circles
           Positioned(
             top: -30,
             right: -30,
@@ -64,7 +64,6 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
               ),
             ),
           ),
-
           Positioned(
             top: 100,
             left: -20,
@@ -77,7 +76,6 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
               ),
             ),
           ),
-
           Positioned(
             top: 140,
             right: 80,
@@ -90,8 +88,6 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
               ),
             ),
           ),
-
-          // Wave
           Positioned(
             bottom: -1,
             left: 0,
@@ -101,8 +97,6 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
               painter: _WavePainter(color: AppColors.background),
             ),
           ),
-
-          // Content
           Positioned(
             bottom: 36,
             left: 24,
@@ -110,7 +104,6 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Back button
                 GestureDetector(
                   onTap: controller.goBack,
                   child: Container(
@@ -119,52 +112,34 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                    child: const Icon(Icons.arrow_back_rounded,
+                        color: Colors.white, size: 20),
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Icon
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
-                    Icons.medical_information_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
+                  child: const Icon(Icons.medical_information_rounded,
+                      color: Colors.white, size: 32),
                 ),
-
                 const SizedBox(height: 6),
-
-                // Title
                 const Text(
                   'Mon Dossier Médical',
                   style: TextStyle(
-                    fontFamily: 'Poppins',
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     letterSpacing: -0.5,
                   ),
                 ),
-
                 const SizedBox(height: 6),
-
-                // Subtitle
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 5,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(20),
@@ -172,20 +147,15 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.verified_user_rounded,
-                        size: 14,
-                        color: Colors.white,
-                      ),
+                      Icon(Icons.verified_user_rounded,
+                          size: 14, color: Colors.white),
                       SizedBox(width: 6),
                       Text(
                         'Données sécurisées et confidentielles',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
                       ),
                     ],
                   ),
@@ -202,70 +172,38 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-            width: 1,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: TabBar(
-        controller: TabController(
-          length: 5,
-          vsync: _TabBarVSync(),
-          initialIndex: controller.tabIndex.value,
-        ),
         isScrollable: true,
         labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.textSecondary,
-        labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        unselectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
         indicatorColor: AppColors.primary,
         indicatorWeight: 3,
         onTap: controller.changeTab,
         tabs: const [
+          Tab(icon: Icon(Icons.dashboard_outlined, size: 20), text: 'Bilan'),
           Tab(
-            icon: Icon(Icons.dashboard_outlined, size: 20),
-            text: 'Bilan',
-          ),
+              icon: Icon(Icons.description_outlined, size: 20),
+              text: 'Ordonnances'),
           Tab(
-            icon: Icon(Icons.description_outlined, size: 20),
-            text: 'Ordonnances',
-          ),
+              icon: Icon(Icons.medication_outlined, size: 20),
+              text: 'Médicaments'),
           Tab(
-            icon: Icon(Icons.medication_outlined, size: 20),
-            text: 'Médicaments',
-          ),
-          Tab(
-            icon: Icon(Icons.calendar_today_outlined, size: 20),
-            text: 'Consultations',
-          ),
-          Tab(
-            icon: Icon(Icons.folder_outlined, size: 20),
-            text: 'Documents',
-          ),
+              icon: Icon(Icons.calendar_today_outlined, size: 20),
+              text: 'Consultations'),
+          Tab(icon: Icon(Icons.folder_outlined, size: 20), text: 'Documents'),
         ],
       ),
     );
   }
 }
 
-class _TabBarVSync extends TickerProvider {
-  @override
-  Ticker createTicker(TickerCallback onTick) => Ticker(onTick);
-}
-
 class _WavePainter extends CustomPainter {
   final Color color;
-
   _WavePainter({required this.color});
 
   @override
@@ -273,25 +211,15 @@ class _WavePainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-
     final path = Path()
       ..moveTo(0, size.height * 0.5)
+      ..quadraticBezierTo(size.width * 0.25, size.height * 0.2,
+          size.width * 0.5, size.height * 0.5)
       ..quadraticBezierTo(
-        size.width * 0.25,
-        size.height * 0.2,
-        size.width * 0.5,
-        size.height * 0.5,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.75,
-        size.height * 0.8,
-        size.width,
-        size.height * 0.5,
-      )
+          size.width * 0.75, size.height * 0.8, size.width, size.height * 0.5)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-
     canvas.drawPath(path, paint);
   }
 

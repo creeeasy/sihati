@@ -1,11 +1,12 @@
 // lib/modules/medications/bindings/medication_detail_binding.dart
 import 'package:get/get.dart';
-import 'package:sihati_mobile/core/services/ai_service.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../data/providers/medication_provider.dart';
 import '../../../data/repositories/medication_repository.dart';
+import '../../../data/providers/ai_provider.dart';
+import '../../../data/repositories/ai_repository.dart';
 import '../controllers/medication_detail_controller.dart';
 
 class MedicationDetailBinding extends Bindings {
@@ -21,14 +22,18 @@ class MedicationDetailBinding extends Bindings {
     if (!Get.isRegistered<StorageService>()) {
       Get.put(StorageService(), permanent: true);
     }
-    if (!Get.isRegistered<AIService>()) {
-      Get.put(AIService(), permanent: true);
-    }
 
     // Provider
     if (!Get.isRegistered<MedicationProvider>()) {
       Get.put(
         MedicationProvider(Get.find<ApiService>()),
+        permanent: true,
+      );
+    }
+    
+    if (!Get.isRegistered<AiProvider>()) {
+      Get.put(
+        AiProvider(Get.find<ApiService>()),
         permanent: true,
       );
     }
@@ -43,12 +48,20 @@ class MedicationDetailBinding extends Bindings {
         permanent: true,
       );
     }
+    
+    if (!Get.isRegistered<AiRepository>()) {
+      Get.lazyPut(
+        () => AiRepository(
+          aiProvider: Get.find<AiProvider>(),
+        ),
+        fenix: true,
+      );
+    }
 
-    // ✅ CORRIGÉ: Injection des deux dépendances
     Get.lazyPut<MedicationDetailController>(
       () => MedicationDetailController(
         medicationRepository: Get.find<MedicationRepository>(),
-        aiService: Get.find<AIService>(),
+        aiRepository: Get.find<AiRepository>(),
       ),
     );
   }

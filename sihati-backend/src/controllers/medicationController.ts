@@ -8,6 +8,17 @@ const getId = (param: string | string[] | undefined): string => {
   return '';
 };
 
+// 📌 GET /api/medications
+export const getAllMedications = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const medications = await medicationService.getAllMedications(page, limit);
+    return res.json({ success: true, data: medications });
+  } catch (error) {
+    return next(error);
+  }
+};
 // 📌 GET /api/medications/search
 export const searchMedications = async (req: Request, res: Response, next: NextFunction) => {
   try {

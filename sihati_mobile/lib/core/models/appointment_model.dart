@@ -1,14 +1,4 @@
 // lib/core/models/appointment_model.dart
-//
-// Matches backend: Appointment.ts (underscored: true)
-// Fields: id, patientId→patient_id, doctorId→doctor_id, officeId→office_id,
-//   appointmentDate→appointment_date, appointmentTime→appointment_time,
-//   status (ENUM: pending|confirmed|cancelled|completed|no_show),
-//   reason, notes, cancelledAt→cancelled_at, cancelledBy→cancelled_by,
-//   cancellationReason→cancellation_reason,
-//   createdAt→created_at, updatedAt→updated_at
-//
-// Booking body (POST /appointments) expects: appointmentDate, appointmentTime
 import 'doctor_model.dart';
 
 class AppointmentModel {
@@ -51,8 +41,7 @@ class AppointmentModel {
       id: json['id'].toString(),
       patientId: (json['patientId'] ?? json['patient_id'] ?? '').toString(),
       doctorId: (json['doctorId'] ?? json['doctor_id'] ?? '').toString(),
-      officeId:
-          json['officeId']?.toString() ?? json['office_id']?.toString(),
+      officeId: json['officeId']?.toString() ?? json['office_id']?.toString(),
       appointmentDate: DateTime.parse(
           (json['appointmentDate'] ?? json['appointment_date']).toString()),
       appointmentTime:
@@ -80,9 +69,19 @@ class AppointmentModel {
               ? DateTime.tryParse(json['updated_at'] as String)
               : null,
       doctor: json['doctor'] != null
-          ? DoctorModel.fromJson(json['doctor'] as Map<String, dynamic>)
+          ? _parseDoctorFromResponse(json['doctor'] as Map<String, dynamic>)
           : null,
     );
+  }
+
+  static DoctorModel? _parseDoctorFromResponse(Map<String, dynamic> data) {
+    if (data.containsKey('doctorName')) {
+      return DoctorModel.fromJson(data);
+    }
+    if (data.containsKey('doctor') && data['doctor'] != null) {
+      return DoctorModel.fromJson(data['doctor'] as Map<String, dynamic>);
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -103,8 +102,18 @@ class AppointmentModel {
 
   String get formattedDate {
     final months = [
-      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+      'Janvier',
+      'Février',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Août',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Décembre'
     ];
     return '${appointmentDate.day} ${months[appointmentDate.month - 1]} ${appointmentDate.year}';
   }
@@ -222,15 +231,15 @@ class AppointmentModel {
   static int getStatusColor(AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.pending:
-        return 0xFFFFA726; // Orange
+        return 0xFFFFA726;
       case AppointmentStatus.confirmed:
-        return 0xFF66BB6A; // Green
+        return 0xFF66BB6A;
       case AppointmentStatus.cancelled:
-        return 0xFFEF5350; // Red
+        return 0xFFEF5350;
       case AppointmentStatus.completed:
-        return 0xFF42A5F5; // Blue
+        return 0xFF42A5F5;
       case AppointmentStatus.noShow:
-        return 0xFF9E9E9E; // Grey
+        return 0xFF9E9E9E;
     }
   }
 
@@ -269,7 +278,7 @@ enum AppointmentStatus {
   confirmed,
   cancelled,
   completed,
-  noShow, // backend: 'no_show'
+  noShow,
 }
 
 extension AppointmentStatusExtension on AppointmentStatus {

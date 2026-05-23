@@ -2,16 +2,22 @@ import 'package:get/get.dart';
 import 'package:sihati_mobile/core/models/pharmacy_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../data/repositories/pharmacy_repository.dart';
+import '../../../data/repositories/favorite_repository.dart';
 
 class PharmacyDetailController extends GetxController {
   final PharmacyRepository pharmacyRepository;
+  final FavoriteRepository favoriteRepository;
 
-  PharmacyDetailController({required this.pharmacyRepository});
+  PharmacyDetailController({
+    required this.pharmacyRepository,
+    required this.favoriteRepository,
+  });
 
   // ── State ────────────────────────────────────────────────────
   final pharmacy = Rxn<PharmacyModel>();
   final isLoading = false.obs;
   final errorMessage = ''.obs;
+  final isFavorite = false.obs;
 
   // ── CRITICAL FIX: French display name → English API key ──────
   // The backend stores opening hours with English keys ('monday', 'tuesday'…)
@@ -34,6 +40,12 @@ class PharmacyDetailController extends GetxController {
   void onInit() {
     super.onInit();
     loadPharmacyDetails();
+    checkFavoriteStatus();
+  }
+
+  Future<void> checkFavoriteStatus() async {
+    if (pharmacyId.isEmpty) return;
+    isFavorite.value = await favoriteRepository.isPharmacyFavorite(pharmacyId);
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -67,6 +79,27 @@ class PharmacyDetailController extends GetxController {
   // ═══════════════════════════════════════════════════════════════
   // ACTIONS
   // ═══════════════════════════════════════════════════════════════
+
+  Future<void> toggleFavorite() async {
+    try {
+      final newStatus = await favoriteRepository.toggleFavoritePharmacy(pharmacyId);
+      isFavorite.value = newStatus;
+      
+      Get.snackbar(
+        newStatus ? 'Ajouté aux favoris' : 'Retiré des favoris',
+        newStatus
+            ? '${pharmacy.value?.pharmacyName} a été ajouté à vos favoris'
+            : '${pharmacy.value?.pharmacyName} a été retiré de vos favoris',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible de modifier les favoris',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 
   Future<void> callPharmacy() async {
     final phone = pharmacy.value?.phone;

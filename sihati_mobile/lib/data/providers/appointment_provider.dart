@@ -35,6 +35,7 @@ class AppointmentProvider {
         // Backend returns: { success: true, data: [...] }
         final List<dynamic> appointmentsJson =
             data is List ? data : (data['appointments'] ?? data);
+        print(appointmentsJson);
 
         return appointmentsJson
             .map((json) => AppointmentModel.fromJson(json))

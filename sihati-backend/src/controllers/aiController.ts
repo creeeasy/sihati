@@ -1,3 +1,4 @@
+// src/controllers/aiController.ts
 import { Request, Response, NextFunction } from 'express';
 import aiService from '../services/aiService';
 import { Conversation } from '../models';
@@ -5,9 +6,6 @@ import ResponseHandler from '../utils/responseHandler';
 import { ChatHistoryItem } from '../types';
 
 // ─── POST /api/ai/chat ────────────────────────────────────────
-// Body: { message, history?, location? }
-// history: [{ role: 'user'|'model', parts: [{ text }] }]
-// location: { lat, lng }
 export const chat = async (
   req: Request,
   res: Response,
@@ -21,7 +19,6 @@ export const chat = async (
       return;
     }
 
-    // Validate history if provided
     let chatHistory: ChatHistoryItem[] = Array.isArray(history)
       ? history
           .filter(
@@ -30,16 +27,13 @@ export const chat = async (
               Array.isArray(h.parts) &&
               h.parts[0]?.text
           )
-          .slice(-20) // hard cap: max 20 turns from client
+          .slice(-20)
       : [];
 
-    // Gemini requires history to start with a 'user' turn
-    // Drop leading 'model' entries (e.g. the welcome message)
     while (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
       chatHistory.shift();
     }
 
-    // Validate location if provided
     const userLocation =
       location?.lat && location?.lng
         ? { lat: Number(location.lat), lng: Number(location.lng) }
@@ -53,12 +47,6 @@ export const chat = async (
         userId: req.user.id,
         userMessage: message,
         aiResponse: result.reply,
-        context: {
-          urgency: result.urgency,
-          suggestedSpecialty: result.suggestedSpecialty,
-          isSymptomRelated: result.isSymptomRelated,
-          medicationCount: result.medicationSuggestions.length,
-        },
       });
     }
 
@@ -69,7 +57,6 @@ export const chat = async (
 };
 
 // ─── POST /api/ai/interaction ─────────────────────────────────
-// Body: { med1, med2 }
 export const checkInteraction = async (
   req: Request,
   res: Response,
@@ -95,7 +82,6 @@ export const checkInteraction = async (
 };
 
 // ─── POST /api/ai/ask-medication ──────────────────────────────
-// Body: { medicationName, question }
 export const askMedicationQuestion = async (
   req: Request,
   res: Response,
@@ -125,7 +111,6 @@ export const askMedicationQuestion = async (
 };
 
 // ─── POST /api/ai/medication-info ─────────────────────────────
-// Body: { medication }
 export const getMedicationInfo = async (
   req: Request,
   res: Response,
@@ -147,7 +132,6 @@ export const getMedicationInfo = async (
 };
 
 // ─── POST /api/ai/specialty ───────────────────────────────────
-// Body: { symptoms }
 export const suggestSpecialty = async (
   req: Request,
   res: Response,
@@ -169,7 +153,6 @@ export const suggestSpecialty = async (
 };
 
 // ─── GET /api/ai/history ──────────────────────────────────────
-// Returns last 30 conversations for the authenticated user
 export const getHistory = async (
   req: Request,
   res: Response,
@@ -185,7 +168,7 @@ export const getHistory = async (
       where: { userId: req.user.id },
       order: [['createdAt', 'DESC']],
       limit: 30,
-      attributes: ['id', 'userMessage', 'aiResponse', 'context', 'createdAt'],
+      attributes: ['id', 'userMessage', 'aiResponse', 'createdAt'],
     });
 
     ResponseHandler.success(res, { conversations }, 'Historique récupéré.');
@@ -195,7 +178,6 @@ export const getHistory = async (
 };
 
 // ─── GET /api/ai/conversation/:id ────────────────────────────
-// Fetch a single conversation by id to resume it
 export const getConversation = async (
   req: Request,
   res: Response,
@@ -209,8 +191,8 @@ export const getConversation = async (
 
     const { id } = req.params;
     const conversation = await Conversation.findOne({
-      where: { id: Number(id), userId: req.user.id },
-      attributes: ['id', 'userMessage', 'aiResponse', 'context', 'createdAt'],
+      where: { id, userId: req.user.id },
+      attributes: ['id', 'userMessage', 'aiResponse', 'createdAt'],
     });
 
     if (!conversation) {

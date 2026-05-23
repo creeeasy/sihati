@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/services/ai_service.dart';
+import '../../../../core/models/ai_models.dart';
+import '../../../../data/repositories/ai_repository.dart';
 import '../../../../app/routes/app_routes.dart';
 
 class ChatMessage {
@@ -18,8 +19,8 @@ class ChatMessage {
 }
 
 class AIAssistantController extends GetxController {
-  final AIService aiService;
-  AIAssistantController({required this.aiService});
+  final AiRepository aiRepository;
+  AIAssistantController({required this.aiRepository});
 
   final messages = <ChatMessage>[].obs;
   final isLoading = false.obs;
@@ -40,7 +41,7 @@ class AIAssistantController extends GetxController {
 
     if (args != null && args.containsKey('conversationId')) {
       _addWelcomeMessage();
-      _loadAndResume(args['conversationId'] as int);
+      _loadAndResume(args['conversationId'] as String);
     } else {
       _addWelcomeMessage();
     }
@@ -55,10 +56,10 @@ class AIAssistantController extends GetxController {
 
   // ─── Resume conversation by id ────────────────────────────
 
-  Future<void> _loadAndResume(int conversationId) async {
+  Future<void> _loadAndResume(String conversationId) async {
     isLoading.value = true;
 
-    final conv = await aiService.getConversation(conversationId);
+    final conv = await aiRepository.getConversation(conversationId);
     isLoading.value = false;
 
     if (conv == null) {
@@ -108,7 +109,11 @@ class AIAssistantController extends GetxController {
     isLoading.value = true;
 
     try {
-      final response = await aiService.sendQuery(text, List.from(_history));
+      final responseMap = await aiRepository.chat(
+        message: text,
+        history: _history.map((h) => h.toJson()).toList(),
+      );
+      final response = ChatResponse.fromJson(responseMap);
       _history.add(HistoryItem(role: 'model', text: response.reply));
       if (_history.length > 40) _history.removeRange(0, 2);
       messages.add(ChatMessage(

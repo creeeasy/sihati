@@ -3,6 +3,16 @@ import { Op } from 'sequelize';
 import { Medication, Pharmacy, PharmacyMedication } from '../models';
 
 class MedicationService {
+
+  // 📌 Récupérer tous les médicaments (paginated)
+async getAllMedications(page: number = 1, limit: number = 20) {
+  const offset = (page - 1) * limit;
+  return Medication.findAll({
+    limit,
+    offset,
+    order: [['name', 'ASC']],
+  });
+}
   // 📌 Rechercher des médicaments
   async searchMedications(query: string, category?: string, requiresPrescription?: boolean) {
     const where: any = {};

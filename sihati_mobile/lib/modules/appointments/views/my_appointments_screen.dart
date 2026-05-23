@@ -131,9 +131,6 @@ class MyAppointmentsScreen extends GetView<MyAppointmentsController> {
               onCancel: isUpcoming
                   ? () => controller.cancelAppointment(appointments[index])
                   : null,
-              onReschedule: isUpcoming
-                  ? () => controller.rescheduleAppointment(appointments[index])
-                  : null,
             ),
           );
         },

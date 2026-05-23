@@ -4,16 +4,28 @@ import 'package:get/get.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../data/repositories/patient_repository.dart';
+import '../../../data/repositories/appointment_repository.dart';
+import '../../../data/repositories/favorite_repository.dart';
 import '../../../core/services/storage_service.dart';
 
 class HomeController extends GetxController {
   final AuthRepository authRepository;
+  final PatientRepository patientRepository;
+  final AppointmentRepository appointmentRepository;
+  final FavoriteRepository favoriteRepository;
   final StorageService? storageService;
 
   HomeController({
     required this.authRepository,
+    required this.patientRepository,
+    required this.appointmentRepository,
+    required this.favoriteRepository,
     this.storageService,
   });
+
+  // State
+  final currentUserId = ''.obs;
 
   // State
   final userName = ''.obs;
@@ -89,6 +101,7 @@ class HomeController extends GetxController {
       final user = await authRepository.getCurrentUser();
 
       if (user != null) {
+        currentUserId.value = user.id;
         userName.value = user.fullName;
         userRole.value = user.role;
       }
@@ -111,13 +124,22 @@ class HomeController extends GetxController {
         return;
       }
 
-      // ✅ TODO: Appeler le vrai API pour les stats
-      upcomingAppointments.value = 2;
-
-      if (storageService != null) {
-        final favMeds = await storageService!.getFavoriteMedications();
-        favoritesCount.value = favMeds.length;
+      if (currentUserId.value.isEmpty) {
+        return;
       }
+
+      // 1. Get upcoming appointments count from AppointmentRepository
+      final counts = await appointmentRepository
+          .getAppointmentsCounts(currentUserId.value);
+      upcomingAppointments.value = counts['upcoming'] ?? 0;
+
+      // 2. Get favorite doctors + pharmacies from FavoriteRepository
+      final pharmacies = await favoriteRepository.getFavoritePharmacies();
+      final doctors = await favoriteRepository.getFavoriteDoctors();
+      favoritesCount.value = pharmacies.length + doctors.length;
+
+      // Note: If favorites module also handles medications in the future,
+      // we add them here. Currently they are local.
     } catch (e) {
       print('Error loading quick stats: $e');
     }
@@ -175,6 +197,13 @@ class HomeController extends GetxController {
   // ═══════════════════════════════════════════════════════════════
   // Navigation Methods
   // ═══════════════════════════════════════════════════════════════
+  void goToMedicalRecord() {
+    if (isGuestMode.value) {
+      authRepository.promptLoginForFeature('accéder à votre dossier médical');
+      return;
+    }
+    Get.toNamed(AppRoutes.MEDICAL_RECORD);
+  }
 
   void goToMedicationSearch() {
     Get.toNamed(AppRoutes.MEDICATION_SEARCH);
@@ -208,12 +237,8 @@ class HomeController extends GetxController {
     Get.toNamed(AppRoutes.FAVORITES);
   }
 
-  void goToMyMedications() {
-    Get.snackbar(
-      'Mes médicaments',
-      'Fonctionnalité à venir',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  void goToAllMedications() {
+    Get.toNamed(AppRoutes.MEDICATIONS_LIST);
   }
 
   void goToMyAppointments() {
@@ -222,14 +247,6 @@ class HomeController extends GetxController {
       return;
     }
     Get.toNamed(AppRoutes.MY_APPOINTMENTS);
-  }
-
-  void goToHistory() {
-    Get.snackbar(
-      'Historique',
-      'Fonctionnalité à venir',
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
 
   void logoutGuest() {

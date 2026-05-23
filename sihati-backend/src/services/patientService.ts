@@ -176,21 +176,30 @@ class PatientService {
   // STATISTIQUES
   // ============================================
   
-  async getStats(userId: string) {
-    const [prescriptionsCount, consultationsCount, documentsCount, allergiesCount] = await Promise.all([
-      Prescription.count({ where: { patientId: userId } }),
-      Consultation.count({ where: { patientId: userId } }),
-      MedicalDocument.count({ where: { patientId: userId } }),
-      PatientAllergy.count({ where: { patientId: userId } })
-    ]);
-    
-    return {
-      prescriptionsCount,
-      consultationsCount,
-      documentsCount,
-      allergiesCount
-    };
-  }
+async getStats(userId: string) {
+  const [prescriptionsCount, consultationsCount, documentsCount] = await Promise.all([
+    Prescription.count({ where: { patientId: userId } }),
+    Consultation.count({ where: { patientId: userId } }),
+    MedicalDocument.count({ where: { patientId: userId } }),
+  ]);
+
+  // Count medications from prescriptions
+  const medicationsCount = await PrescriptionMedication.count({
+    include: [{
+      model: Prescription,
+      as: 'prescription',
+      where: { patientId: userId },
+      required: true,
+    }],
+  });
+  
+  return {
+    prescriptionsCount,
+    medicationsCount,
+    consultationsCount,
+    documentsCount,
+  };
+}
 }
 
 export default new PatientService();

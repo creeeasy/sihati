@@ -47,7 +47,7 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> resultsJson = data['results'] ?? data;
+        final List<dynamic> resultsJson = data is List ? data : (data['results'] ?? data);
 
         return resultsJson
             .map((json) => MedicationSearchResult.fromJson(json))
@@ -118,7 +118,7 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> medicationsJson = data['medications'] ?? data;
+        final List<dynamic> medicationsJson = data is List ? data : (data['medications'] ?? data);
 
         return medicationsJson
             .map((json) => MedicationModel.fromJson(json))
@@ -142,7 +142,7 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> medicationsJson = data['medications'] ?? data;
+        final List<dynamic> medicationsJson = data is List ? data : (data['medications'] ?? data);
 
         return medicationsJson
             .map((json) => MedicationModel.fromJson(json))
@@ -179,7 +179,7 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
+        final List<dynamic> pharmaciesJson = data is List ? data : (data['pharmacies'] ?? data);
 
         return pharmaciesJson
             .map((json) => PharmacyWithStock.fromJson(json))

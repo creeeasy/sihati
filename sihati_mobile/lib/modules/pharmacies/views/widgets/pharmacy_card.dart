@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:sihati_mobile/core/models/pharmacy_model.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../core/widgets/favorite_button.dart';
+import '../../../../app/theme/app_spacing.dart';
 
 class PharmacyCard extends StatelessWidget {
   final PharmacyModel pharmacy;
@@ -171,7 +171,7 @@ class PharmacyCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    PharmacyFavoriteButton(pharmacy: pharmacy, size: 20),
+
                   ],
                 ),
 

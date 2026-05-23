@@ -136,12 +136,13 @@ async getDoctorById(id: string) {
   }
 
   // 📌 Créneaux disponibles
-  async getAvailableSlots(doctorId: string, date: Date, officeId?: string) {
-    const schedules = await DoctorSchedule.findAll({
-      where: { doctorId, officeId, isAvailable: true }
-    });
-    return this.generateTimeSlots(schedules, date);
-  }
+async getAvailableSlots(doctorId: string, date: Date, officeId?: string) {
+  const where: any = { doctorId, isAvailable: true };
+  if (officeId) where.officeId = officeId;
+  
+  const schedules = await DoctorSchedule.findAll({ where });
+  return this.generateTimeSlots(schedules, date);
+}
 
   private generateTimeSlots(schedules: DoctorSchedule[], date: Date): string[] {
     const slots: string[] = [];

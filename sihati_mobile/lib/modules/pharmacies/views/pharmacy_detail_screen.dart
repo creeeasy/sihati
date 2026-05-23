@@ -5,7 +5,6 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/sihati_mapbox.dart';
-import '../../../core/widgets/favorite_button.dart';
 import '../controllers/pharmacy_detail_controller.dart';
 
 class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
@@ -103,7 +102,20 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           ),
         ],
       ),
-      child: PharmacyFavoriteButton(pharmacy: pharmacy, size: 22),
+      child: Obx(() => IconButton(
+            icon: Icon(
+              controller.isFavorite.value
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color: controller.isFavorite.value
+                  ? AppColors.error
+                  : AppColors.textSecondary,
+              size: 22,
+            ),
+            onPressed: controller.toggleFavorite,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          )),
     );
   }
 

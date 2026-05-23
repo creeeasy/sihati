@@ -1,7 +1,10 @@
+// lib/modules/medications/views/medication_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/core/models/medication_model.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/routes/app_routes.dart';
 import '../controllers/medication_detail_controller.dart';
 
 class MedicationDetailScreen extends GetView<MedicationDetailController> {
@@ -13,7 +16,8 @@ class MedicationDetailScreen extends GetView<MedicationDetailController> {
       backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
-          return _LoadingState(medicationName: controller.medicationName);
+          return _LoadingState(
+              medicationName: controller.medication.value?.name ?? '');
         }
         if (controller.hasError.value || controller.medication.value == null) {
           return _ErrorState(onRetry: controller.retry);
@@ -23,10 +27,6 @@ class MedicationDetailScreen extends GetView<MedicationDetailController> {
     );
   }
 }
-
-// ═══════════════════════════════════════════════════════════════
-// LOADING STATE
-// ═══════════════════════════════════════════════════════════════
 
 class _LoadingState extends StatelessWidget {
   final String medicationName;
@@ -44,12 +44,9 @@ class _LoadingState extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          medicationName,
+          medicationName.isNotEmpty ? medicationName : 'Chargement...',
           style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -59,20 +56,14 @@ class _LoadingState extends StatelessWidget {
           children: [
             CircularProgressIndicator(color: AppColors.primary),
             SizedBox(height: 24),
-            Text(
-              'Chargement des informations...',
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
-            ),
+            Text('Chargement des informations...',
+                style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
           ],
         ),
       ),
     );
   }
 }
-
-// ═══════════════════════════════════════════════════════════════
-// ERROR STATE
-// ═══════════════════════════════════════════════════════════════
 
 class _ErrorState extends StatelessWidget {
   final VoidCallback onRetry;
@@ -102,29 +93,19 @@ class _ErrorState extends StatelessWidget {
                   color: AppColors.errorLight,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.error_outline_rounded,
-                  size: 64,
-                  color: AppColors.error,
-                ),
+                child: Icon(Icons.error_outline_rounded,
+                    size: 64, color: AppColors.error),
               ),
               SizedBox(height: AppSpacing.lg),
-              const Text(
-                'Impossible de charger',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
+              const Text('Impossible de charger',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary)),
               SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Vérifiez votre connexion',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              const Text('Vérifiez votre connexion',
+                  style:
+                      TextStyle(fontSize: 14, color: AppColors.textSecondary)),
               SizedBox(height: AppSpacing.xl),
               ElevatedButton.icon(
                 onPressed: onRetry,
@@ -134,12 +115,9 @@ class _ErrorState extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xl,
-                    vertical: AppSpacing.md,
-                  ),
+                      horizontal: AppSpacing.xl, vertical: AppSpacing.md),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
@@ -150,13 +128,8 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// MAIN CONTENT
-// ═══════════════════════════════════════════════════════════════
-
 class _Content extends StatelessWidget {
   final MedicationDetailController controller;
-
   const _Content({required this.controller});
 
   @override
@@ -181,9 +154,60 @@ class _Content extends StatelessWidget {
                   color: AppColors.primary,
                 ),
 
+              // Indications
+              if (medication.indications != null &&
+                  medication.indications!.isNotEmpty)
+                _Section(
+                  icon: Icons.healing_rounded,
+                  title: 'Indications',
+                  text: medication.indications!,
+                  color: AppColors.info,
+                ),
+
+              // Posology
+              if (medication.posology != null &&
+                  medication.posology!.isNotEmpty)
+                _Section(
+                  icon: Icons.schedule_rounded,
+                  title: 'Posologie',
+                  text: medication.posology!,
+                  color: AppColors.secondary,
+                ),
+
+              // Quick info chips (Form, Dosage, DCI, Manufacturer)
+              if (medication.form != null ||
+                  medication.dosage != null ||
+                  medication.dci != null ||
+                  medication.manufacturer != null)
+                _QuickInfoRow(medication: medication),
+
               // Prescription requirement
               _PrescriptionCard(
                   requiresPrescription: medication.requiresPrescription),
+
+              // Contraindications
+              if (medication.contraindications != null &&
+                  medication.contraindications!.isNotEmpty)
+                _Section(
+                  icon: Icons.warning_amber_rounded,
+                  title: 'Contre-indications',
+                  text: medication.contraindications!,
+                  color: AppColors.error,
+                ),
+
+              // Side Effects
+              if (medication.sideEffects != null &&
+                  medication.sideEffects!.isNotEmpty)
+                _Section(
+                  icon: Icons.report_problem_rounded,
+                  title: 'Effets secondaires',
+                  text: medication.sideEffects!,
+                  color: AppColors.warning,
+                ),
+
+              // Barcode
+              if (medication.barcode != null && medication.barcode!.isNotEmpty)
+                _BarcodeCard(barcode: medication.barcode!),
 
               // Drug Interaction Checker
               _DrugInteractionChecker(controller: controller),
@@ -206,13 +230,8 @@ class _Content extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// APP BAR
-// ═══════════════════════════════════════════════════════════════
-
 class _AppBar extends StatelessWidget {
   final MedicationDetailController controller;
-
   const _AppBar({required this.controller});
 
   @override
@@ -256,10 +275,8 @@ class _AppBar extends StatelessWidget {
         background: Stack(
           children: [
             Container(
-              decoration: const BoxDecoration(
-                gradient: AppColors.primaryGradient,
-              ),
-            ),
+                decoration:
+                    const BoxDecoration(gradient: AppColors.primaryGradient)),
             Positioned(
               bottom: -2,
               left: 0,
@@ -272,11 +289,7 @@ class _AppBar extends StatelessWidget {
             SafeArea(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                  AppSpacing.lg,
-                  AppSpacing.xl,
-                ),
+                    AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xl),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -286,11 +299,8 @@ class _AppBar extends StatelessWidget {
                         color: Colors.white.withOpacity(0.25),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        Icons.medication_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
+                      child: Icon(Icons.medication_rounded,
+                          color: Colors.white, size: 28),
                     ),
                     SizedBox(width: AppSpacing.md),
                     Expanded(
@@ -298,22 +308,16 @@ class _AppBar extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(
-                            medication.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (medication.genericName != null)
-                            Text(
-                              medication.genericName!,
+                          Text(medication.name,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.85),
-                                fontSize: 13,
-                              ),
-                            ),
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold)),
+                          if (medication.genericName != null)
+                            Text(medication.genericName!,
+                                style: TextStyle(
+                                    color: Colors.white.withOpacity(0.85),
+                                    fontSize: 13)),
                         ],
                       ),
                     ),
@@ -327,10 +331,6 @@ class _AppBar extends StatelessWidget {
     );
   }
 }
-
-// ═══════════════════════════════════════════════════════════════
-// PRESCRIPTION CARD
-// ═══════════════════════════════════════════════════════════════
 
 class _PrescriptionCard extends StatelessWidget {
   final bool requiresPrescription;
@@ -382,10 +382,6 @@ class _PrescriptionCard extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// DRUG INTERACTION CHECKER
-// ═══════════════════════════════════════════════════════════════
-
 class _DrugInteractionChecker extends StatelessWidget {
   final MedicationDetailController controller;
   const _DrugInteractionChecker({required this.controller});
@@ -412,22 +408,16 @@ class _DrugInteractionChecker extends StatelessWidget {
                   color: AppColors.errorLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  Icons.warning_amber_rounded,
-                  color: AppColors.error,
-                  size: 20,
-                ),
+                child: Icon(Icons.warning_amber_rounded,
+                    color: AppColors.error, size: 20),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Text(
-                  'Vérifier les interactions',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: AppColors.error,
-                  ),
-                ),
+                child: Text('Vérifier les interactions',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: AppColors.error)),
               ),
             ],
           ),
@@ -438,17 +428,14 @@ class _DrugInteractionChecker extends StatelessWidget {
               hintText: 'Autre médicament...',
               hintStyle: TextStyle(color: AppColors.textTertiary),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border)),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border)),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primary),
-              ),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.primary)),
               suffixIcon: IconButton(
                 icon: Icon(Icons.search_rounded, color: AppColors.primary),
                 onPressed: controller.checkInteraction,
@@ -461,8 +448,7 @@ class _DrugInteractionChecker extends StatelessWidget {
               return Padding(
                 padding: EdgeInsets.all(AppSpacing.md),
                 child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+                    child: CircularProgressIndicator(color: AppColors.primary)),
               );
             }
             if (controller.interactionResult.value.isNotEmpty) {
@@ -470,20 +456,20 @@ class _DrugInteractionChecker extends StatelessWidget {
                 margin: EdgeInsets.only(top: AppSpacing.sm + 4),
                 padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: controller.interactionResult.value.contains('⚠️')
+                  color: controller.interactionResult.value.contains('⚠️') ||
+                          controller.interactionResult.value.contains('🚫')
                       ? AppColors.warningLight
                       : AppColors.successLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: controller.interactionResult.value.contains('⚠️')
+                    color: controller.interactionResult.value.contains('⚠️') ||
+                            controller.interactionResult.value.contains('🚫')
                         ? AppColors.warning.withOpacity(0.3)
                         : AppColors.success.withOpacity(0.3),
                   ),
                 ),
-                child: Text(
-                  controller.interactionResult.value,
-                  style: TextStyle(fontSize: 13, height: 1.5),
-                ),
+                child: Text(controller.interactionResult.value,
+                    style: TextStyle(fontSize: 13, height: 1.5)),
               );
             }
             return const SizedBox.shrink();
@@ -493,10 +479,6 @@ class _DrugInteractionChecker extends StatelessWidget {
     );
   }
 }
-
-// ═══════════════════════════════════════════════════════════════
-// ASK AI SECTION
-// ═══════════════════════════════════════════════════════════════
 
 class _AskAiSection extends StatelessWidget {
   final MedicationDetailController controller;
@@ -529,22 +511,16 @@ class _AskAiSection extends StatelessWidget {
                     color: AppColors.primary.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    Icons.psychology_rounded,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.psychology_rounded,
+                      color: AppColors.primary, size: 20),
                 ),
                 SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: Text(
-                    'Posez une question',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: AppColors.primary,
-                    ),
-                  ),
+                  child: Text('Posez une question',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: AppColors.primary)),
                 ),
               ],
             ),
@@ -561,17 +537,14 @@ class _AskAiSection extends StatelessWidget {
                     hintStyle:
                         TextStyle(color: AppColors.textTertiary, fontSize: 13),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.border),
-                    ),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.border)),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.border),
-                    ),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.border)),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary),
-                    ),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.primary)),
                   ),
                 ),
                 SizedBox(height: AppSpacing.sm + 4),
@@ -584,10 +557,7 @@ class _AskAiSection extends StatelessWidget {
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                                strokeWidth: 2, color: Colors.white))
                         : Icon(Icons.send_rounded, size: 18)),
                     label: Obx(() => Text(
                         controller.isAskingAi.value ? 'Envoi...' : 'Envoyer')),
@@ -596,8 +566,7 @@ class _AskAiSection extends StatelessWidget {
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -620,25 +589,19 @@ class _AskAiSection extends StatelessWidget {
                               Icon(Icons.psychology_rounded,
                                   color: AppColors.primary, size: 16),
                               SizedBox(width: 8),
-                              Text(
-                                'Réponse de l\'IA',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                ),
-                              ),
+                              Text('Réponse de l\'IA',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                      fontSize: 13)),
                             ],
                           ),
                           SizedBox(height: 8),
-                          Text(
-                            controller.aiAnswer.value,
-                            style: TextStyle(
-                              fontSize: 13,
-                              height: 1.5,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
+                          Text(controller.aiAnswer.value,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.5,
+                                  color: AppColors.textPrimary)),
                         ],
                       ),
                     );
@@ -654,10 +617,6 @@ class _AskAiSection extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// FIND PHARMACIES CTA
-// ═══════════════════════════════════════════════════════════════
-
 class _FindPharmaciesCTA extends StatelessWidget {
   final String medicationName;
   const _FindPharmaciesCTA({required this.medicationName});
@@ -670,20 +629,17 @@ class _FindPharmaciesCTA extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
+              color: AppColors.primary.withOpacity(0.3),
+              blurRadius: 12,
+              offset: Offset(0, 6)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Get.back();
-            Get.toNamed('/medication-search', arguments: medicationName);
-          },
+          onTap: () => Get.toNamed(AppRoutes.MEDICATION_SEARCH,
+              arguments: medicationName),
           child: Padding(
             padding: EdgeInsets.all(AppSpacing.lg),
             child: Row(
@@ -694,41 +650,29 @@ class _FindPharmaciesCTA extends StatelessWidget {
                     color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    Icons.local_pharmacy_rounded,
-                    color: Colors.white,
-                    size: 26,
-                  ),
+                  child: Icon(Icons.local_pharmacy_rounded,
+                      color: Colors.white, size: 26),
                 ),
                 SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Trouver en pharmacie',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      Text('Trouver en pharmacie',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16)),
                       SizedBox(height: 2),
-                      Text(
-                        'Voir les pharmacies qui ont ce médicament',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 12,
-                        ),
-                      ),
+                      Text('Voir les pharmacies qui ont ce médicament',
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 12)),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white.withOpacity(0.8),
-                  size: 16,
-                ),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    color: Colors.white.withOpacity(0.8), size: 16),
               ],
             ),
           ),
@@ -738,27 +682,20 @@ class _FindPharmaciesCTA extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SECTION
-// ═══════════════════════════════════════════════════════════════
-
 class _Section extends StatelessWidget {
   final IconData icon;
   final String title;
   final String text;
   final Color color;
-
-  const _Section({
-    required this.icon,
-    required this.title,
-    required this.text,
-    required this.color,
-  });
+  const _Section(
+      {required this.icon,
+      required this.title,
+      required this.text,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
     if (text.isEmpty) return const SizedBox.shrink();
-
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
       decoration: BoxDecoration(
@@ -780,37 +717,25 @@ class _Section extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 20),
                 SizedBox(width: AppSpacing.sm + 4),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
+                Text(title,
+                    style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
               ],
             ),
           ),
           Padding(
             padding: EdgeInsets.all(AppSpacing.md),
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textPrimary,
-                height: 1.6,
-              ),
-            ),
+            child: Text(text,
+                style: TextStyle(
+                    fontSize: 14, color: AppColors.textPrimary, height: 1.6)),
           ),
         ],
       ),
     );
   }
 }
-
-// ═══════════════════════════════════════════════════════════════
-// DISCLAIMER
-// ═══════════════════════════════════════════════════════════════
 
 class _Disclaimer extends StatelessWidget {
   const _Disclaimer();
@@ -827,20 +752,14 @@ class _Disclaimer extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 16,
-            color: AppColors.textSecondary,
-          ),
+          Icon(Icons.info_outline_rounded,
+              size: 16, color: AppColors.textSecondary),
           SizedBox(width: AppSpacing.sm + 4),
           Expanded(
             child: Text(
               'Ces informations sont à titre éducatif uniquement et ne remplacent pas l\'avis d\'un médecin ou pharmacien.',
               style: TextStyle(
-                fontSize: 11,
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+                  fontSize: 11, color: AppColors.textSecondary, height: 1.5),
             ),
           ),
         ],
@@ -849,38 +768,163 @@ class _Disclaimer extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// WAVE PAINTER
-// ═══════════════════════════════════════════════════════════════
-
 class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Color(0xFFF9FAFB)
       ..style = PaintingStyle.fill;
-
     final path = Path()
       ..moveTo(0, size.height * 0.5)
+      ..quadraticBezierTo(size.width * 0.25, size.height * 0.2,
+          size.width * 0.5, size.height * 0.5)
       ..quadraticBezierTo(
-        size.width * 0.25,
-        size.height * 0.2,
-        size.width * 0.5,
-        size.height * 0.5,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.75,
-        size.height * 0.8,
-        size.width,
-        size.height * 0.5,
-      )
+          size.width * 0.75, size.height * 0.8, size.width, size.height * 0.5)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-
     canvas.drawPath(path, paint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUICK INFO ROW
+// ═══════════════════════════════════════════════════════════════
+
+class _QuickInfoRow extends StatelessWidget {
+  final MedicationModel medication;
+  const _QuickInfoRow({required this.medication});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.shadowSm,
+      ),
+      child: Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        children: [
+          if (medication.dci != null && medication.dci!.isNotEmpty)
+            _InfoChip(
+                label: 'DCI', value: medication.dci!, color: AppColors.primary),
+          if (medication.form != null && medication.form!.isNotEmpty)
+            _InfoChip(
+                label: 'Forme',
+                value: medication.form!,
+                color: AppColors.secondary),
+          if (medication.dosage != null && medication.dosage!.isNotEmpty)
+            _InfoChip(
+                label: 'Dosage',
+                value: medication.dosage!,
+                color: AppColors.info),
+          if (medication.manufacturer != null &&
+              medication.manufacturer!.isNotEmpty)
+            _InfoChip(
+                label: 'Fabricant',
+                value: medication.manufacturer!,
+                color: AppColors.success),
+          if (medication.category != null && medication.category!.isNotEmpty)
+            _InfoChip(
+                label: 'Catégorie',
+                value: medication.category!,
+                color: AppColors.warning),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  const _InfoChip(
+      {required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+          SizedBox(height: 2),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BARCODE CARD
+// ═══════════════════════════════════════════════════════════════
+
+class _BarcodeCard extends StatelessWidget {
+  final String barcode;
+  const _BarcodeCard({required this.barcode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm + 4),
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.shadowSm,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child:
+                Icon(Icons.qr_code_rounded, color: AppColors.primary, size: 20),
+          ),
+          SizedBox(width: AppSpacing.md),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Code-barres',
+                  style:
+                      TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              SizedBox(height: 2),
+              Text(barcode,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      letterSpacing: 1)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

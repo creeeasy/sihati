@@ -9,7 +9,7 @@ class AppointmentService {
     return Appointment.findAll({
       where,
       include: [
-        { model: User, as: 'patient', attributes: ['id', 'fullName', 'phoneNumber','chifaNumber'] },
+        { model: User, as: 'patient', attributes: ['id', 'fullName', 'phoneNumber', 'chifaNumber'] },
         { model: DoctorOffice, as: 'office' }
       ],
       order: [['appointmentDate', 'ASC'], ['appointmentTime', 'ASC']]
@@ -24,7 +24,12 @@ class AppointmentService {
     return Appointment.findAll({
       where,
       include: [
-        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user' }] },
+        { 
+          model: User, 
+          as: 'doctor',
+          attributes: ['id', 'fullName', 'phoneNumber', 'profileImage'],
+          include: [{ model: Doctor, as: 'doctor' }]
+        },
         { model: DoctorOffice, as: 'office' }
       ],
       order: [['appointmentDate', 'DESC']]
@@ -78,8 +83,13 @@ class AppointmentService {
   async getAppointmentById(id: string) {
     const appointment = await Appointment.findByPk(id, {
       include: [
-        { model: User, as: 'patient' },
-        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user' }] },
+        { model: User, as: 'patient', attributes: ['id', 'fullName', 'phoneNumber'] },
+        { 
+          model: User, 
+          as: 'doctor',
+          attributes: ['id', 'fullName', 'phoneNumber', 'profileImage'],
+          include: [{ model: Doctor, as: 'doctor' }]
+        },
         { model: DoctorOffice, as: 'office' }
       ]
     });

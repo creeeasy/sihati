@@ -36,7 +36,9 @@ import '../../modules/pharmacies/bindings/pharmacy_binding.dart';
 
 // Medications
 import '../../modules/medications/views/medication_search_screen.dart';
+import '../../modules/medications/views/medications_list_screen.dart';
 import '../../modules/medications/bindings/medication_binding.dart';
+import '../../modules/medications/bindings/medications_list_binding.dart';
 
 // Doctors
 import '../../modules/doctors/views/doctor_list_screen.dart';
@@ -98,6 +100,11 @@ class AppPages {
       page: () => const MedicationSearchScreen(),
       binding: MedicationBinding(),
     ),
+    GetPage(
+      name: AppRoutes.MEDICATIONS_LIST,
+      page: () => const MedicationsListScreen(),
+      binding: MedicationsListBinding(),
+    ),
 
     // Doctors
     GetPage(
@@ -150,7 +157,7 @@ class AppPages {
       binding: MyAppointmentsBinding(),
     ),
     GetPage(
-      name: AppRoutes.MEDICATION_DETAIL,
+      name: '${AppRoutes.MEDICATION_DETAIL}/:id',
       page: () => const MedicationDetailScreen(),
       binding: MedicationDetailBinding(),
     ),

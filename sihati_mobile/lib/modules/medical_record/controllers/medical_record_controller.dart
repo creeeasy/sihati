@@ -13,43 +13,28 @@ import '../../../core/models/allergy_model.dart';
 class MedicalRecordController extends GetxController {
   final PatientRepository _patientRepository;
 
-  MedicalRecordController({
-    required PatientRepository patientRepository,
-  }) : _patientRepository = patientRepository;
+  MedicalRecordController({required PatientRepository patientRepository})
+      : _patientRepository = patientRepository;
 
-  // Tab index
   final tabIndex = 0.obs;
-
-  // Data states
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
-  // User & Patient data
   final user = Rxn<UserModel>();
   final patientProfile = Rxn<PatientProfile>();
 
-  // Statistics
   final ordonnancesCount = 0.obs;
   final medicationsCount = 0.obs;
   final consultationsCount = 0.obs;
   final documentsCount = 0.obs;
 
-  // Lists
   final prescriptions = <Prescription>[].obs;
   final medicationHistory = <MedicationHistory>[].obs;
   final consultations = <Consultation>[].obs;
   final medicalDocuments = <MedicalDocument>[].obs;
-
-  // Allergies
   final allergies = <Allergy>[].obs;
-
-  // Current medications
   final currentMedications = <MedicationHistory>[].obs;
-
-  // Last consultation
   final lastConsultation = Rxn<Consultation>();
-
-  // 🆕 Filter for medication history
   final showActiveOnly = false.obs;
 
   @override
@@ -63,33 +48,27 @@ class MedicalRecordController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      // Load user profile
       user.value = await _patientRepository.getCurrentUser();
-
-      // Load patient profile
       patientProfile.value = await _patientRepository.getPatientProfile();
 
-      // Load statistics
       final stats = await _patientRepository.getStats();
       ordonnancesCount.value = stats['prescriptionsCount'] ?? 0;
       medicationsCount.value = stats['medicationsCount'] ?? 0;
       consultationsCount.value = stats['consultationsCount'] ?? 0;
       documentsCount.value = stats['documentsCount'] ?? 0;
 
-      // Load lists
       prescriptions.value = await _patientRepository.getPrescriptions();
       medicationHistory.value = await _patientRepository.getMedicationHistory();
       consultations.value = await _patientRepository.getConsultations();
       medicalDocuments.value = await _patientRepository.getDocuments();
-
-      // Load allergies
       allergies.value = await _patientRepository.getAllergies();
 
-      // Load current medications (ongoing = no endDate, or endDate in future)
-      currentMedications.value =
-          medicationHistory.where((m) => m.isContinuous || (m.endDate != null && m.endDate!.isAfter(DateTime.now()))).toList();
+      currentMedications.value = medicationHistory
+          .where((m) =>
+              m.isContinuous ||
+              (m.endDate != null && m.endDate!.isAfter(DateTime.now())))
+          .toList();
 
-      // Get last consultation
       if (consultations.isNotEmpty) {
         lastConsultation.value = consultations.first;
       }
@@ -101,106 +80,41 @@ class MedicalRecordController extends GetxController {
     }
   }
 
-  void changeTab(int index) {
-    tabIndex.value = index;
-  }
+  void changeTab(int index) => tabIndex.value = index;
+  void goBack() => Get.back();
 
-  void goBack() {
-    Get.back();
-  }
-
-  void viewPrescription(String prescriptionId) {
-    Get.toNamed('/prescription/$prescriptionId');
-  }
-
-  // NOTE: downloadPrescriptionPDF removed — backend returns JSON, not a PDF file stream.
-  // NOTE: addAllergy / removeAllergy removed — patient read-only via /patient/allergies.
-  //   Allergy management is handled by /allergies (separate controller if needed).
-
-  // 🆕 Delete document method
   Future<void> deleteDocument(String documentId) async {
     try {
       isLoading.value = true;
       await _patientRepository.deleteDocument(documentId);
-      await loadMedicalData(); // Refresh
-      Get.snackbar(
-        'Succès',
-        'Document supprimé',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      await loadMedicalData();
+      Get.snackbar('Succès', 'Document supprimé',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white);
     } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible de supprimer le document',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Erreur', 'Impossible de supprimer le document',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }
   }
-
-  // 🆕 Download document method
-  Future<void> downloadDocument(MedicalDocument document) async {
-    try {
-      isLoading.value = true;
-      // TODO: Implement document download
-      // await _patientRepository.downloadDocument(document.id);
-
-      Get.snackbar(
-        'Téléchargement',
-        'Téléchargement de ${document.title}...',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 1),
-      );
-
-      // Simulate download for now
-      await Future.delayed(const Duration(seconds: 1));
-
-      Get.snackbar(
-        'Succès',
-        'Document téléchargé: ${document.title}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible de télécharger le document',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  // downloadDocumentById removed — use downloadDocument(document) instead.
 
   void uploadDocument() async {
-    // TODO: Implement document upload with file picker
-    Get.snackbar(
-      'Document',
-      'Fonctionnalité à venir',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.snackbar('Document', 'Fonctionnalité à venir',
+        snackPosition: SnackPosition.BOTTOM);
   }
 
-  void refreshData() async {
-    await loadMedicalData();
-  }
+  void refreshData() async => await loadMedicalData();
 
-  // Helper to get filtered medications
-  // Uses isContinuous (endDate == null) as the "active" proxy
   List<MedicationHistory> getFilteredMedications() {
     if (showActiveOnly.value) {
       return medicationHistory
-          .where((m) => m.isContinuous || (m.endDate != null && m.endDate!.isAfter(DateTime.now())))
+          .where((m) =>
+              m.isContinuous ||
+              (m.endDate != null && m.endDate!.isAfter(DateTime.now())))
           .toList();
     }
     return medicationHistory;
@@ -226,15 +140,5 @@ class MedicalRecordController extends GetxController {
       'Décembre'
     ];
     return months[month - 1];
-  }
-
-  void addMedication() {
-    // TODO: Navigate to add medication screen
-    Get.snackbar(
-      'Médicament',
-      'Fonctionnalité à venir',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
   }
 }

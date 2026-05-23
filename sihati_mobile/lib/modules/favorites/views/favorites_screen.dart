@@ -5,15 +5,14 @@ import 'package:sihati_mobile/core/models/pharmacy_model.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/routes/app_routes.dart';
-import '../../../core/services/favorites_service.dart';
+import '../controllers/favorites_controller.dart';
 import '../../../core/widgets/empty_state.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends GetView<FavoritesController> {
   const FavoritesScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final favoritesService = Get.find<FavoritesService>();
 
     return DefaultTabController(
       length: 2,
@@ -21,12 +20,12 @@ class FavoritesScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            _buildEpicHeader(favoritesService, innerBoxIsScrolled),
+            _buildEpicHeader(controller, innerBoxIsScrolled),
           ],
           body: TabBarView(
             children: [
-              _PharmaciesTab(favoritesService: favoritesService),
-              _DoctorsTab(favoritesService: favoritesService),
+              _PharmaciesTab(controller: controller),
+              _DoctorsTab(controller: controller),
             ],
           ),
         ),
@@ -39,7 +38,7 @@ class FavoritesScreen extends StatelessWidget {
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildEpicHeader(
-      FavoritesService favoritesService, bool innerBoxIsScrolled) {
+      FavoritesController controller, bool innerBoxIsScrolled) {
     return SliverAppBar(
       expandedHeight: 220,
       floating: false,
@@ -52,7 +51,7 @@ class FavoritesScreen extends StatelessWidget {
       ),
       actions: [
         Obx(() {
-          if (favoritesService.totalCount == 0) return const SizedBox();
+          if (controller.totalCount == 0) return const SizedBox();
           return Container(
             margin: EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
@@ -61,7 +60,7 @@ class FavoritesScreen extends StatelessWidget {
             ),
             child: IconButton(
               icon: Icon(Icons.delete_outline_rounded, color: Colors.white),
-              onPressed: () => _showEpicDeleteDialog(favoritesService),
+              onPressed: () => _showEpicDeleteDialog(controller),
             ),
           );
         }),
@@ -187,7 +186,7 @@ class FavoritesScreen extends StatelessWidget {
                                         ),
                                         SizedBox(width: 6),
                                         Text(
-                                          '${favoritesService.totalCount} favori${favoritesService.totalCount > 1 ? 's' : ''}',
+                                          '${controller.totalCount} favori${controller.totalCount > 1 ? 's' : ''}',
                                           style: TextStyle(
                                             fontSize: 13,
                                             color: Colors.white,
@@ -236,7 +235,7 @@ class FavoritesScreen extends StatelessWidget {
                         Icon(Icons.local_pharmacy_rounded, size: 20),
                         SizedBox(width: 8),
                         Text('Pharmacies'),
-                        if (favoritesService.pharmacyCount > 0) ...[
+                        if (controller.pharmacyCount > 0) ...[
                           SizedBox(width: 8),
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -246,7 +245,7 @@ class FavoritesScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              '${favoritesService.pharmacyCount}',
+                              '${controller.pharmacyCount}',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -266,7 +265,7 @@ class FavoritesScreen extends StatelessWidget {
                         Icon(Icons.medical_services_rounded, size: 20),
                         SizedBox(width: 8),
                         Text('Médecins'),
-                        if (favoritesService.doctorCount > 0) ...[
+                        if (controller.doctorCount > 0) ...[
                           SizedBox(width: 8),
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -276,7 +275,7 @@ class FavoritesScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              '${favoritesService.doctorCount}',
+                              '${controller.doctorCount}',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -295,7 +294,7 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 
-  void _showEpicDeleteDialog(FavoritesService service) {
+  void _showEpicDeleteDialog(FavoritesController service) {
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(
@@ -415,14 +414,14 @@ class FavoritesScreen extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 
 class _PharmaciesTab extends StatelessWidget {
-  final FavoritesService favoritesService;
+  final FavoritesController controller;
 
-  const _PharmaciesTab({required this.favoritesService});
+  const _PharmaciesTab({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final pharmacies = favoritesService.favoritePharmacies;
+      final pharmacies = controller.favoritePharmacies;
 
       if (pharmacies.isEmpty) {
         return EmptyState(
@@ -460,7 +459,7 @@ class _PharmaciesTab extends StatelessWidget {
             onTap: () =>
                 Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/${pharmacy.id}'),
             onRemove: () =>
-                favoritesService.removePharmacyFavorite(pharmacy.id),
+                controller.removePharmacyFavorite(pharmacy.id),
           );
         },
       );
@@ -473,14 +472,14 @@ class _PharmaciesTab extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 
 class _DoctorsTab extends StatelessWidget {
-  final FavoritesService favoritesService;
+  final FavoritesController controller;
 
-  const _DoctorsTab({required this.favoritesService});
+  const _DoctorsTab({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final doctors = favoritesService.favoriteDoctors;
+      final doctors = controller.favoriteDoctors;
 
       if (doctors.isEmpty) {
         return EmptyState(
@@ -516,7 +515,7 @@ class _DoctorsTab extends StatelessWidget {
           return _EpicDoctorCard(
             doctor: doctor,
             onTap: () => Get.toNamed('${AppRoutes.DOCTOR_DETAIL}/${doctor.id}'),
-            onRemove: () => favoritesService.removeDoctorFavorite(doctor.id),
+            onRemove: () => controller.removeDoctorFavorite(doctor.id),
           );
         },
       );

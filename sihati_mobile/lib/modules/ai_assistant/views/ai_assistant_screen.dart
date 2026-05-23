@@ -5,7 +5,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../controllers/ai_assistant_controller.dart';
-import '../../../core/services/ai_service.dart';
+import '../../../core/models/ai_models.dart';
 
 class AIAssistantScreen extends StatelessWidget {
   const AIAssistantScreen({Key? key}) : super(key: key);
@@ -187,45 +187,51 @@ class _WaveHeader extends StatelessWidget {
                   ),
                 ),
               ),
-              // Wave spacer (30px so the wave has room)
+              // Wave spacer
               const SizedBox(height: 12),
             ],
           ),
         ),
-        // Decorative circles
+        // Decorative circles (wrapped with IgnorePointer so they don't block taps)
         Positioned(
           top: 44,
           right: -15,
-          child: Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.09),
+          child: IgnorePointer(
+            child: Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.09),
+              ),
             ),
           ),
         ),
         Positioned(
           top: 84,
           left: 20,
-          child: Container(
-            width: 55,
-            height: 55,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.06),
+          child: IgnorePointer(
+            child: Container(
+              width: 55,
+              height: 55,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.06),
+              ),
             ),
           ),
         ),
         Positioned(
           bottom: 14,
           right: 70,
-          child: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.07),
+          child: IgnorePointer(
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.07),
+              ),
             ),
           ),
         ),

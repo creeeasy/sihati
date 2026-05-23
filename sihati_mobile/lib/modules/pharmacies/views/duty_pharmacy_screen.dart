@@ -470,69 +470,69 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
               SizedBox(height: AppSpacing.md),
               Divider(color: AppColors.border),
               Flexible(
-                child: Obx(() => ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: controller.wilayas.length,
-                      itemBuilder: (context, index) {
-                        final wilaya = controller.wilayas[index];
-                        final isSelected =
-                            controller.selectedWilaya.value == wilaya ||
-                                (wilaya == 'Tous' &&
-                                    controller.selectedWilaya.value == null);
-                        return InkWell(
-                          onTap: () {
-                            controller.filterByWilaya(
-                                wilaya == 'Tous' ? null : wilaya);
-                            Get.back();
-                          },
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: controller.wilayas.length,
+                  itemBuilder: (context, index) {
+                    final wilaya = controller.wilayas[index];
+                    final isSelected =
+                        controller.selectedWilaya.value == wilaya ||
+                            (wilaya == 'Tous' &&
+                                controller.selectedWilaya.value == null);
+                    return InkWell(
+                      onTap: () {
+                        controller
+                            .filterByWilaya(wilaya == 'Tous' ? null : wilaya);
+                        Get.back();
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm + 4,
+                        ),
+                        margin: const EdgeInsets.only(bottom: 4),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primarySoft
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
-                              vertical: AppSpacing.sm + 4,
-                            ),
-                            margin: const EdgeInsets.only(bottom: 4),
-                            decoration: BoxDecoration(
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isSelected
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_unchecked_rounded,
                               color: isSelected
-                                  ? AppColors.primarySoft
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
+                                  ? AppColors.primary
+                                  : AppColors.textTertiary,
+                              size: 20,
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  isSelected
-                                      ? Icons.radio_button_checked_rounded
-                                      : Icons.radio_button_unchecked_rounded,
+                            SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Text(
+                                wilaya,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
                                   color: isSelected
                                       ? AppColors.primary
-                                      : AppColors.textTertiary,
-                                  size: 20,
+                                      : AppColors.textPrimary,
                                 ),
-                                SizedBox(width: AppSpacing.md),
-                                Expanded(
-                                  child: Text(
-                                    wilaya,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                if (isSelected)
-                                  Icon(Icons.check_rounded,
-                                      size: 18, color: AppColors.primary),
-                              ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    )),
+                            if (isSelected)
+                              Icon(Icons.check_rounded,
+                                  size: 18, color: AppColors.primary),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),

@@ -1,3 +1,4 @@
+// lib/modules/appointments/views/book_appointment_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
@@ -16,42 +17,39 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
         title: const Text('Prendre Rendez-vous'),
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          // Doctor info header
-          _buildDoctorHeader(),
+      body: Obx(() {
+        if (controller.doctor == null) {
+          return const Center(child: Text('Médecin non trouvé'));
+        }
 
-          // Content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Calendar
-                  _buildCalendar(),
-                  const SizedBox(height: 24),
-
-                  // Time slots
-                  _buildTimeSlots(),
-                  const SizedBox(height: 24),
-
-                  // Reason (optional)
-                  _buildReasonField(),
-                  const SizedBox(height: 24),
-
-                  // Book button
-                  _buildBookButton(),
-                ],
+        return Column(
+          children: [
+            _buildDoctorHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCalendar(),
+                    const SizedBox(height: 24),
+                    _buildTimeSlots(),
+                    const SizedBox(height: 24),
+                    _buildReasonField(),
+                    const SizedBox(height: 24),
+                    _buildBookButton(),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 
   Widget _buildDoctorHeader() {
+    final doctor = controller.doctor!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -70,7 +68,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             radius: 30,
             backgroundColor: AppColors.primary.withOpacity(0.1),
             child: Text(
-              controller.doctor.doctorName.substring(0, 2).toUpperCase(),
+              doctor.doctorName.substring(0, 2).toUpperCase(),
               style: const TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
@@ -82,19 +80,16 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(doctor.doctorName, style: AppTextStyles.subtitle1),
                 Text(
-                  controller.doctor.doctorName,
-                  style: AppTextStyles.subtitle1,
-                ),
-                Text(
-                  controller.doctor.specialty?.nameFr ?? 'Spécialiste',
+                  doctor.specialty?.nameFr ?? 'Spécialiste',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
                 ),
-                if (controller.doctor.consultationFee != null)
+                if (doctor.consultationFee != null)
                   Text(
-                    controller.doctor.formattedFee,
+                    doctor.formattedFee,
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -154,10 +149,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '🕐 Créneaux disponibles',
-          //     style: AppTextStyles.subtitle2,
-        ),
+        const Text('🕐 Créneaux disponibles'),
         const SizedBox(height: 12),
         Obx(() {
           if (controller.isLoadingSlots.value) {
@@ -193,7 +185,6 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             children: controller.availableSlots.map((slot) {
               return Obx(() {
                 final isSelected = controller.selectedTime.value == slot;
-
                 return ChoiceChip(
                   label: Text(slot),
                   selected: isSelected,
@@ -217,10 +208,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '📝 Motif (optionnel)',
-          //   style: AppTextStyles.subtitle2,
-        ),
+        const Text('📝 Motif (optionnel)'),
         const SizedBox(height: 8),
         TextField(
           controller: controller.reasonController,

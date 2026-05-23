@@ -19,6 +19,7 @@ class AppRoutes {
 
   // Medication routes
   static const String MEDICATION_SEARCH = '/medications/search';
+  static const String MEDICATIONS_LIST = '/medications/list';
   static const MEDICATION_DETAIL = '/medication-detail';
   // Doctor routes
   static const String DOCTOR_LIST = '/doctors';

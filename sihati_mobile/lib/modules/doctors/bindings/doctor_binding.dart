@@ -5,6 +5,8 @@ import '../../../core/services/location_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../data/providers/doctor_provider.dart';
 import '../../../data/repositories/doctor_repository.dart';
+import '../../../data/providers/favorite_provider.dart';
+import '../../../data/repositories/favorite_repository.dart';
 import '../controllers/doctor_list_controller.dart';
 import '../controllers/doctor_detail_controller.dart';
 
@@ -29,6 +31,13 @@ class DoctorBinding extends Bindings {
         permanent: true,
       );
     }
+    
+    if (!Get.isRegistered<FavoriteProvider>()) {
+      Get.put(
+        FavoriteProvider(Get.find<ApiService>()),
+        permanent: true,
+      );
+    }
 
     // Repository
     Get.lazyPut(
@@ -38,6 +47,15 @@ class DoctorBinding extends Bindings {
       ),
       fenix: true,
     );
+
+    if (!Get.isRegistered<FavoriteRepository>()) {
+      Get.lazyPut(
+        () => FavoriteRepository(
+          favoriteProvider: Get.find<FavoriteProvider>(),
+        ),
+        fenix: true,
+      );
+    }
 
     // Controllers
     Get.lazyPut(
@@ -50,6 +68,7 @@ class DoctorBinding extends Bindings {
     Get.lazyPut(
       () => DoctorDetailController(
         doctorRepository: Get.find<DoctorRepository>(),
+        favoriteRepository: Get.find<FavoriteRepository>(),
       ),
     );
   }

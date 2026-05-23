@@ -104,11 +104,9 @@ class MedicationSearchController extends GetxController {
     Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
   }
 
-  void goToMedicationDetail(String medicationName) {
-    Get.toNamed(
-      AppRoutes.MEDICATION_DETAIL,
-      arguments: {'medicationName': medicationName},
-    );
+// Controller
+  void goToMedicationDetail(String medicationId) {
+    Get.toNamed('${AppRoutes.MEDICATION_DETAIL}/$medicationId');
   }
 
   // ─── Helpers ──────────────────────────────────────────────

@@ -5,6 +5,8 @@ import '../../../core/services/location_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../data/providers/pharmacy_provider.dart';
 import '../../../data/repositories/pharmacy_repository.dart';
+import '../../../data/providers/favorite_provider.dart';
+import '../../../data/repositories/favorite_repository.dart';
 import '../controllers/pharmacy_list_controller.dart';
 import '../controllers/pharmacy_detail_controller.dart';
 import '../controllers/duty_pharmacy_controller.dart';
@@ -31,6 +33,13 @@ class PharmacyBinding extends Bindings {
       );
     }
 
+    if (!Get.isRegistered<FavoriteProvider>()) {
+      Get.put(
+        FavoriteProvider(Get.find<ApiService>()),
+        permanent: true,
+      );
+    }
+
     // Repository
     if (!Get.isRegistered<PharmacyRepository>()) {
       Get.put(
@@ -42,6 +51,15 @@ class PharmacyBinding extends Bindings {
       );
     }
 
+    if (!Get.isRegistered<FavoriteRepository>()) {
+      Get.lazyPut(
+        () => FavoriteRepository(
+          favoriteProvider: Get.find<FavoriteProvider>(),
+        ),
+        fenix: true,
+      );
+    }
+
     // Controllers
     Get.lazyPut(() => PharmacyListController(
           pharmacyRepository: Get.find<PharmacyRepository>(),
@@ -49,6 +67,7 @@ class PharmacyBinding extends Bindings {
 
     Get.lazyPut(() => PharmacyDetailController(
           pharmacyRepository: Get.find<PharmacyRepository>(),
+          favoriteRepository: Get.find<FavoriteRepository>(),
         ));
 
     Get.lazyPut(() => DutyPharmacyController(

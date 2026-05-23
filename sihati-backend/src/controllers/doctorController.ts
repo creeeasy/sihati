@@ -150,6 +150,7 @@ export const getAvailableSlots = async (req: Request, res: Response, next: NextF
   try {
     const id = getId(req.params.id);
     const { date, officeId } = req.query;
+    console.log(req.query);
 
     if (!id) {
       return res.status(400).json({ success: false, message: 'ID invalide' });

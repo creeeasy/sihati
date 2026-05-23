@@ -58,6 +58,9 @@ class ApiConstants {
   // ─── AI endpoints ──────────────────────────────────────────────────
   static const String AI_CHAT = '/ai/chat';
   static const String AI_INTERACTION = '/ai/interaction';
+  static const String AI_ASK_MEDICATION = '/ai/ask-medication';
+  static const String AI_CONVERSATION = '/ai/conversation';
+  static const String AI_HISTORY = '/ai/history';
 
   // ─── Timeouts ──────────────────────────────────────────────────────
   static const Duration CONNECT_TIMEOUT = Duration(seconds: 30);

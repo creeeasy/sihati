@@ -1,5 +1,7 @@
+// lib/modules/medical_record/views/widgets/documents_tab.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/widgets/custom_button.dart';
@@ -14,9 +16,7 @@ class DocumentsTab extends GetView<MedicalRecordController> {
     return Obx(() {
       if (controller.isLoading.value && controller.medicalDocuments.isEmpty) {
         return const Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primary,
-          ),
+          child: CircularProgressIndicator(color: AppColors.primary),
         );
       }
 
@@ -25,30 +25,18 @@ class DocumentsTab extends GetView<MedicalRecordController> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.folder_outlined,
-                size: 80,
-                color: AppColors.primary.withOpacity(0.3),
-              ),
+              Icon(Icons.folder_outlined,
+                  size: 80, color: AppColors.primary.withOpacity(0.3)),
               const SizedBox(height: AppSpacing.md),
-              const Text(
-                'Aucun document',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              const Text('Aucun document',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Vos documents médicaux apparaîtront ici',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  color: AppColors.textTertiary,
-                ),
-              ),
+              const Text('Vos documents médicaux apparaîtront ici',
+                  style:
+                      TextStyle(fontSize: 14, color: AppColors.textTertiary)),
               const SizedBox(height: AppSpacing.lg),
               CustomButton(
                 text: 'Ajouter un document',
@@ -61,12 +49,12 @@ class DocumentsTab extends GetView<MedicalRecordController> {
           ),
         );
       }
+
       return RefreshIndicator(
         onRefresh: () async => controller.refreshData(),
         color: AppColors.primary,
         child: Column(
           children: [
-            // Upload button at top
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Row(
@@ -83,7 +71,6 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                 ],
               ),
             ),
-            // Documents list
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -124,12 +111,12 @@ class DocumentsTab extends GetView<MedicalRecordController> {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
               children: [
-                // Document icon with type color
                 Container(
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: _getDocumentColor(document.documentType).withOpacity(0.1),
+                    color: _getDocumentColor(document.documentType)
+                        .withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -139,93 +126,53 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
-
-                // Document info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        document.title,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(document.title,
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Text(
-                        document.documentTypeDisplayName,
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 13,
-                          color: _getDocumentColor(document.documentType),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      Text(document.documentTypeDisplayName,
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: _getDocumentColor(document.documentType),
+                              fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.calendar_today_outlined,
-                            size: 12,
-                            color: AppColors.textTertiary,
-                          ),
+                          const Icon(Icons.calendar_today_outlined,
+                              size: 12, color: AppColors.textTertiary),
                           const SizedBox(width: 4),
-                          Text(
-                            _formatDate(document.documentDate),
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 12,
-                              color: AppColors.textTertiary,
-                            ),
-                          ),
+                          Text(_formatDate(document.documentDate),
+                              style: const TextStyle(
+                                  fontSize: 12, color: AppColors.textTertiary)),
                           const SizedBox(width: 12),
-                          const Icon(
-                            Icons.file_present_outlined,
-                            size: 12,
-                            color: AppColors.textTertiary,
-                          ),
+                          const Icon(Icons.file_present_outlined,
+                              size: 12, color: AppColors.textTertiary),
                           const SizedBox(width: 4),
-                          Text(
-                            document.formattedFileSize,
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 12,
-                              color: AppColors.textTertiary,
-                            ),
-                          ),
+                          Text(document.formattedFileSize,
+                              style: const TextStyle(
+                                  fontSize: 12, color: AppColors.textTertiary)),
                         ],
                       ),
                     ],
                   ),
                 ),
-
-                // Actions
-                Row(
-                  children: [
-                    // Download button
-                    IconButton(
-                      icon: const Icon(
-                        Icons.download_rounded,
-                        color: AppColors.primary,
-                        size: 22,
-                      ),
-                      onPressed: () => _downloadDocument(document),
-                    ),
-                    // Delete button
-                    IconButton(
-                      icon: const Icon(
-                        Icons.delete_outline_rounded,
-                        color: AppColors.error,
-                        size: 22,
-                      ),
-                      onPressed: () => _showDeleteConfirmation(document),
-                    ),
-                  ],
+                IconButton(
+                  icon: const Icon(Icons.open_in_browser_rounded,
+                      color: AppColors.primary, size: 22),
+                  onPressed: () => _openDocument(document),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      color: AppColors.error, size: 22),
+                  onPressed: () => _showDeleteConfirmation(document),
                 ),
               ],
             ),
@@ -237,35 +184,28 @@ class DocumentsTab extends GetView<MedicalRecordController> {
 
   Future<void> _openDocument(MedicalDocument document) async {
     try {
-      // TODO: Implement document opening
-      Get.snackbar(
-        'Document',
-        'Ouverture du document: ${document.title}',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
+      final uri = Uri.parse(document.fileUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Get.snackbar('Erreur', 'Impossible d\'ouvrir le document',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white);
+      }
     } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible d\'ouvrir le document',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Erreur', 'Impossible d\'ouvrir le document',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
     }
-  }
-
-  Future<void> _downloadDocument(MedicalDocument document) async {
-    await controller.downloadDocument(document);
   }
 
   Future<void> _showDeleteConfirmation(MedicalDocument document) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Supprimer le document'),
-        content: Text(
-          'Voulez-vous vraiment supprimer "${document.title}" ?',
-        ),
+        content: Text('Voulez-vous vraiment supprimer "${document.title}" ?'),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -273,9 +213,7 @@ class DocumentsTab extends GetView<MedicalRecordController> {
           ),
           ElevatedButton(
             onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Supprimer'),
           ),
         ],
@@ -283,19 +221,7 @@ class DocumentsTab extends GetView<MedicalRecordController> {
     );
 
     if (confirmed == true) {
-      try {
-        // ✅ Utiliser la méthode publique du controller
-        await controller.deleteDocument(document.id);
-        // deleteDocument appelle déjà refreshData()
-      } catch (e) {
-        Get.snackbar(
-          'Erreur',
-          'Impossible de supprimer le document',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
+      await controller.deleteDocument(document.id);
     }
   }
 

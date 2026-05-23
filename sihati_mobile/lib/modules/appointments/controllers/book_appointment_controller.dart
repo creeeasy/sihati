@@ -1,8 +1,10 @@
+// lib/modules/appointments/controllers/book_appointment_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
 import 'package:sihati_mobile/data/repositories/appointment_repository.dart';
 import 'package:sihati_mobile/core/services/storage_service.dart';
+import 'package:sihati_mobile/app/routes/app_routes.dart';
 
 class BookAppointmentController extends GetxController {
   final AppointmentRepository appointmentRepository;
@@ -13,36 +15,34 @@ class BookAppointmentController extends GetxController {
     required this.storageService,
   });
 
-  // Doctor data (passed from previous screen)
-  late DoctorModel doctor;
+  DoctorModel? doctor;
 
-  // State
   final isLoading = false.obs;
   final selectedDate = Rxn<DateTime>();
   final selectedTime = Rxn<String>();
   final availableSlots = <String>[].obs;
   final isLoadingSlots = false.obs;
   final reasonController = TextEditingController();
-
-  // Calendar
   final focusedDay = DateTime.now().obs;
-  final selectedMonth = DateTime.now().obs;
 
   @override
   void onInit() {
     super.onInit();
 
-    // Get doctor from arguments
     if (Get.arguments is DoctorModel) {
       doctor = Get.arguments as DoctorModel;
     }
 
-    // Select today as initial date
+    if (doctor == null) {
+      Get.back();
+      Get.snackbar('Erreur', 'Médecin non trouvé',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
     final today = DateTime.now();
     selectedDate.value = today;
     focusedDay.value = today;
-
-    // Load slots for today
     loadAvailableSlots(today);
   }
 
@@ -52,7 +52,6 @@ class BookAppointmentController extends GetxController {
     super.onClose();
   }
 
-  /// Load available slots for a specific date
   Future<void> loadAvailableSlots(DateTime date) async {
     try {
       isLoadingSlots.value = true;
@@ -60,7 +59,7 @@ class BookAppointmentController extends GetxController {
       selectedTime.value = null;
 
       final slots = await appointmentRepository.getAvailableSlots(
-        doctorId: doctor.id,
+        doctorId: doctor!.id,
         date: date,
       );
 
@@ -78,72 +77,53 @@ class BookAppointmentController extends GetxController {
     }
   }
 
-  /// Select a date
   void selectDate(DateTime date) {
     selectedDate.value = date;
     focusedDay.value = date;
     loadAvailableSlots(date);
   }
 
-  /// Select a time slot
   void selectTimeSlot(String time) {
     selectedTime.value = time;
   }
 
-  /// Check if date is selectable
   bool isDateSelectable(DateTime date) {
-    // Can't select past dates
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final checkDate = DateTime(date.year, date.month, date.day);
 
-    if (checkDate.isBefore(today)) {
-      return false;
-    }
+    if (checkDate.isBefore(today)) return false;
 
-    // Can select dates up to 30 days in advance
     final maxDate = today.add(const Duration(days: 30));
     return checkDate.isBefore(maxDate) || checkDate.isAtSameMomentAs(maxDate);
   }
 
-  /// Book appointment
   Future<void> bookAppointment() async {
-    // Validation
     if (selectedDate.value == null) {
-      Get.snackbar(
-        'Erreur',
-        'Veuillez sélectionner une date',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Erreur', 'Veuillez sélectionner une date',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return;
     }
 
     if (selectedTime.value == null) {
-      Get.snackbar(
-        'Erreur',
-        'Veuillez sélectionner un créneau horaire',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Erreur', 'Veuillez sélectionner un créneau horaire',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return;
     }
 
     try {
       isLoading.value = true;
 
-      // Get current user
       final user = await storageService.getUser();
-      if (user == null) {
-        throw Exception('Utilisateur non connecté');
-      }
+      if (user == null) throw Exception('Utilisateur non connecté');
 
-      // Book appointment
       final appointment = await appointmentRepository.bookAppointment(
         patientId: user.id,
-        doctorId: doctor.id,
+        doctorId: doctor!.id,
         date: selectedDate.value!,
         time: selectedTime.value!,
         reason: reasonController.text.trim().isEmpty
@@ -151,8 +131,7 @@ class BookAppointmentController extends GetxController {
             : reasonController.text.trim(),
       );
 
-      // Show success message
-      Get.back(); // Close booking screen
+      Get.back();
 
       Get.snackbar(
         'Succès',
@@ -163,8 +142,7 @@ class BookAppointmentController extends GetxController {
         duration: const Duration(seconds: 4),
       );
 
-      // Navigate to appointments screen
-      Get.toNamed('/appointments');
+      Get.toNamed(AppRoutes.MY_APPOINTMENTS);
     } catch (e) {
       Get.snackbar(
         'Erreur',
@@ -176,15 +154,5 @@ class BookAppointmentController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }
-
-  /// Change month
-  void changeMonth(int delta) {
-    final newMonth = DateTime(
-      selectedMonth.value.year,
-      selectedMonth.value.month + delta,
-    );
-    selectedMonth.value = newMonth;
-    focusedDay.value = newMonth;
   }
 }

@@ -4,12 +4,11 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../data/providers/favorite_provider.dart';
 import '../../../data/repositories/favorite_repository.dart';
+import '../controllers/favorites_controller.dart';
 
 /// Binding for the Favorites screen.
 ///
 /// Wires: ApiService → FavoriteProvider → FavoriteRepository
-/// The FavoritesController is expected to be registered separately
-/// (or can be added here once it's refactored to use FavoriteRepository).
 class FavoritesBinding extends Bindings {
   @override
   void dependencies() {
@@ -37,5 +36,11 @@ class FavoritesBinding extends Bindings {
         fenix: true,
       );
     }
+
+    Get.lazyPut<FavoritesController>(
+      () => FavoritesController(
+        favoriteRepository: Get.find<FavoriteRepository>(),
+      ),
+    );
   }
 }

@@ -6,8 +6,6 @@ import 'app/routes/app_pages.dart';
 import 'core/services/api_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/location_service.dart';
-import 'core/services/favorites_service.dart';
-import 'core/services/ai_service.dart';
 import 'core/services/notification_service.dart';
 
 void main() async {
@@ -31,11 +29,9 @@ Future<void> initServices() async {
     await Get.putAsync(() => LocationService().init());
     print('✓ Location service');
 
-    await Get.putAsync(() => FavoritesService().init());
-    print('✓ Favorites service');
 
-    await Get.putAsync(() => AIService().init());
-    print('✓ AI service');
+
+
 
     // NotificationService is a singleton, not a GetxService
     // initialize() sets up channels + requests permissions

@@ -13,10 +13,9 @@ class MyAppointmentsController extends GetxController {
     required this.storageService,
   });
 
-  // State
   final appointments = <AppointmentModel>[].obs;
   final isLoading = false.obs;
-  final selectedTab = 0.obs; // 0 = upcoming, 1 = past
+  final selectedTab = 0.obs;
 
   @override
   void onInit() {
@@ -24,7 +23,6 @@ class MyAppointmentsController extends GetxController {
     loadAppointments();
   }
 
-  /// Load appointments
   Future<void> loadAppointments() async {
     try {
       isLoading.value = true;
@@ -46,17 +44,14 @@ class MyAppointmentsController extends GetxController {
     }
   }
 
-  /// Get upcoming appointments
   List<AppointmentModel> get upcomingAppointments {
     return appointments.where((a) => a.isUpcoming).toList();
   }
 
-  /// Get past appointments
   List<AppointmentModel> get pastAppointments {
     return appointments.where((a) => a.isPast).toList();
   }
 
-  /// Cancel appointment
   Future<void> cancelAppointment(AppointmentModel appointment) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
@@ -71,9 +66,7 @@ class MyAppointmentsController extends GetxController {
           ),
           ElevatedButton(
             onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Annuler le RDV'),
           ),
         ],
@@ -104,17 +97,6 @@ class MyAppointmentsController extends GetxController {
     }
   }
 
-  /// Reschedule appointment
-  void rescheduleAppointment(AppointmentModel appointment) {
-    // Navigate to booking screen with reschedule mode
-    Get.toNamed(
-      '/book-appointment',
-      arguments: appointment.doctor,
-      parameters: {'reschedule': appointment.id.toString()},
-    );
-  }
-
-  /// Refresh appointments
   Future<void> refreshAppointments() async {
     await loadAppointments();
   }

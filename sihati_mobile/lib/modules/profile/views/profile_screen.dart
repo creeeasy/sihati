@@ -1,3 +1,4 @@
+// lib/modules/profile/views/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -32,14 +33,9 @@ class ProfileScreen extends GetView<ProfileController> {
           }
           if (controller.user.value == null) {
             return Center(
-              child: Text(
-                'Utilisateur non trouvé',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 15,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              child: Text('Utilisateur non trouvé',
+                  style:
+                      TextStyle(fontSize: 15, color: AppColors.textSecondary)),
             );
           }
           return _buildContent();
@@ -50,35 +46,23 @@ class ProfileScreen extends GetView<ProfileController> {
 
   Widget _buildContent() {
     return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: BouncingScrollPhysics(),
-      ),
+      physics:
+          const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
       slivers: [
         _buildHeader(),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.xl + 8,
-            AppSpacing.lg,
-            AppSpacing.xl,
-          ),
+              AppSpacing.lg, AppSpacing.xl + 8, AppSpacing.lg, AppSpacing.xl),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               _buildNameBadge(),
               const SizedBox(height: AppSpacing.lg),
-
-              // 🆕 DOSSIER MÉDICAL CARD (Featured)
               _buildMedicalRecordCard(),
               const SizedBox(height: AppSpacing.lg),
-
-              // 🆕 ACTIONS RAPIDES
               _buildQuickActionsCard(),
               const SizedBox(height: AppSpacing.lg),
-
-              // 🆕 CARTE CHIFA SECTION (Integrated)
               _buildChifaCard(),
               const SizedBox(height: AppSpacing.lg),
-
               _buildPersonalInfoCard(),
               const SizedBox(height: AppSpacing.md),
               _buildSettingsCard(),
@@ -88,15 +72,11 @@ class ProfileScreen extends GetView<ProfileController> {
               _buildLogoutButton(),
               const SizedBox(height: AppSpacing.md),
               Center(
-                child: Text(
-                  'v1.0.0',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w300,
-                    color: AppColors.textTertiary,
-                  ),
-                ),
+                child: Text('v1.0.0',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w300,
+                        color: AppColors.textTertiary)),
               ),
               const SizedBox(height: AppSpacing.md),
             ]),
@@ -107,7 +87,7 @@ class ProfileScreen extends GetView<ProfileController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // WAVE HEADER — gradient + avatar floating over wave
+  // WAVE HEADER
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildHeader() {
@@ -152,7 +132,6 @@ class ProfileScreen extends GetView<ProfileController> {
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           children: [
-            // Gradient
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -161,13 +140,12 @@ class ProfileScreen extends GetView<ProfileController> {
                   colors: [
                     Color(0xFF2E7BF6),
                     Color(0xFF1E5BC6),
-                    Color(0xFF0D2460),
+                    Color(0xFF0D2460)
                   ],
                   stops: [0.0, 0.6, 1.0],
                 ),
               ),
             ),
-            // Decorative circles
             Positioned(
               top: -40,
               right: -30,
@@ -184,7 +162,6 @@ class ProfileScreen extends GetView<ProfileController> {
               child: _Circle(
                   size: 60, opacity: 0.10, color: const Color(0xFF64FFDA)),
             ),
-            // Wave at bottom
             Positioned(
               bottom: -1,
               left: 0,
@@ -194,7 +171,6 @@ class ProfileScreen extends GetView<ProfileController> {
                 painter: _WavePainter(),
               ),
             ),
-            // Avatar centered, slightly below midpoint
             Positioned(
               bottom: 10,
               left: 0,
@@ -221,11 +197,9 @@ class ProfileScreen extends GetView<ProfileController> {
                       child: Text(
                         user != null ? controller.getUserInitials() : '--',
                         style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                        ),
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primary),
                       ),
                     ),
                   );
@@ -247,16 +221,12 @@ class ProfileScreen extends GetView<ProfileController> {
       final user = controller.user.value!;
       return Column(
         children: [
-          Text(
-            user.fullName,
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          Text(user.fullName,
+              style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary),
+              textAlign: TextAlign.center),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -264,15 +234,11 @@ class ProfileScreen extends GetView<ProfileController> {
               color: AppColors.primarySoft,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(
-              controller.getUserRole(),
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
+            child: Text(controller.getUserRole(),
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary)),
           ),
         ],
       );
@@ -280,7 +246,7 @@ class ProfileScreen extends GetView<ProfileController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 🆕 DOSSIER MÉDICAL CARD (Featured Gradient Card)
+  // DOSSIER MÉDICAL CARD
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildMedicalRecordCard() {
@@ -289,18 +255,14 @@ class ProfileScreen extends GetView<ProfileController> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
+              color: AppColors.primary.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10)),
         ],
       ),
       child: Material(
@@ -313,7 +275,6 @@ class ProfileScreen extends GetView<ProfileController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
                 Row(
                   children: [
                     Container(
@@ -322,47 +283,32 @@ class ProfileScreen extends GetView<ProfileController> {
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
-                        Icons.medical_information_rounded,
-                        color: Colors.white,
-                        size: 32,
-                      ),
+                      child: const Icon(Icons.medical_information_rounded,
+                          color: Colors.white, size: 32),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Mon Dossier Médical',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                          const Text('Mon Dossier Médical',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
                           const SizedBox(height: 4),
-                          Text(
-                            'Accédez à votre historique complet',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
+                          Text('Accédez à votre historique complet',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withOpacity(0.9))),
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                    const Icon(Icons.arrow_forward_ios,
+                        color: Colors.white, size: 18),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                // Stats Grid
                 Row(
                   children: [
                     Expanded(
@@ -373,10 +319,9 @@ class ProfileScreen extends GetView<ProfileController> {
                       ),
                     ),
                     Container(
-                      width: 1,
-                      height: 40,
-                      color: Colors.white.withOpacity(0.3),
-                    ),
+                        width: 1,
+                        height: 40,
+                        color: Colors.white.withOpacity(0.3)),
                     Expanded(
                       child: _buildMedicalStatItem(
                         icon: Icons.medication_outlined,
@@ -385,10 +330,9 @@ class ProfileScreen extends GetView<ProfileController> {
                       ),
                     ),
                     Container(
-                      width: 1,
-                      height: 40,
-                      color: Colors.white.withOpacity(0.3),
-                    ),
+                        width: 1,
+                        height: 40,
+                        color: Colors.white.withOpacity(0.3)),
                     Expanded(
                       child: _buildMedicalStatItem(
                         icon: Icons.calendar_today_outlined,
@@ -406,44 +350,28 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildMedicalStatItem({
-    required IconData icon,
-    required String count,
-    required String label,
-  }) {
+  Widget _buildMedicalStatItem(
+      {required IconData icon, required String count, required String label}) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: Colors.white.withOpacity(0.9),
-          size: 22,
-        ),
+        Icon(icon, color: Colors.white.withOpacity(0.9), size: 22),
         const SizedBox(height: 6),
-        Text(
-          count,
-          style: const TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        Text(count,
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 10,
-            color: Colors.white.withOpacity(0.8),
-          ),
-          textAlign: TextAlign.center,
-        ),
+        Text(label,
+            style:
+                TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.8)),
+            textAlign: TextAlign.center),
       ],
     );
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 🆕 ACTIONS RAPIDES CARD
+  // ACTIONS RAPIDES CARD
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildQuickActionsCard() {
@@ -462,7 +390,6 @@ class ProfileScreen extends GetView<ProfileController> {
             icon: Icons.event_outlined,
             title: 'Mes Rendez-vous',
             subtitle: 'Consultations à venir',
-            badge: '2',
             onTap: controller.goToAppointments,
           ),
           const Divider(height: 1, color: AppColors.divider),
@@ -478,7 +405,7 @@ class ProfileScreen extends GetView<ProfileController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 🆕 CARTE CHIFA CARD
+  // CARTE CHIFA CARD
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildChifaCard() {
@@ -509,26 +436,16 @@ class ProfileScreen extends GetView<ProfileController> {
                   decoration: BoxDecoration(
                     color: AppColors.infoLight.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.info.withOpacity(0.3),
-                    ),
+                    border: Border.all(color: AppColors.info.withOpacity(0.3)),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 18,
-                        color: AppColors.info,
-                      ),
+                      Icon(Icons.info_outline, size: 18, color: AppColors.info),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'Le numéro Chifa vous permet de bénéficier de remboursements et d\'accéder à vos droits',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 11,
-                            color: AppColors.info,
-                          ),
+                          style: TextStyle(fontSize: 11, color: AppColors.info),
                         ),
                       ),
                     ],
@@ -545,69 +462,52 @@ class ProfileScreen extends GetView<ProfileController> {
     String clean = chifa.replaceAll(' ', '');
     String formatted = '';
     for (int i = 0; i < clean.length; i++) {
-      if (i > 0 && i % 3 == 0) {
-        formatted += ' ';
-      }
+      if (i > 0 && i % 3 == 0) formatted += ' ';
       formatted += clean[i];
     }
     return formatted;
   }
 
   void _showEditChifaDialog() {
-    final chifaController = TextEditingController(
-      text: controller.user.value?.chifaNumber ?? '',
-    );
+    final chifaController =
+        TextEditingController(text: controller.user.value?.chifaNumber ?? '');
 
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
             Icon(Icons.credit_card, color: AppColors.primary),
             const SizedBox(width: 12),
-            const Text(
-              'Carte Chifa',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            const Text('Carte Chifa',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Numéro de Carte Chifa',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
+            Text('Numéro de Carte Chifa',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary)),
             const SizedBox(height: 12),
             TextField(
               controller: chifaController,
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(15),
+                LengthLimitingTextInputFormatter(15)
               ],
               decoration: InputDecoration(
                 hintText: '1234567890123',
                 prefixIcon: Icon(Icons.credit_card, color: AppColors.primary),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.primary, width: 2),
-                ),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2)),
               ),
             ),
             const SizedBox(height: 8),
@@ -616,14 +516,9 @@ class ProfileScreen extends GetView<ProfileController> {
                 Icon(Icons.info_outline, size: 14, color: AppColors.info),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Text(
-                    'Entre 13 et 15 chiffres (Optionnel)',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  child: Text('Entre 13 et 15 chiffres (Optionnel)',
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.textSecondary)),
                 ),
               ],
             ),
@@ -641,15 +536,11 @@ class ProfileScreen extends GetView<ProfileController> {
                     Icon(Icons.delete_outline,
                         size: 18, color: AppColors.error),
                     const SizedBox(width: 8),
-                    Text(
-                      'Supprimer le numéro',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 14,
-                        color: AppColors.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    Text('Supprimer le numéro',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -659,14 +550,10 @@ class ProfileScreen extends GetView<ProfileController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text(
-              'Annuler',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text('Annuler',
+                style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -675,21 +562,16 @@ class ProfileScreen extends GetView<ProfileController> {
                 controller.updateChifaNumber(chifa);
                 Get.back();
               } else {
-                Get.snackbar(
-                  'Erreur',
-                  'Format invalide (13-15 chiffres)',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.red,
-                  colorText: Colors.white,
-                );
+                Get.snackbar('Erreur', 'Format invalide (13-15 chiffres)',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white);
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12))),
             child: const Text('Enregistrer'),
           ),
         ],
@@ -700,34 +582,17 @@ class ProfileScreen extends GetView<ProfileController> {
   void _confirmDeleteChifa() {
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'Supprimer le numéro Chifa',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Supprimer le numéro Chifa',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         content: const Text(
-          'Êtes-vous sûr de vouloir supprimer votre numéro Carte Chifa ?',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 14,
-          ),
-        ),
+            'Êtes-vous sûr de vouloir supprimer votre numéro Carte Chifa ?',
+            style: TextStyle(fontSize: 14)),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text(
-              'Annuler',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                color: AppColors.textSecondary,
-              ),
-            ),
+            child: Text('Annuler',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () {
@@ -735,14 +600,9 @@ class ProfileScreen extends GetView<ProfileController> {
               Get.back();
               Get.back();
             },
-            child: Text(
-              'Supprimer',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                color: AppColors.error,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Text('Supprimer',
+                style: TextStyle(
+                    color: AppColors.error, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -802,15 +662,11 @@ class ProfileScreen extends GetView<ProfileController> {
               Obx(() {
                 if (controller.errorMessage.value.isNotEmpty) {
                   return _MessageBanner(
-                    message: controller.errorMessage.value,
-                    isError: true,
-                  );
+                      message: controller.errorMessage.value, isError: true);
                 }
                 if (controller.successMessage.value.isNotEmpty) {
                   return _MessageBanner(
-                    message: controller.successMessage.value,
-                    isError: false,
-                  );
+                      message: controller.successMessage.value, isError: false);
                 }
                 return const SizedBox.shrink();
               }),
@@ -823,10 +679,9 @@ class ProfileScreen extends GetView<ProfileController> {
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
+                          color: AppColors.primary.withOpacity(0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6)),
                     ],
                   ),
                   child: Material(
@@ -844,20 +699,15 @@ class ProfileScreen extends GetView<ProfileController> {
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white)),
                                 )
-                              : const Text(
-                                  'Enregistrer les modifications',
+                              : const Text('Enregistrer les modifications',
                                   style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white)),
                         ),
                       ),
                     ),
@@ -962,15 +812,11 @@ class ProfileScreen extends GetView<ProfileController> {
           children: [
             const Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
             const SizedBox(width: 10),
-            const Text(
-              'Se déconnecter',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.error,
-              ),
-            ),
+            const Text('Se déconnecter',
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.error)),
           ],
         ),
       ),
@@ -981,14 +827,8 @@ class ProfileScreen extends GetView<ProfileController> {
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Choisir la langue',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        title: const Text('Choisir la langue',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1000,14 +840,10 @@ class ProfileScreen extends GetView<ProfileController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text(
-              'Annuler',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text('Annuler',
+                style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -1017,10 +853,7 @@ class ProfileScreen extends GetView<ProfileController> {
   Widget _buildLanguageOption(String language) {
     return Obx(() => ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(
-            language,
-            style: const TextStyle(fontFamily: 'Poppins', fontSize: 15),
-          ),
+          title: Text(language, style: const TextStyle(fontSize: 15)),
           leading: Radio<String>(
             value: language,
             groupValue: controller.language.value,
@@ -1043,7 +876,6 @@ class ProfileScreen extends GetView<ProfileController> {
 class _Card extends StatelessWidget {
   final String title;
   final Widget child;
-
   const _Card({required this.title, required this.child});
 
   @override
@@ -1060,15 +892,11 @@ class _Card extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
+            child: Text(title,
+                style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary)),
           ),
           child,
         ],
@@ -1077,7 +905,6 @@ class _Card extends StatelessWidget {
   }
 }
 
-// 🆕 Chifa Tile Component
 class _ChifaTile extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -1085,7 +912,6 @@ class _ChifaTile extends StatelessWidget {
   final String subtitle;
   final bool isVerified;
   final VoidCallback onTap;
-
   const _ChifaTile({
     required this.icon,
     required this.title,
@@ -1112,11 +938,9 @@ class _ChifaTile extends StatelessWidget {
                     isVerified ? AppColors.successLight : AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: isVerified ? AppColors.success : AppColors.primary,
-                size: 22,
-              ),
+              child: Icon(icon,
+                  color: isVerified ? AppColors.success : AppColors.primary,
+                  size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1125,53 +949,35 @@ class _ChifaTile extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
+                      Text(title,
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary)),
                       if (isVerified) ...[
                         const SizedBox(width: 6),
-                        Icon(
-                          Icons.verified,
-                          size: 14,
-                          color: AppColors.success,
-                        ),
+                        Icon(Icons.verified,
+                            size: 14, color: AppColors.success),
                       ],
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color:
-                          isVerified ? AppColors.textPrimary : AppColors.info,
-                    ),
-                  ),
+                  Text(value,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isVerified
+                              ? AppColors.textPrimary
+                              : AppColors.info)),
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textSecondary)),
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textTertiary,
-              size: 20,
-            ),
+            Icon(Icons.chevron_right_rounded,
+                color: AppColors.textTertiary, size: 20),
           ],
         ),
       ),
@@ -1179,21 +985,16 @@ class _ChifaTile extends StatelessWidget {
   }
 }
 
-// 🆕 Action Tile for Quick Actions
 class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final String? badge;
   final VoidCallback onTap;
-
-  const _ActionTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.badge,
-    required this.onTap,
-  });
+  const _ActionTile(
+      {required this.icon,
+      required this.title,
+      required this.subtitle,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1218,53 +1019,20 @@ class _ActionTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary)),
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ),
             ),
-            if (badge != null)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.error,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  badge!,
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textTertiary,
-              size: 20,
-            ),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textTertiary, size: 20),
           ],
         ),
       ),
@@ -1276,12 +1044,8 @@ class _FieldRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final Widget child;
-
-  const _FieldRow({
-    required this.icon,
-    required this.label,
-    required this.child,
-  });
+  const _FieldRow(
+      {required this.icon, required this.label, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -1298,14 +1062,12 @@ class _SwitchRow extends StatelessWidget {
   final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
-
-  const _SwitchRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
+  const _SwitchRow(
+      {required this.icon,
+      required this.title,
+      required this.subtitle,
+      required this.value,
+      required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -1317,9 +1079,8 @@ class _SwitchRow extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: AppColors.primarySoft,
-              borderRadius: BorderRadius.circular(10),
-            ),
+                color: AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(10)),
             child: Icon(icon, color: AppColors.primary, size: 18),
           ),
           const SizedBox(width: 12),
@@ -1327,31 +1088,21 @@ class _SwitchRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary)),
+                Text(subtitle,
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.textSecondary)),
               ],
             ),
           ),
           Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.primary,
-          ),
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.primary),
         ],
       ),
     );
@@ -1363,13 +1114,11 @@ class _TileRow extends StatelessWidget {
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
-
-  const _TileRow({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.onTap,
-  });
+  const _TileRow(
+      {required this.icon,
+      required this.title,
+      this.subtitle,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1384,9 +1133,8 @@ class _TileRow extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: AppColors.primarySoft,
-                borderRadius: BorderRadius.circular(10),
-              ),
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(10)),
               child: Icon(icon, color: AppColors.primary, size: 18),
             ),
             const SizedBox(width: 12),
@@ -1394,32 +1142,20 @@ class _TileRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle!,
+                  Text(title,
                       style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary)),
+                  if (subtitle != null)
+                    Text(subtitle!,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSecondary)),
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textTertiary,
-              size: 20,
-            ),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textTertiary, size: 20),
           ],
         ),
       ),
@@ -1430,7 +1166,6 @@ class _TileRow extends StatelessWidget {
 class _MessageBanner extends StatelessWidget {
   final String message;
   final bool isError;
-
   const _MessageBanner({required this.message, required this.isError});
 
   @override
@@ -1449,22 +1184,18 @@ class _MessageBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            isError
-                ? Icons.error_outline_rounded
-                : Icons.check_circle_outline_rounded,
-            color: isError ? AppColors.error : AppColors.success,
-            size: 18,
-          ),
+              isError
+                  ? Icons.error_outline_rounded
+                  : Icons.check_circle_outline_rounded,
+              color: isError ? AppColors.error : AppColors.success,
+              size: 18),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 13,
-                color: isError ? AppColors.errorDark : AppColors.successDark,
-              ),
-            ),
+            child: Text(message,
+                style: TextStyle(
+                    fontSize: 13,
+                    color:
+                        isError ? AppColors.errorDark : AppColors.successDark)),
           ),
         ],
       ),
@@ -1472,20 +1203,12 @@ class _MessageBanner extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════════
-
 class _Circle extends StatelessWidget {
   final double size;
   final double opacity;
   final Color color;
-
-  const _Circle({
-    required this.size,
-    required this.opacity,
-    this.color = Colors.white,
-  });
+  const _Circle(
+      {required this.size, required this.opacity, this.color = Colors.white});
 
   @override
   Widget build(BuildContext context) {
@@ -1493,9 +1216,7 @@ class _Circle extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(opacity),
-      ),
+          shape: BoxShape.circle, color: color.withOpacity(opacity)),
     );
   }
 }
@@ -1506,25 +1227,15 @@ class _WavePainter extends CustomPainter {
     final paint = Paint()
       ..color = const Color(0xFFF9FAFB)
       ..style = PaintingStyle.fill;
-
     final path = Path()
       ..moveTo(0, size.height * 0.5)
+      ..quadraticBezierTo(size.width * 0.25, size.height * 0.2,
+          size.width * 0.5, size.height * 0.5)
       ..quadraticBezierTo(
-        size.width * 0.25,
-        size.height * 0.2,
-        size.width * 0.5,
-        size.height * 0.5,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.75,
-        size.height * 0.8,
-        size.width,
-        size.height * 0.5,
-      )
+          size.width * 0.75, size.height * 0.8, size.width, size.height * 0.5)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-
     canvas.drawPath(path, paint);
   }
 

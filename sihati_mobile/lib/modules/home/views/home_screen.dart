@@ -364,34 +364,31 @@ class HomeScreen extends GetView<HomeController> {
           childAspectRatio: 3.0,
           padding: EdgeInsets.zero,
           children: [
-            // Mes médicaments - ALWAYS enabled (no guest check)
             _buildQuickActionCard(
               icon: Icons.medical_services_rounded,
-              label: 'Mes médicaments',
-              onTap: controller.goToMyMedications,
+              label: 'Médicaments',
+              onTap: controller.goToAllMedications,
               isDisabled: false,
             ),
-            // Rendez-vous - ONLY THIS ONE checks guest mode
             Obx(() => _buildQuickActionCard(
                   icon: Icons.event_rounded,
                   label: 'Rendez-vous',
                   onTap: controller.goToMyAppointments,
                   isDisabled: controller.isGuestMode.value,
                 )),
-            // Favoris - ALWAYS enabled (no guest check)
             _buildQuickActionCard(
               icon: Icons.favorite_rounded,
               label: 'Favoris',
               onTap: controller.goToFavorites,
               isDisabled: false,
             ),
-            // Historique - ALWAYS enabled (no guest check)
-            _buildQuickActionCard(
-              icon: Icons.history_rounded,
-              label: 'Historique',
-              onTap: controller.goToHistory,
-              isDisabled: false,
-            ),
+            // ✅ NEW: Medical Record
+            Obx(() => _buildQuickActionCard(
+                  icon: Icons.folder_shared_rounded,
+                  label: 'Dossier médical',
+                  onTap: controller.goToMedicalRecord,
+                  isDisabled: controller.isGuestMode.value,
+                )),
           ],
         ),
       ],
@@ -691,16 +688,6 @@ class HomeScreen extends GetView<HomeController> {
                     label: 'Rendez-vous à venir',
                     value: controller.upcomingAppointments.value.toString(),
                     onTap: controller.goToMyAppointments,
-                  )),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Divider(height: 1, color: AppColors.border),
-              ),
-              Obx(() => _buildStatRow(
-                    icon: Icons.bookmark_rounded,
-                    label: 'Favoris',
-                    value: controller.favoritesCount.value.toString(),
-                    onTap: controller.goToFavorites,
                   )),
             ],
           ),

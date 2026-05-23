@@ -1,3 +1,4 @@
+// src/services/aiService.ts
 import model from '../config/gemini';
 import { Medication, Pharmacy } from '../models';
 import { Op } from 'sequelize';
@@ -12,8 +13,6 @@ import {
   UrgencyLevel,
 } from '../types';
 
-// ─── JSON parse helper ────────────────────────────────────────
-// Gemini sometimes wraps output in markdown fences — strip them
 function safeParseJSON<T>(text: string, fallback: T): T {
   try {
     const cleaned = text
@@ -27,7 +26,6 @@ function safeParseJSON<T>(text: string, fallback: T): T {
   }
 }
 
-// ─── Haversine ────────────────────────────────────────────────
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -39,8 +37,6 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
       Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-
-// ─── Prompts ──────────────────────────────────────────────────
 
 const CHAT_PROMPT = (message: string) => `
 Tu es un assistant santé algérien. Un patient dit: "${message}"
@@ -103,11 +99,7 @@ Réponds UNIQUEMENT avec un JSON valide (sans markdown):
 }
 `.trim();
 
-// ─── AI Service ───────────────────────────────────────────────
-
 class AIService {
-
-  // ── CHAT: history + structured response + DB lookup ─────────
 
   async sendQuery(
     message: string,
@@ -115,23 +107,18 @@ class AIService {
     location?: { lat: number; lng: number }
   ): Promise<ChatResponse> {
     try {
-      // Keep last 10 turns to stay within token limits
       let trimmedHistory = history.slice(-10);
 
-      // Gemini hard rule: history must start with a 'user' turn
-      // Drop leading 'model' messages (e.g. welcome message from Flutter)
       while (trimmedHistory.length > 0 && trimmedHistory[0].role !== 'user') {
         trimmedHistory = trimmedHistory.slice(1);
       }
 
-      // Start Gemini chat session with history for context
       const chat = model.startChat({ history: trimmedHistory });
       const result = await chat.sendMessage(CHAT_PROMPT(message));
       const raw = result.response.text();
 
       const parsed = safeParseJSON<any>(raw, null);
 
-      // If JSON parse failed, return a safe plain-text fallback
       if (!parsed) {
         return {
           reply: raw,
@@ -142,7 +129,6 @@ class AIService {
         };
       }
 
-      // DB Integration — look up AI-suggested medications
       let medicationSuggestions: AIMedicationResult[] = [];
       if (
         parsed.isSymptomRelated &&
@@ -177,14 +163,11 @@ class AIService {
     }
   }
 
-  // ── DB medication lookup with pharmacy stock ─────────────────
-
   private async _lookupMedications(
     names: string[],
     location?: { lat: number; lng: number }
   ): Promise<AIMedicationResult[]> {
     try {
-      // Build iLike OR conditions for all AI-suggested names
       const nameConditions = names.map((n) => ({
         [Op.or]: [
           { name: { [Op.iLike]: `%${n}%` } },
@@ -204,8 +187,6 @@ class AIService {
         limit: 4,
       });
 
-      // Build results — for names AI suggested but not in our DB,
-      // still return them with foundInDb: false so Flutter can display them
       const results: AIMedicationResult[] = medications.map((med) => {
         const pharmacyRows = ((med as any).pharmacies ?? []).map((p: any): PharmacyStock => {
           const junction = p.PharmacyMedication ?? p.pharmacy_medications;
@@ -225,7 +206,6 @@ class AIService {
           };
         });
 
-        // Sort: by distance if available, then duty pharmacies first
         pharmacyRows.sort((a: PharmacyStock, b: PharmacyStock) => {
           if (a.distance !== undefined && b.distance !== undefined) {
             return a.distance - b.distance;
@@ -238,13 +218,12 @@ class AIService {
           genericName: med.genericName ?? null,
           category: med.category ?? null,
           requiresPrescription: med.requiresPrescription,
-          basePrice: med.price ? Number(med.price) : null,
+          basePrice: null, // Medication model has no price field
           foundInDb: true,
           availableInPharmacies: pharmacyRows.slice(0, 5),
         };
       });
 
-      // Add AI-suggested names that weren't found in the DB
       const foundNames = results.map((r) => r.name.toLowerCase());
       for (const name of names) {
         const alreadyFound = foundNames.some((fn) => fn.includes(name.toLowerCase()));
@@ -268,8 +247,6 @@ class AIService {
     }
   }
 
-  // ── Drug interaction check ────────────────────────────────────
-
   async checkDrugInteraction(med1: string, med2: string): Promise<InteractionResponse> {
     try {
       const result = await model.generateContent(INTERACTION_PROMPT(med1, med2));
@@ -291,11 +268,8 @@ class AIService {
     }
   }
 
-  // ── Medication info (DB-enriched) ─────────────────────────────
-
   async getMedicationInfo(medicationName: string): Promise<MedicationInfoResponse> {
     try {
-      // Check our DB first to enrich the AI prompt
       const dbMed = await Medication.findOne({
         where: {
           [Op.or]: [
@@ -306,7 +280,7 @@ class AIService {
       });
 
       const dbContext = dbMed
-        ? `nom=${dbMed.name}, générique=${dbMed.genericName ?? 'N/A'}, forme=${dbMed.dosageForm ?? 'N/A'}, dosage=${dbMed.strength ?? 'N/A'}, prix=${dbMed.price ?? 'N/A'} DA`
+        ? `nom=${dbMed.name}, générique=${dbMed.genericName ?? 'N/A'}, forme=${dbMed.form ?? 'N/A'}, dosage=${dbMed.dosage ?? 'N/A'}, catégorie=${dbMed.category ?? 'N/A'}`
         : '';
 
       const result = await model.generateContent(MED_INFO_PROMPT(medicationName, dbContext));
@@ -326,11 +300,11 @@ class AIService {
           ? {
               name:                 dbMed.name,
               genericName:          dbMed.genericName ?? null,
-              price:                dbMed.price ? Number(dbMed.price) : null,
+              price:                null, // No price column on Medication
               requiresPrescription: dbMed.requiresPrescription,
               category:             dbMed.category ?? null,
-              dosageForm:           dbMed.dosageForm ?? null,
-              strength:             dbMed.strength ?? null,
+              dosageForm:           dbMed.form ?? null,
+              strength:             dbMed.dosage ?? null,
             }
           : undefined,
       };
@@ -349,8 +323,6 @@ class AIService {
       };
     }
   }
-
-  // ── Ask medication question ──────────────────────────────────
 
   async askMedicationQuestion(medicationName: string, question: string): Promise<{ answer: string }> {
     try {
@@ -378,8 +350,6 @@ Réponds UNIQUEMENT avec un JSON valide (sans markdown):
       };
     }
   }
-
-  // ── Specialty suggestion ──────────────────────────────────────
 
   async suggestSpecialty(symptoms: string): Promise<SpecialtyResponse> {
     try {

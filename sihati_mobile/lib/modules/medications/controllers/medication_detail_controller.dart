@@ -3,23 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/models/pharmacy_with_stock.dart';
-import '../../../core/services/ai_service.dart';
-import '../../../core/services/storage_service.dart';
 import '../../../data/repositories/medication_repository.dart';
+import '../../../data/repositories/ai_repository.dart';
 import '../../../core/models/medication_model.dart';
 
 class MedicationDetailController extends GetxController {
   final MedicationRepository _medicationRepository;
-  final AIService _aiService;
-  final StorageService? _storageService;
+  final AiRepository _aiRepository;
 
   MedicationDetailController({
     required MedicationRepository medicationRepository,
-    required AIService aiService,
-    StorageService? storageService,
+    required AiRepository aiRepository,
   })  : _medicationRepository = medicationRepository,
-        _aiService = aiService,
-        _storageService = storageService;
+        _aiRepository = aiRepository;
 
   // ─── State ────────────────────────────────────────────────────
 
@@ -29,27 +25,17 @@ class MedicationDetailController extends GetxController {
   final pharmacies = <PharmacyWithStock>[].obs;
   final errorMessage = ''.obs;
 
-  // Drug interaction checker
   final interactionController = TextEditingController();
   final isCheckingInteraction = false.obs;
   final interactionResult = ''.obs;
 
-  // Ask AI
   final questionController = TextEditingController();
   final isAskingAi = false.obs;
   final aiAnswer = ''.obs;
 
   // ─── Getters ──────────────────────────────────────────────────
 
-  /// Get medication ID from route parameters
   String get medicationId => Get.parameters['id'] ?? '';
-
-  String get medicationName {
-    final args = Get.arguments;
-    if (args is Map) return args['medicationName'] as String? ?? '';
-    if (args is String) return args;
-    return medication.value?.name ?? '';
-  }
 
   // ─── Lifecycle ────────────────────────────────────────────────
 
@@ -58,9 +44,6 @@ class MedicationDetailController extends GetxController {
     super.onInit();
     if (medicationId.isNotEmpty) {
       loadMedicationDetails();
-    } else if (medicationName.isNotEmpty) {
-      // Search by name if no ID provided
-      searchMedicationByName();
     } else {
       hasError.value = true;
       errorMessage.value = 'Aucun médicament spécifié';
@@ -77,7 +60,6 @@ class MedicationDetailController extends GetxController {
 
   // ─── Load Methods ─────────────────────────────────────────────
 
-  /// Load medication details by ID
   Future<void> loadMedicationDetails() async {
     try {
       isLoading.value = true;
@@ -88,11 +70,7 @@ class MedicationDetailController extends GetxController {
           await _medicationRepository.getMedicationById(medicationId);
       medication.value = result;
 
-      // Load pharmacies with stock
       await loadNearbyPharmacies();
-
-      // Save to history
-      await _saveToHistory();
     } catch (e) {
       hasError.value = true;
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
@@ -108,35 +86,6 @@ class MedicationDetailController extends GetxController {
     }
   }
 
-  /// Search medication by name
-  Future<void> searchMedicationByName() async {
-    try {
-      isLoading.value = true;
-      hasError.value = false;
-      errorMessage.value = '';
-
-      final results = await _medicationRepository.searchMedication(
-        medicationName,
-        useLocation: false,
-      );
-
-      if (results.isNotEmpty) {
-        medication.value = results.first.medication;
-        pharmacies.value = results.first.pharmacies;
-      } else {
-        throw Exception('Médicament non trouvé');
-      }
-
-      await _saveToHistory();
-    } catch (e) {
-      hasError.value = true;
-      errorMessage.value = e.toString().replaceAll('Exception: ', '');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /// Load nearby pharmacies that have this medication
   Future<void> loadNearbyPharmacies() async {
     if (medication.value == null) return;
 
@@ -149,7 +98,6 @@ class MedicationDetailController extends GetxController {
       pharmacies.value = result;
     } catch (e) {
       print('Error loading pharmacies: $e');
-      // Don't show error to user, just keep empty list
     }
   }
 
@@ -170,9 +118,9 @@ class MedicationDetailController extends GetxController {
       isCheckingInteraction.value = true;
       interactionResult.value = '';
 
-      final result = await _aiService.checkDrugInteraction(
-        medication1: medication.value?.name ?? medicationName,
-        medication2: otherMed,
+      final result = await _aiRepository.checkDrugInteractions(
+        med1: medication.value?.name ?? '',
+        med2: otherMed,
       );
       interactionResult.value = result;
     } catch (e) {
@@ -204,8 +152,8 @@ class MedicationDetailController extends GetxController {
       isAskingAi.value = true;
       aiAnswer.value = '';
 
-      final answer = await _aiService.askMedicationQuestion(
-        medicationName: medication.value?.name ?? medicationName,
+      final answer = await _aiRepository.askMedicationQuestion(
+        medicationName: medication.value?.name ?? '',
         question: question,
       );
       aiAnswer.value = answer;
@@ -224,7 +172,6 @@ class MedicationDetailController extends GetxController {
 
   // ─── Share ────────────────────────────────────────────────────
 
-  // Dans medication_detail_controller.dart
   Future<void> shareMedication() async {
     final med = medication.value;
     if (med == null) return;
@@ -246,26 +193,23 @@ Partagé depuis Sihati 🏥
     try {
       await Share.share(text, subject: 'Informations sur ${med.name}');
     } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible de partager',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Erreur', 'Impossible de partager',
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
+
   // ─── Reminders ────────────────────────────────────────────────
 
   Future<void> setReminder() async {
     final result = await Get.dialog<List<TimeOfDay>>(
-      _ReminderDialog(medicationName: medication.value?.name ?? medicationName),
+      _ReminderDialog(medicationName: medication.value?.name ?? ''),
     );
 
     if (result == null || result.isEmpty) return;
 
-    // TODO: Implement notification scheduling
     Get.snackbar(
       '⏰ Rappels configurés',
-      '${result.length} rappel(s) pour ${medication.value?.name ?? medicationName}',
+      '${result.length} rappel(s) pour ${medication.value?.name ?? ''}',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.blue[100],
       colorText: Colors.blue[900],
@@ -273,35 +217,17 @@ Partagé depuis Sihati 🏥
     );
   }
 
-  // ─── Helper Methods ───────────────────────────────────────────
-
-  Future<void> _saveToHistory() async {
-    if (_storageService == null) return;
-    if (medication.value == null) return;
-
-    await _storageService!.addToMedicationHistory({
-      'name': medication.value!.name,
-      'viewedAt': DateTime.now().toIso8601String(),
-    });
-  }
+  // ─── Retry ────────────────────────────────────────────────────
 
   Future<void> retry() async {
     if (medicationId.isNotEmpty) {
       await loadMedicationDetails();
-    } else if (medicationName.isNotEmpty) {
-      await searchMedicationByName();
     }
-  }
-
-  // ─── Navigation ───────────────────────────────────────────────
-
-  void goToPharmacyDetail(PharmacyWithStock pharmacy) {
-    Get.toNamed('/pharmacy/${pharmacy.pharmacy.id}');
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Reminder Dialog (gardé identique)
+// Reminder Dialog
 // ═══════════════════════════════════════════════════════════════
 
 class _ReminderDialog extends StatefulWidget {

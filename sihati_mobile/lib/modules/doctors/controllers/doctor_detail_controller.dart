@@ -2,15 +2,18 @@ import 'package:get/get.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
 import 'package:sihati_mobile/data/repositories/doctor_repository.dart';
 import 'package:sihati_mobile/data/repositories/appointment_repository.dart';
+import 'package:sihati_mobile/data/repositories/favorite_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DoctorDetailController extends GetxController {
   final DoctorRepository doctorRepository;
   final AppointmentRepository? appointmentRepository;
+  final FavoriteRepository favoriteRepository;
 
   DoctorDetailController({
     required this.doctorRepository,
     this.appointmentRepository,
+    required this.favoriteRepository,
   });
 
   final doctor = Rxn<DoctorModel>();
@@ -26,6 +29,12 @@ class DoctorDetailController extends GetxController {
   void onInit() {
     super.onInit();
     loadDoctorDetails();
+    checkFavoriteStatus();
+  }
+
+  Future<void> checkFavoriteStatus() async {
+    if (doctorId.isEmpty) return;
+    isFavorite.value = await favoriteRepository.isDoctorFavorite(doctorId);
   }
 
   Future<void> loadDoctorDetails() async {
@@ -69,15 +78,25 @@ class DoctorDetailController extends GetxController {
     Get.toNamed('/book-appointment', arguments: doctor.value);
   }
 
-  void toggleFavorite() {
-    isFavorite.value = !isFavorite.value;
-    Get.snackbar(
-      isFavorite.value ? 'Ajouté aux favoris' : 'Retiré des favoris',
-      isFavorite.value
-          ? '${doctor.value?.doctorName} a été ajouté à vos favoris'
-          : '${doctor.value?.doctorName} a été retiré de vos favoris',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  Future<void> toggleFavorite() async {
+    try {
+      final newStatus = await favoriteRepository.toggleFavoriteDoctor(doctorId);
+      isFavorite.value = newStatus;
+      
+      Get.snackbar(
+        newStatus ? 'Ajouté aux favoris' : 'Retiré des favoris',
+        newStatus
+            ? '${doctor.value?.doctorName} a été ajouté à vos favoris'
+            : '${doctor.value?.doctorName} a été retiré de vos favoris',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible de modifier les favoris',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   Future<void> callDoctor() async {

@@ -33,9 +33,10 @@ class FavoriteProvider {
       final response = await _apiService.get(ApiConstants.FAVORITES_DOCTORS);
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> doctorsJson = data['doctors'] ?? data;
-        return doctorsJson.map((json) => DoctorModel.fromJson(json)).toList();
+        final List<DoctorModel> list = (response.data['data'] as List<dynamic>)
+            .map((json) => DoctorModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        return list;
       }
       return [];
     } on DioException catch (e) {
@@ -97,15 +98,14 @@ class FavoriteProvider {
   /// Backend: GET /favorites/pharmacies
   Future<List<PharmacyModel>> getFavoritePharmacies() async {
     try {
-      final response =
-          await _apiService.get(ApiConstants.FAVORITES_PHARMACIES);
+      final response = await _apiService.get(ApiConstants.FAVORITES_PHARMACIES);
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data['pharmacies'] ?? data;
-        return pharmaciesJson
-            .map((json) => PharmacyModel.fromJson(json))
+        final List<PharmacyModel> list = (response.data['data']
+                as List<dynamic>)
+            .map((json) => PharmacyModel.fromJson(json as Map<String, dynamic>))
             .toList();
+        return list;
       }
       return [];
     } on DioException catch (e) {
