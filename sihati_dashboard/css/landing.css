@@ -1,16 +1,9 @@
-/* ═══════════════════════════════════════════════
-   Sihati Landing — Cheerful, Modern, Compact
-   ═══════════════════════════════════════════════ */
-
-/* ── Tokens ──────────────────────────────────── */
 :root {
   --bg:        #080f1e;
   --bg2:       #0e1829;
   --surface:   #14223a;
   --border:    rgba(56,189,248,0.10);
   --border2:   rgba(56,189,248,0.22);
-
-  /* Vivid accent palette */
   --sky:       #38bdf8;
   --sky-dim:   rgba(56,189,248,0.12);
   --sky-glow:  rgba(56,189,248,0.30);
@@ -20,11 +13,9 @@
   --violet-dim:rgba(167,139,248,0.12);
   --amber:     #fbbf24;
   --rose:      #fb7185;
-
   --text:      #e2e8f0;
   --muted:     #94a3b8;
   --dim:       #475569;
-
   --r:         14px;
   --r-sm:      9px;
   --r-pill:    99px;
@@ -52,7 +43,6 @@
   --dim:       #64748b;
 }
 
-/* ── Reset ───────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{
@@ -71,7 +61,6 @@ img{display:block;max-width:100%}
 ::-webkit-scrollbar-track{background:var(--bg2)}
 ::-webkit-scrollbar-thumb{background:var(--surface);border-radius:99px}
 
-/* ── Animated gradient bg ────────────────────── */
 .bg-glow{
   position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
 }
@@ -98,10 +87,8 @@ img{display:block;max-width:100%}
 [data-theme="light"] .bg-glow::before{opacity:.5}
 [data-theme="light"] .bg-glow::after{opacity:.5}
 
-/* ── Container ───────────────────────────────── */
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
 
-/* ── Topbar ──────────────────────────────────── */
 .nav{
   position:fixed;top:0;left:0;right:0;height:60px;z-index:100;
   display:flex;align-items:center;
@@ -116,10 +103,16 @@ img{display:block;max-width:100%}
   display:flex;align-items:center;justify-content:space-between;
   width:100%;max-width:1080px;margin:0 auto;padding:0 24px;
 }
-.nav-logo img{height:34px;object-fit:contain}
+.nav-logo img{
+  height:34px;
+  object-fit:contain;
+  transition:filter .3s;
+}
+[data-theme="light"] .nav-logo img{
+  filter:brightness(0) saturate(100%) invert(27%) sepia(89%) saturate(600%) hue-rotate(175deg) brightness(90%);
+}
 .nav-right{display:flex;align-items:center;gap:8px}
 
-/* nav buttons */
 .nb{
   display:flex;align-items:center;gap:6px;
   padding:7px 14px;border-radius:var(--r-sm);
@@ -152,7 +145,6 @@ img{display:block;max-width:100%}
 }
 .lang-btn:hover{color:var(--sky);border-color:var(--sky)}
 
-/* ── HERO ────────────────────────────────────── */
 .hero{
   min-height:100vh;
   display:flex;align-items:center;
@@ -165,7 +157,6 @@ img{display:block;max-width:100%}
   gap:48px;align-items:center;
 }
 
-/* pill badge */
 .pill-badge{
   display:inline-flex;align-items:center;gap:7px;
   background:var(--sky-dim);
@@ -205,7 +196,6 @@ img{display:block;max-width:100%}
 }
 .hero-ctas{display:flex;flex-direction:column;gap:12px;margin-top:4px}
 
-/* Big CTA cards */
 .cta-card-big{
   display:flex;align-items:center;gap:14px;
   padding:16px 20px;
@@ -257,7 +247,6 @@ img{display:block;max-width:100%}
 [dir="rtl"] .ctab-arrow{transform:scaleX(-1)}
 [dir="rtl"] .cta-card-big:hover .ctab-arrow{transform:scaleX(-1) translateX(4px)}
 
-/* hero visual — lottie + floating chips */
 .hero-visual{
   display:flex;flex-direction:column;align-items:center;
   position:relative;
@@ -265,10 +254,15 @@ img{display:block;max-width:100%}
 .lottie-wrap{
   width:100%;max-width:420px;
   position:relative;
+  border-radius:20px;
+  transition:background .3s, padding .3s;
+}
+[data-theme="light"] .lottie-wrap{
+  background:linear-gradient(135deg,rgba(2,132,199,0.08) 0%,rgba(5,150,105,0.06) 100%);
+  padding:12px;
 }
 .lottie-wrap lottie-player{width:100%;height:auto}
 
-/* floating chips */
 .chip{
   position:absolute;
   background:var(--bg2);
@@ -294,7 +288,6 @@ img{display:block;max-width:100%}
   50%{transform:translateY(-8px)}
 }
 
-/* ── PORTALS SECTION ─────────────────────────── */
 .portals{padding:64px 0;position:relative;z-index:1}
 .portals-grid{
   display:grid;grid-template-columns:1fr 1fr;
@@ -347,7 +340,6 @@ img{display:block;max-width:100%}
 .p-link.mint{color:var(--mint)}
 .p-link:hover{gap:12px}
 
-/* ── FEATURES ROW ────────────────────────────── */
 .feats{padding:0 0 64px;position:relative;z-index:1}
 .feats-grid{
   display:grid;grid-template-columns:repeat(3,1fr);
@@ -367,7 +359,6 @@ img{display:block;max-width:100%}
 .feat h4{font-size:13.5px;font-weight:700;margin-bottom:6px}
 .feat p{font-size:12px;color:var(--muted);line-height:1.65}
 
-/* ── SECTION HEADING ─────────────────────────── */
 .s-label{
   display:inline-block;
   font-size:10.5px;font-weight:700;
@@ -381,7 +372,6 @@ img{display:block;max-width:100%}
 }
 .s-sub{font-size:14.5px;color:var(--muted);line-height:1.7}
 
-/* ── FOOTER ──────────────────────────────────── */
 .foot{
   background:var(--bg2);border-top:1px solid var(--border);
   padding:28px 0;position:relative;z-index:1;
@@ -390,13 +380,19 @@ img{display:block;max-width:100%}
   display:flex;align-items:center;justify-content:space-between;
   flex-wrap:wrap;gap:12px;
 }
-.foot-inner img{height:26px;object-fit:contain}
+.foot-inner img{
+  height:26px;
+  object-fit:contain;
+  transition:filter .3s;
+}
+[data-theme="light"] .foot-inner img{
+  filter:brightness(0) saturate(100%) invert(27%) sepia(89%) saturate(600%) hue-rotate(175deg) brightness(90%);
+}
 .foot-copy{font-size:12px;color:var(--dim)}
 .foot-links{display:flex;gap:18px}
 .foot-links a{font-size:12px;color:var(--dim);transition:color .2s}
 .foot-links a:hover{color:var(--sky)}
 
-/* ── Fade-up animation ───────────────────────── */
 .fu{opacity:0;transform:translateY(20px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
 .fu.in{opacity:1;transform:translateY(0)}
 .fu:nth-child(2){transition-delay:.08s}
@@ -405,14 +401,12 @@ img{display:block;max-width:100%}
 .fu:nth-child(5){transition-delay:.32s}
 .fu:nth-child(6){transition-delay:.40s}
 
-/* ── RTL ─────────────────────────────────────── */
 [dir="rtl"] .hero-inner{direction:rtl}
 [dir="rtl"] .hero-sub{direction:rtl}
 [dir="rtl"] .nav-inner{direction:rtl}
 [dir="rtl"] .foot-inner{direction:rtl}
 [dir="rtl"] .p-link i{transform:scaleX(-1)}
 
-/* ── Responsive ──────────────────────────────── */
 @media(max-width:860px){
   .hero-inner{grid-template-columns:1fr;gap:32px}
   .hero-visual{display:none}
