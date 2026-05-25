@@ -219,10 +219,11 @@ class DoctorCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.near_me_rounded,
-                              size: 14,
-                              color: AppColors.primary,
+                            SvgPicture.asset(
+                              AppIcons.location,
+                              width: 14,
+                              height: 14,
+                              colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -248,10 +249,11 @@ class DoctorCard extends StatelessWidget {
                               color: AppColors.successLight,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.attach_money_rounded,
-                              size: 12,
-                              color: AppColors.success,
+                            child: SvgPicture.asset(
+                              AppIcons.consultation,
+                              width: 12,
+                              height: 12,
+                              colorFilter: const ColorFilter.mode(AppColors.success, BlendMode.srcIn),
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -277,10 +279,11 @@ class DoctorCard extends StatelessWidget {
                               color: AppColors.infoLight,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.work_outline_rounded,
-                              size: 12,
-                              color: AppColors.info,
+                            child: SvgPicture.asset(
+                              AppIcons.verified,
+                              width: 12,
+                              height: 12,
+                              colorFilter: const ColorFilter.mode(AppColors.info, BlendMode.srcIn),
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -346,7 +349,7 @@ class DoctorCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.schedule_rounded, size: 14, color: AppColors.success),
+                SvgPicture.asset(AppIcons.appointment, width: 14, height: 14, colorFilter: const ColorFilter.mode(AppColors.success, BlendMode.srcIn)),
                 const SizedBox(width: 6),
                 Text(
                   'Prochain créneau: ${snapshot.data}',

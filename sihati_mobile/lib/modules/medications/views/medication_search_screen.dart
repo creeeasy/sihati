@@ -433,7 +433,7 @@ class MedicationSearchScreen extends GetView<MedicationSearchController> {
         return EmptyState(
           message: 'Aucun médicament trouvé',
           submessage: 'Essayez un autre nom ou vérifiez l\'orthographe',
-          icon: Icons.medication_rounded,
+          icon: AppIcons.medication,
           onRetry: controller.searchMedication,
           retryText: 'Réessayer',
         );

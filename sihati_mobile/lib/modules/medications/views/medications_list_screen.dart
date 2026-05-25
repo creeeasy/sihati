@@ -213,7 +213,7 @@ class MedicationsListScreen extends GetView<MedicationsListController> {
         return SliverFillRemaining(
           child: EmptyState(
             message: 'Aucun médicament trouvé',
-            icon: Icons.medical_services_rounded,
+            icon: AppIcons.medication,
             onRetry: controller.refreshMedications,
           ),
         );

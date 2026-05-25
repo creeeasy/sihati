@@ -1,6 +1,8 @@
 // lib/modules/medications/views/medication_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/core/models/medication_model.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -40,7 +42,11 @@ class _LoadingState extends StatelessWidget {
         backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+          icon: SvgPicture.asset(AppIcons.arrowBack,
+              width: 24,
+              height: 24,
+              colorFilter:
+                  const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -77,7 +83,11 @@ class _ErrorState extends StatelessWidget {
         backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+          icon: SvgPicture.asset(AppIcons.arrowBack,
+              width: 24,
+              height: 24,
+              colorFilter:
+                  const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
           onPressed: () => Get.back(),
         ),
       ),
@@ -93,8 +103,11 @@ class _ErrorState extends StatelessWidget {
                   color: AppColors.errorLight,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.error_outline_rounded,
-                    size: 64, color: AppColors.error),
+                child: SvgPicture.asset(AppIcons.errorIcon,
+                    width: 64,
+                    height: 64,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.error, BlendMode.srcIn)),
               ),
               SizedBox(height: AppSpacing.lg),
               const Text('Impossible de charger',
@@ -109,7 +122,11 @@ class _ErrorState extends StatelessWidget {
               SizedBox(height: AppSpacing.xl),
               ElevatedButton.icon(
                 onPressed: onRetry,
-                icon: Icon(Icons.refresh_rounded),
+                icon: SvgPicture.asset(AppIcons.history,
+                    width: 20,
+                    height: 20,
+                    colorFilter:
+                        const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
                 label: const Text('Réessayer'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -148,7 +165,7 @@ class _Content extends StatelessWidget {
               if (medication.description != null &&
                   medication.description!.isNotEmpty)
                 _Section(
-                  icon: Icons.description_rounded,
+                  icon: AppIcons.prescription,
                   title: 'Description',
                   text: medication.description!,
                   color: AppColors.primary,
@@ -158,7 +175,7 @@ class _Content extends StatelessWidget {
               if (medication.indications != null &&
                   medication.indications!.isNotEmpty)
                 _Section(
-                  icon: Icons.healing_rounded,
+                  icon: AppIcons.medication,
                   title: 'Indications',
                   text: medication.indications!,
                   color: AppColors.info,
@@ -168,7 +185,7 @@ class _Content extends StatelessWidget {
               if (medication.posology != null &&
                   medication.posology!.isNotEmpty)
                 _Section(
-                  icon: Icons.schedule_rounded,
+                  icon: AppIcons.calendar,
                   title: 'Posologie',
                   text: medication.posology!,
                   color: AppColors.secondary,
@@ -189,7 +206,7 @@ class _Content extends StatelessWidget {
               if (medication.contraindications != null &&
                   medication.contraindications!.isNotEmpty)
                 _Section(
-                  icon: Icons.warning_amber_rounded,
+                  icon: AppIcons.warning,
                   title: 'Contre-indications',
                   text: medication.contraindications!,
                   color: AppColors.error,
@@ -199,7 +216,7 @@ class _Content extends StatelessWidget {
               if (medication.sideEffects != null &&
                   medication.sideEffects!.isNotEmpty)
                 _Section(
-                  icon: Icons.report_problem_rounded,
+                  icon: AppIcons.warning,
                   title: 'Effets secondaires',
                   text: medication.sideEffects!,
                   color: AppColors.warning,
@@ -244,7 +261,10 @@ class _AppBar extends StatelessWidget {
       elevation: 0,
       backgroundColor: AppColors.primary,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+        icon: SvgPicture.asset(AppIcons.arrowBack,
+            width: 24,
+            height: 24,
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
         onPressed: () => Get.back(),
       ),
       actions: [
@@ -255,7 +275,11 @@ class _AppBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
-            icon: Icon(Icons.alarm_rounded, color: Colors.white),
+            icon: SvgPicture.asset(AppIcons.reminder,
+                width: 24,
+                height: 24,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
             onPressed: controller.setReminder,
           ),
         ),
@@ -266,7 +290,11 @@ class _AppBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
-            icon: Icon(Icons.share_rounded, color: Colors.white),
+            icon: SvgPicture.asset(AppIcons.share,
+                width: 24,
+                height: 24,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
             onPressed: controller.shareMedication,
           ),
         ),
@@ -299,8 +327,11 @@ class _AppBar extends StatelessWidget {
                         color: Colors.white.withOpacity(0.25),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(Icons.medication_rounded,
-                          color: Colors.white, size: 28),
+                      child: SvgPicture.asset(AppIcons.medication,
+                          width: 28,
+                          height: 28,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn)),
                     ),
                     SizedBox(width: AppSpacing.md),
                     Expanded(
@@ -354,12 +385,14 @@ class _PrescriptionCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            requiresPrescription
-                ? Icons.description_outlined
-                : Icons.check_circle_outline,
-            color: requiresPrescription ? AppColors.warning : AppColors.success,
-            size: 24,
+          SvgPicture.asset(
+            requiresPrescription ? AppIcons.prescription : AppIcons.verified,
+            width: 24,
+            height: 24,
+            colorFilter: ColorFilter.mode(
+              requiresPrescription ? AppColors.warning : AppColors.success,
+              BlendMode.srcIn,
+            ),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -408,8 +441,11 @@ class _DrugInteractionChecker extends StatelessWidget {
                   color: AppColors.errorLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.warning_amber_rounded,
-                    color: AppColors.error, size: 20),
+                child: SvgPicture.asset(AppIcons.warning,
+                    width: 20,
+                    height: 20,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.error, BlendMode.srcIn)),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
@@ -437,7 +473,11 @@ class _DrugInteractionChecker extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: AppColors.primary)),
               suffixIcon: IconButton(
-                icon: Icon(Icons.search_rounded, color: AppColors.primary),
+                icon: SvgPicture.asset(AppIcons.search,
+                    width: 20,
+                    height: 20,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.primary, BlendMode.srcIn)),
                 onPressed: controller.checkInteraction,
               ),
             ),
@@ -511,8 +551,11 @@ class _AskAiSection extends StatelessWidget {
                     color: AppColors.primary.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(Icons.psychology_rounded,
-                      color: AppColors.primary, size: 20),
+                  child: SvgPicture.asset(AppIcons.aiPsychology,
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(
+                          AppColors.primary, BlendMode.srcIn)),
                 ),
                 SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -558,7 +601,11 @@ class _AskAiSection extends StatelessWidget {
                             height: 16,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : Icon(Icons.send_rounded, size: 18)),
+                        : SvgPicture.asset(AppIcons.send,
+                            width: 18,
+                            height: 18,
+                            colorFilter: const ColorFilter.mode(
+                                Colors.white, BlendMode.srcIn))),
                     label: Obx(() => Text(
                         controller.isAskingAi.value ? 'Envoi...' : 'Envoyer')),
                     style: ElevatedButton.styleFrom(
@@ -586,8 +633,11 @@ class _AskAiSection extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.psychology_rounded,
-                                  color: AppColors.primary, size: 16),
+                              SvgPicture.asset(AppIcons.aiPsychology,
+                                  width: 16,
+                                  height: 16,
+                                  colorFilter: const ColorFilter.mode(
+                                      AppColors.primary, BlendMode.srcIn)),
                               SizedBox(width: 8),
                               Text('Réponse de l\'IA',
                                   style: TextStyle(
@@ -650,8 +700,11 @@ class _FindPharmaciesCTA extends StatelessWidget {
                     color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.local_pharmacy_rounded,
-                      color: Colors.white, size: 26),
+                  child: SvgPicture.asset(AppIcons.pharmacy,
+                      width: 26,
+                      height: 26,
+                      colorFilter: const ColorFilter.mode(
+                          Colors.white, BlendMode.srcIn)),
                 ),
                 SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -671,8 +724,11 @@ class _FindPharmaciesCTA extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded,
-                    color: Colors.white.withOpacity(0.8), size: 16),
+                SvgPicture.asset(AppIcons.arrowForward,
+                    width: 16,
+                    height: 16,
+                    colorFilter: ColorFilter.mode(
+                        Colors.white.withOpacity(0.8), BlendMode.srcIn)),
               ],
             ),
           ),
@@ -683,7 +739,7 @@ class _FindPharmaciesCTA extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final String title;
   final String text;
   final Color color;
@@ -715,7 +771,10 @@ class _Section extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, color: color, size: 20),
+                SvgPicture.asset(icon,
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(color, BlendMode.srcIn)),
                 SizedBox(width: AppSpacing.sm + 4),
                 Text(title,
                     style: TextStyle(
@@ -752,8 +811,11 @@ class _Disclaimer extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded,
-              size: 16, color: AppColors.textSecondary),
+          SvgPicture.asset(AppIcons.info,
+              width: 16,
+              height: 16,
+              colorFilter: const ColorFilter.mode(
+                  AppColors.textSecondary, BlendMode.srcIn)),
           SizedBox(width: AppSpacing.sm + 4),
           Expanded(
             child: Text(
@@ -904,8 +966,11 @@ class _BarcodeCard extends StatelessWidget {
               color: AppColors.primarySoft,
               borderRadius: BorderRadius.circular(10),
             ),
-            child:
-                Icon(Icons.qr_code_rounded, color: AppColors.primary, size: 20),
+            child: SvgPicture.asset(AppIcons.qrCode,
+                width: 20,
+                height: 20,
+                colorFilter:
+                    const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
           ),
           SizedBox(width: AppSpacing.md),
           Column(

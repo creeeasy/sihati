@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/routes/app_routes.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import 'package:sihati_mobile/core/models/medication_search_result.dart';
 import 'pharmacy_stock_card.dart';
@@ -77,8 +80,12 @@ class MedicationResultCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.description_outlined,
-                                size: 14, color: AppColors.warning),
+                            SvgPicture.asset(
+                              AppIcons.prescription,
+                              width: 14,
+                              height: 14,
+                              colorFilter: ColorFilter.mode(AppColors.warning, BlendMode.srcIn),
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'Ordonnance',
@@ -106,8 +113,12 @@ class MedicationResultCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.auto_awesome,
-                                  size: 13, color: AppColors.primary),
+                              SvgPicture.asset(
+                                AppIcons.aiPsychology,
+                                width: 13,
+                                height: 13,
+                                colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Détails AI',
@@ -135,8 +146,12 @@ class MedicationResultCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.inventory_2_outlined,
-                      size: 18, color: AppColors.primary),
+                  SvgPicture.asset(
+                    AppIcons.pharmacy,
+                    width: 18,
+                    height: 18,
+                    colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     _getAvailabilityMessage(),

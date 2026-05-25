@@ -469,7 +469,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                 color: AppColors.success,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
-              child: const Icon(Icons.schedule_rounded, color: Colors.white, size: 24),
+              child: SvgPicture.asset(AppIcons.appointment, width: 24, height: 24, colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -488,7 +488,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.success700),
+            SvgPicture.asset(AppIcons.arrowForward, width: 16, height: 16, colorFilter: const ColorFilter.mode(AppColors.success700, BlendMode.srcIn)),
           ],
         ),
       ),

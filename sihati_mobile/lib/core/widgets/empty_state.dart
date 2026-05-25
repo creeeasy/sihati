@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../app/constants/app_icons.dart';
 
 class EmptyState extends StatelessWidget {
   final String message;
   final String? submessage;
-  final IconData? icon;
+  final dynamic icon;
   final VoidCallback? onRetry;
   final String? retryText;
   final Widget? action;
@@ -36,11 +38,21 @@ class EmptyState extends StatelessWidget {
                 color: AppColors.primarySoft,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon ?? Icons.inbox_rounded,
-                size: 64,
-                color: AppColors.primary.withOpacity(0.5),
-              ),
+              child: icon is String
+                  ? SvgPicture.asset(
+                      icon as String,
+                      width: 64,
+                      height: 64,
+                      colorFilter: ColorFilter.mode(
+                        AppColors.primary.withOpacity(0.5),
+                        BlendMode.srcIn,
+                      ),
+                    )
+                  : Icon(
+                      (icon as IconData?) ?? Icons.inbox_rounded,
+                      size: 64,
+                      color: AppColors.primary.withOpacity(0.5),
+                    ),
             ),
 
             SizedBox(height: AppSpacing.xl),
@@ -78,7 +90,15 @@ class EmptyState extends StatelessWidget {
               else if (onRetry != null)
                 ElevatedButton.icon(
                   onPressed: onRetry,
-                  icon: Icon(Icons.refresh_rounded),
+                  icon: SvgPicture.asset(
+                    AppIcons.history,
+                    width: AppSpacing.iconSizeMd,
+                    height: AppSpacing.iconSizeMd,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                   label: Text(retryText ?? 'Réessayer'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,

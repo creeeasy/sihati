@@ -536,7 +536,7 @@ class DoctorListScreen extends GetView<DoctorListController> {
           child: EmptyState(
             message: 'Aucun médecin trouvé',
             submessage: 'Essayez de modifier vos filtres de recherche',
-            icon: Icons.medical_services_rounded,
+            icon: AppIcons.doctor,
             onRetry: controller.refreshData,
             retryText: 'Actualiser',
           ),
@@ -1231,12 +1231,16 @@ class _FilterBottomSheet extends StatelessWidget {
                         ? AppColors.shadowPrimary
                         : null,
                   ),
-                  child: Icon(
-                    Icons.near_me_rounded,
-                    color: controller.useLocation.value
-                        ? Colors.white
-                        : AppColors.primary,
-                    size: 20,
+                  child: SvgPicture.asset(
+                    AppIcons.location,
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(
+                      controller.useLocation.value
+                          ? Colors.white
+                          : AppColors.primary,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),

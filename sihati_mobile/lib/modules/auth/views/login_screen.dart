@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../app/constants/app_icons.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../controllers/login_controller.dart';
@@ -33,7 +35,7 @@ class LoginScreen extends GetView<LoginController> {
                     const Text(
                       'Bienvenue',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Nunito',
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -45,7 +47,7 @@ class LoginScreen extends GetView<LoginController> {
                     const Text(
                       'Connectez-vous pour continuer',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 17,
                         color: AppColors.textSecondary,
                       ),
@@ -57,7 +59,12 @@ class LoginScreen extends GetView<LoginController> {
                     _InputField(
                       controller: controller.emailController,
                       hint: 'votre@email.com',
-                      icon: Icons.email_rounded,
+                      prefixIcon: SvgPicture.asset(
+                          AppIcons.notification,
+                          width: AppSpacing.iconSizeSm,
+                          height: AppSpacing.iconSizeSm,
+                          colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                        ),
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -66,7 +73,12 @@ class LoginScreen extends GetView<LoginController> {
                     Obx(() => _InputField(
                           controller: controller.passwordController,
                           hint: '••••••••',
-                          icon: Icons.lock_rounded,
+                          prefixIcon: SvgPicture.asset(
+                            AppIcons.lock,
+                            width: AppSpacing.iconSizeSm,
+                            height: AppSpacing.iconSizeSm,
+                            colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          ),
                           obscureText: !controller.isPasswordVisible.value,
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -104,7 +116,7 @@ class LoginScreen extends GetView<LoginController> {
                         const Text(
                           'Pas de compte ? ',
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 15,
                             color: AppColors.textSecondary,
                           ),
@@ -114,7 +126,7 @@ class LoginScreen extends GetView<LoginController> {
                           child: const Text(
                             "S'inscrire",
                             style: TextStyle(
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Inter',
                               fontSize: 15,
                               color: AppColors.primary,
                               fontWeight: FontWeight.w700,
@@ -289,7 +301,7 @@ class _HeaderState extends State<_Header> with SingleTickerProviderStateMixin {
                       child: const Text(
                         'SIHATI',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Nunito',
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -313,7 +325,7 @@ class _HeaderState extends State<_Header> with SingleTickerProviderStateMixin {
                       child: Text(
                         'Votre santé, notre priorité',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           fontSize: 13,
                           fontWeight: FontWeight.w300,
                           color: Colors.white.withOpacity(0.70),
@@ -339,7 +351,7 @@ class _HeaderState extends State<_Header> with SingleTickerProviderStateMixin {
 class _InputField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
-  final IconData icon;
+  final Widget prefixIcon;
   final TextInputType keyboardType;
   final bool obscureText;
   final Widget? suffixIcon;
@@ -347,7 +359,7 @@ class _InputField extends StatelessWidget {
   const _InputField({
     required this.controller,
     required this.hint,
-    required this.icon,
+    required this.prefixIcon,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.suffixIcon,
@@ -367,14 +379,14 @@ class _InputField extends StatelessWidget {
         keyboardType: keyboardType,
         obscureText: obscureText,
         style: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontSize: 15,
           color: AppColors.textPrimary,
         ),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             color: AppColors.textTertiary,
             fontSize: 15,
           ),
@@ -387,7 +399,7 @@ class _InputField extends StatelessWidget {
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 18),
+              child: Center(child: prefixIcon),
             ),
           ),
           suffixIcon: suffixIcon,
@@ -449,7 +461,7 @@ class _LoginButton extends StatelessWidget {
                   : const Text(
                       'Se connecter',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -490,21 +502,22 @@ class _GuestButton extends StatelessWidget {
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(16),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.preview_rounded,
-                  color: AppColors.primary,
-                  size: 22,
+                SvgPicture.asset(
+                  AppIcons.search,
+                  width: AppSpacing.iconSizeMd,
+                  height: AppSpacing.iconSizeMd,
+                  colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
                 ),
-                SizedBox(width: 12),
-                Text(
+                const SizedBox(width: 12),
+                const Text(
                   'Continuer en tant qu\'invité',
                   style: TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,

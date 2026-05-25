@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../app/constants/app_icons.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../controllers/register_controller.dart';
@@ -33,7 +35,7 @@ class RegisterScreen extends GetView<RegisterController> {
                     const Text(
                       'Créer un compte',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Nunito',
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -42,10 +44,10 @@ class RegisterScreen extends GetView<RegisterController> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    Text(
+                    const Text(
                       'Remplissez les informations ci-dessous',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 17,
                         color: AppColors.textSecondary,
                       ),
@@ -57,7 +59,12 @@ class RegisterScreen extends GetView<RegisterController> {
                     _InputField(
                       controller: controller.fullNameController,
                       hint: 'Ex: Ahmed Benali',
-                      icon: Icons.person_rounded,
+                      prefixIcon: SvgPicture.asset(
+                        AppIcons.profile,
+                        width: AppSpacing.iconSizeSm,
+                        height: AppSpacing.iconSizeSm,
+                        colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.md),
 
@@ -65,7 +72,12 @@ class RegisterScreen extends GetView<RegisterController> {
                     _InputField(
                       controller: controller.emailController,
                       hint: 'exemple@email.com',
-                      icon: Icons.email_rounded,
+                      prefixIcon: SvgPicture.asset(
+                        AppIcons.notification,
+                        width: AppSpacing.iconSizeSm,
+                        height: AppSpacing.iconSizeSm,
+                        colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                      ),
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -74,7 +86,12 @@ class RegisterScreen extends GetView<RegisterController> {
                     _InputField(
                       controller: controller.phoneController,
                       hint: '0555123456',
-                      icon: Icons.phone_rounded,
+                      prefixIcon: SvgPicture.asset(
+                        AppIcons.phone,
+                        width: AppSpacing.iconSizeSm,
+                        height: AppSpacing.iconSizeSm,
+                        colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                      ),
                       keyboardType: TextInputType.phone,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -87,7 +104,12 @@ class RegisterScreen extends GetView<RegisterController> {
                     Obx(() => _InputField(
                           controller: controller.passwordController,
                           hint: 'Au moins 8 caractères',
-                          icon: Icons.lock_rounded,
+                          prefixIcon: SvgPicture.asset(
+                            AppIcons.lock,
+                            width: AppSpacing.iconSizeSm,
+                            height: AppSpacing.iconSizeSm,
+                            colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          ),
                           obscureText: !controller.isPasswordVisible.value,
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -106,7 +128,12 @@ class RegisterScreen extends GetView<RegisterController> {
                     Obx(() => _InputField(
                           controller: controller.confirmPasswordController,
                           hint: 'Re-entrez votre mot de passe',
-                          icon: Icons.lock_rounded,
+                          prefixIcon: SvgPicture.asset(
+                            AppIcons.lock,
+                            width: AppSpacing.iconSizeSm,
+                            height: AppSpacing.iconSizeSm,
+                            colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          ),
                           obscureText:
                               !controller.isConfirmPasswordVisible.value,
                           suffixIcon: IconButton(
@@ -138,29 +165,29 @@ class RegisterScreen extends GetView<RegisterController> {
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
                               ),
-                              Expanded(
+                              const Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.only(top: 12),
+                                  padding: EdgeInsets.only(top: 12),
                                   child: Text.rich(
                                     TextSpan(
                                       text: 'J\'accepte les ',
-                                      style: const TextStyle(
-                                        fontFamily: 'Poppins',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
                                         fontSize: 13,
                                         color: AppColors.textSecondary,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: 'Conditions d\'utilisation',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
-                                        const TextSpan(text: ' et la '),
+                                        TextSpan(text: ' et la '),
                                         TextSpan(
                                           text: 'Politique de confidentialité',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -188,10 +215,10 @@ class RegisterScreen extends GetView<RegisterController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        const Text(
                           'Déjà un compte ? ',
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 15,
                             color: AppColors.textSecondary,
                           ),
@@ -201,7 +228,7 @@ class RegisterScreen extends GetView<RegisterController> {
                           child: const Text(
                             'Se connecter',
                             style: TextStyle(
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Inter',
                               fontSize: 15,
                               color: AppColors.primary,
                               fontWeight: FontWeight.w700,
@@ -290,21 +317,21 @@ class _HeaderState extends State<_Header> with SingleTickerProviderStateMixin {
           ),
 
           // Decorative circles
-          Positioned(
+          const Positioned(
             top: -40,
             right: -30,
             child: _Circle(size: 140, opacity: 0.08),
           ),
-          Positioned(
+          const Positioned(
             top: 60,
             left: -20,
             child: _Circle(size: 90, opacity: 0.06),
           ),
-          Positioned(
+          const Positioned(
             bottom: 20,
             right: 60,
             child: _Circle(
-                size: 60, opacity: 0.10, color: const Color(0xFF64FFDA)),
+                size: 60, opacity: 0.10, color: Color(0xFF64FFDA)),
           ),
 
           // Wave
@@ -331,10 +358,13 @@ class _HeaderState extends State<_Header> with SingleTickerProviderStateMixin {
                   color: Colors.white.withOpacity(0.20),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: Colors.white,
-                  size: 18,
+                child: Center(
+                  child: SvgPicture.asset(
+                    AppIcons.arrowBack,
+                    width: 18,
+                    height: 18,
+                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  ),
                 ),
               ),
             ),
@@ -368,7 +398,7 @@ class _HeaderState extends State<_Header> with SingleTickerProviderStateMixin {
                       child: const Text(
                         'SIHATI',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Nunito',
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -404,10 +434,10 @@ class _ChifaInputField extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
+            const Text(
               'Numéro Carte Chifa',
-              style: const TextStyle(
-                fontFamily: 'Poppins',
+              style: TextStyle(
+                fontFamily: 'Inter',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
@@ -416,10 +446,11 @@ class _ChifaInputField extends StatelessWidget {
             const SizedBox(width: 6),
             Tooltip(
               message: 'Carte nationale de sécurité sociale (Optionnel)',
-              child: Icon(
-                Icons.info_outline,
-                size: 16,
-                color: AppColors.primary,
+              child: SvgPicture.asset(
+                AppIcons.info,
+                width: 16,
+                height: 16,
+                colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
               ),
             ),
           ],
@@ -441,14 +472,14 @@ class _ChifaInputField extends StatelessWidget {
               _ChifaNumberFormatter(),
             ],
             style: const TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontSize: 17,
               color: AppColors.textPrimary,
             ),
             decoration: InputDecoration(
               hintText: '123 456 789 012 34',
               hintStyle: const TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Inter',
                 color: AppColors.textTertiary,
                 fontSize: 15,
               ),
@@ -461,8 +492,14 @@ class _ChifaInputField extends StatelessWidget {
                     color: AppColors.primarySoft,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.credit_card,
-                      color: AppColors.primary, size: 17),
+                  child: Center(
+                    child: SvgPicture.asset(
+                      AppIcons.qrCode,
+                      width: 17,
+                      height: 17,
+                      colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                    ),
+                  ),
                 ),
               ),
               suffixIcon: Obx(() {
@@ -470,15 +507,23 @@ class _ChifaInputField extends StatelessWidget {
                   return const SizedBox.shrink();
                 }
                 return controller.isChifaValid.value
-                    ? const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Icon(Icons.check_circle,
-                            color: AppColors.success, size: 20),
+                    ? Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SvgPicture.asset(
+                          AppIcons.verified,
+                          width: 20,
+                          height: 20,
+                          colorFilter: const ColorFilter.mode(AppColors.success, BlendMode.srcIn),
+                        ),
                       )
-                    : const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Icon(Icons.error_outline,
-                            color: AppColors.error, size: 20),
+                    : Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SvgPicture.asset(
+                          AppIcons.errorIcon,
+                          width: 20,
+                          height: 20,
+                          colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
+                        ),
                       );
               }),
               border: InputBorder.none,
@@ -495,7 +540,7 @@ class _ChifaInputField extends StatelessWidget {
             return const Text(
               'Optionnel - Vous pourrez l\'ajouter plus tard',
               style: TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Inter',
                 fontSize: 12,
                 color: AppColors.textTertiary,
               ),
@@ -504,13 +549,17 @@ class _ChifaInputField extends StatelessWidget {
           return controller.isChifaValid.value
               ? Row(
                   children: [
-                    const Icon(Icons.check_circle,
-                        size: 14, color: AppColors.success),
+                    SvgPicture.asset(
+                      AppIcons.verified,
+                      width: 14,
+                      height: 14,
+                      colorFilter: const ColorFilter.mode(AppColors.success, BlendMode.srcIn),
+                    ),
                     const SizedBox(width: 4),
                     const Text(
                       'Numéro valide',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 12,
                         color: AppColors.success,
                         fontWeight: FontWeight.w600,
@@ -520,13 +569,17 @@ class _ChifaInputField extends StatelessWidget {
                 )
               : Row(
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 14, color: AppColors.error),
+                    SvgPicture.asset(
+                      AppIcons.errorIcon,
+                      width: 14,
+                      height: 14,
+                      colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
+                    ),
                     const SizedBox(width: 4),
                     const Text(
                       'Format invalide (13-15 chiffres)',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 12,
                         color: AppColors.error,
                       ),
@@ -546,7 +599,7 @@ class _ChifaInputField extends StatelessWidget {
 class _InputField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
-  final IconData icon;
+  final Widget prefixIcon;
   final TextInputType keyboardType;
   final bool obscureText;
   final Widget? suffixIcon;
@@ -554,7 +607,7 @@ class _InputField extends StatelessWidget {
   const _InputField({
     required this.controller,
     required this.hint,
-    required this.icon,
+    required this.prefixIcon,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.suffixIcon,
@@ -574,14 +627,14 @@ class _InputField extends StatelessWidget {
         keyboardType: keyboardType,
         obscureText: obscureText,
         style: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontSize: 17,
           color: AppColors.textPrimary,
         ),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             color: AppColors.textTertiary,
             fontSize: 15,
           ),
@@ -594,7 +647,7 @@ class _InputField extends StatelessWidget {
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 17),
+              child: Center(child: prefixIcon),
             ),
           ),
           suffixIcon: suffixIcon,
@@ -656,7 +709,7 @@ class _RegisterButton extends StatelessWidget {
                   : const Text(
                       "S'inscrire",
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,

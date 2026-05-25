@@ -570,9 +570,7 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
           child: EmptyState(
             message: message,
             submessage: submessage,
-            icon: controller.showActiveOnly.value
-                ? Icons.storefront_rounded
-                : Icons.store_rounded,
+            icon: AppIcons.pharmacy,
             onRetry: controller.clearFilters,
             retryText: 'Réinitialiser',
           ),
@@ -990,10 +988,14 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
                                 ),
                               ),
                               child: isSelected
-                                  ? const Icon(
-                                      Icons.check_rounded,
-                                      size: 12,
-                                      color: AppColors.white,
+                                  ? SvgPicture.asset(
+                                      AppIcons.verified,
+                                      width: 12,
+                                      height: 12,
+                                      colorFilter: const ColorFilter.mode(
+                                        AppColors.white,
+                                        BlendMode.srcIn,
+                                      ),
                                     )
                                   : null,
                             ),

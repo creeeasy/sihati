@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import 'package:sihati_mobile/core/models/pharmacy_with_stock.dart';
 
@@ -54,10 +57,11 @@ class PharmacyStockCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.check_circle,
-                              size: 12,
-                              color: AppColors.success,
+                            SvgPicture.asset(
+                              AppIcons.verified,
+                              width: 12,
+                              height: 12,
+                              colorFilter: ColorFilter.mode(AppColors.success, BlendMode.srcIn),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -85,10 +89,11 @@ class PharmacyStockCard extends StatelessWidget {
                   Row(
                     children: [
                       if (pharmacyStock.distance != null) ...[
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 14,
-                          color: AppColors.primary,
+                        SvgPicture.asset(
+                          AppIcons.location,
+                          width: 14,
+                          height: 14,
+                          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
                         ),
                         const SizedBox(width: 2),
                         Text(
@@ -99,10 +104,11 @@ class PharmacyStockCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                       ],
-                      Icon(
-                        Icons.update,
-                        size: 14,
-                        color: Colors.grey,
+                      SvgPicture.asset(
+                        AppIcons.history,
+                        width: 14,
+                        height: 14,
+                        colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
                       ),
                       const SizedBox(width: 2),
                       Text(
@@ -117,9 +123,11 @@ class PharmacyStockCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.grey[400],
+            SvgPicture.asset(
+              AppIcons.arrowForward,
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(Colors.grey[400]!, BlendMode.srcIn),
             ),
           ],
         ),

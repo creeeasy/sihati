@@ -39,7 +39,7 @@ class DocumentsTab extends GetView<MedicalRecordController> {
               const SizedBox(height: AppSpacing.lg),
               CustomButton(
                 text: 'Ajouter un document',
-                icon: Icons.cloud_upload_rounded,
+                svgIcon: AppIcons.upload,
                 onPressed: controller.uploadDocument,
                 isOutlined: true,
                 width: 200,
@@ -61,7 +61,7 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                   Expanded(
                     child: CustomButton(
                       text: 'Ajouter un document',
-                      icon: Icons.cloud_upload_rounded,
+                      svgIcon: AppIcons.upload,
                       onPressed: controller.uploadDocument,
                       isOutlined: true,
                       height: 44,
@@ -150,8 +150,13 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                               style: AppTextStyles.labelSmall
                                   .copyWith(color: AppColors.textTertiary)),
                           const SizedBox(width: 12),
-                          const Icon(Icons.file_present_outlined,
-                              size: 12, color: AppColors.textTertiary),
+                          SvgPicture.asset(
+                            AppIcons.medicalRecord,
+                            width: 12,
+                            height: 12,
+                            colorFilter: const ColorFilter.mode(
+                                AppColors.textTertiary, BlendMode.srcIn),
+                          ),
                           const SizedBox(width: 4),
                           Text(document.formattedFileSize,
                               style: AppTextStyles.labelSmall
@@ -162,8 +167,13 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.open_in_browser_rounded,
-                      color: AppColors.primary, size: 22),
+                  icon: SvgPicture.asset(
+                    AppIcons.search,
+                    width: AppSpacing.iconSizeMd,
+                    height: AppSpacing.iconSizeMd,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.primary, BlendMode.srcIn),
+                  ),
                   onPressed: () => _openDocument(document),
                 ),
                 IconButton(

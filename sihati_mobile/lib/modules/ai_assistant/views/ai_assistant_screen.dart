@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
@@ -97,8 +99,11 @@ class _WaveHeader extends StatelessWidget {
                       ),
                       child: IconButton(
                         padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.arrow_back_rounded,
-                            color: Colors.white, size: 18),
+                        icon: SvgPicture.asset(
+                          AppIcons.arrowBack,
+                          width: 18, height: 18,
+                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        ),
                         onPressed: () => Get.back(),
                       ),
                     ),
@@ -111,10 +116,12 @@ class _WaveHeader extends StatelessWidget {
                         color: Colors.white.withOpacity(0.22),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.psychology_rounded,
-                        color: Colors.white,
-                        size: 22,
+                      child: Center(
+                        child: SvgPicture.asset(
+                          AppIcons.aiPsychology,
+                          width: 22, height: 22,
+                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -143,13 +150,13 @@ class _WaveHeader extends StatelessWidget {
                     ),
                     // Action buttons
                     _HeaderIconButton(
-                      icon: Icons.delete_outline_rounded,
+                      svgPath: AppIcons.delete,
                       onPressed: controller.clearChat,
                       tooltip: 'Effacer',
                     ),
                     const SizedBox(width: 6),
                     _HeaderIconButton(
-                      icon: Icons.history_rounded,
+                      svgPath: AppIcons.history,
                       onPressed: () => Get.toNamed(AppRoutes.HISTORY),
                       tooltip: 'Historique',
                     ),
@@ -251,12 +258,12 @@ class _WaveHeader extends StatelessWidget {
 }
 
 class _HeaderIconButton extends StatelessWidget {
-  final IconData icon;
+  final String svgPath;
   final VoidCallback onPressed;
   final String tooltip;
 
   const _HeaderIconButton({
-    required this.icon,
+    required this.svgPath,
     required this.onPressed,
     required this.tooltip,
   });
@@ -272,7 +279,11 @@ class _HeaderIconButton extends StatelessWidget {
       ),
       child: IconButton(
         padding: EdgeInsets.zero,
-        icon: Icon(icon, color: Colors.white, size: 17),
+        icon: SvgPicture.asset(
+          svgPath,
+          width: 17, height: 17,
+          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        ),
         onPressed: onPressed,
         tooltip: tooltip,
       ),
@@ -493,10 +504,14 @@ class _UrgencyBanner extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isEmergency ? Icons.emergency_rounded : Icons.warning_amber_rounded,
-            color: isEmergency ? AppColors.error : AppColors.warning,
-            size: 16,
+          SvgPicture.asset(
+            isEmergency ? AppIcons.emergency : AppIcons.warning,
+            colorFilter: ColorFilter.mode(
+              isEmergency ? AppColors.error : AppColors.warning,
+              BlendMode.srcIn,
+            ),
+            width: 16,
+            height: 16,
           ),
           const SizedBox(width: AppSpacing.sm),
           Flexible(
@@ -538,8 +553,8 @@ class _SpecialtyChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.medical_services_outlined,
-              size: 13, color: AppColors.primary),
+          SvgPicture.asset(AppIcons.stethoscope, width: 13, height: 13,
+            colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
           const SizedBox(width: 6),
           Text(
             'Consulter: $specialty',
@@ -621,8 +636,10 @@ class _MedicationCard extends StatelessWidget {
                     color: AppColors.primarySoft,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.medication_rounded,
-                      size: 14, color: AppColors.primary),
+                  child: Center(
+                    child: SvgPicture.asset(AppIcons.medication, width: 14, height: 14,
+                      colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -674,13 +691,13 @@ class _MedicationCard extends StatelessWidget {
             // Availability row
             if (!med.foundInDb)
               _AvailRow(
-                icon: Icons.info_outline_rounded,
+                svgIcon: AppIcons.info,
                 color: AppColors.textTertiary,
                 text: 'Rechercher en pharmacie',
               )
             else if (inStockPharmacies.isEmpty)
               _AvailRow(
-                icon: Icons.close_rounded,
+                svgIcon: AppIcons.errorIcon,
                 color: AppColors.error,
                 text: 'Non disponible actuellement',
               )
@@ -688,7 +705,7 @@ class _MedicationCard extends StatelessWidget {
               Row(
                 children: [
                   _AvailRow(
-                    icon: Icons.check_circle_rounded,
+                    svgIcon: AppIcons.verified,
                     color: AppColors.success,
                     text:
                         'Disponible dans ${inStockPharmacies.length} pharmacie${inStockPharmacies.length > 1 ? 's' : ''}',
@@ -725,18 +742,19 @@ class _MedicationCard extends StatelessWidget {
 }
 
 class _AvailRow extends StatelessWidget {
-  final IconData icon;
+  final String svgIcon;
   final Color color;
   final String text;
   const _AvailRow(
-      {required this.icon, required this.color, required this.text});
+      {required this.svgIcon, required this.color, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: color),
+        SvgPicture.asset(svgIcon, width: 13, height: 13,
+          colorFilter: ColorFilter.mode(color, BlendMode.srcIn)),
         const SizedBox(width: 4),
         Text(
           text,
@@ -760,10 +778,13 @@ class _PharmacyRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          isDuty ? Icons.nightlight_round : Icons.store_rounded,
-          size: 11,
-          color: isDuty ? AppColors.info : AppColors.textTertiary,
+        SvgPicture.asset(
+          isDuty ? AppIcons.moon : AppIcons.pharmacy,
+          width: 11, height: 11,
+          colorFilter: ColorFilter.mode(
+            isDuty ? AppColors.info : AppColors.textTertiary,
+            BlendMode.srcIn,
+          ),
         ),
         const SizedBox(width: 4),
         Expanded(
@@ -810,10 +831,16 @@ class _Avatar extends StatelessWidget {
         color: isUser ? AppColors.primarySoft : null,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        isUser ? Icons.person_rounded : Icons.psychology_rounded,
-        size: 16,
-        color: isUser ? AppColors.primary : Colors.white,
+      child: Center(
+        child: SvgPicture.asset(
+          isUser ? AppIcons.profile : AppIcons.aiPsychology,
+          width: 16,
+          height: 16,
+          colorFilter: ColorFilter.mode(
+            isUser ? AppColors.primary : Colors.white,
+            BlendMode.srcIn,
+          ),
+        ),
       ),
     );
   }
@@ -971,8 +998,7 @@ class _InputField extends StatelessWidget {
                             valueColor: AlwaysStoppedAnimation(Colors.white),
                           ),
                         )
-                      : const Icon(Icons.send_rounded,
-                          color: Colors.white, size: 18),
+                      : SvgPicture.asset(AppIcons.send, width: 18, height: 18, colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
                 ),
               ),
             ),

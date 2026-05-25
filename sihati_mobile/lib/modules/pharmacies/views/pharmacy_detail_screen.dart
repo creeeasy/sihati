@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_text_styles.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/sihati_mapbox.dart';
@@ -71,9 +74,6 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               ),
 
             // ── Favorite button — always top-right:8 ──
-            // FIX: was rendered twice (once as SizedBox + once real) with
-            // confusing left:null/right:null no-op logic. Now always right:8,
-            // the badge shifts left independently when needed.
             Positioned(
               top: topPadding,
               right: 8,
@@ -102,20 +102,21 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           ),
         ],
       ),
-      child: Obx(() => IconButton(
-            icon: Icon(
-              controller.isFavorite.value
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              color: controller.isFavorite.value
-                  ? AppColors.error
-                  : AppColors.textSecondary,
-              size: 22,
-            ),
-            onPressed: controller.toggleFavorite,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          )),
+      child: Obx(() {
+        final isFav = controller.isFavorite.value;
+        final color = isFav ? AppColors.error : AppColors.textSecondary;
+        return IconButton(
+          icon: SvgPicture.asset(
+            isFav ? AppIcons.favoriteFilled : AppIcons.favoriteOutlined,
+            width: 22,
+            height: 22,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          ),
+          onPressed: controller.toggleFavorite,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        );
+      }),
     );
   }
 
@@ -133,7 +134,13 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
         ],
       ),
       child: IconButton(
-        icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+        icon: SvgPicture.asset(
+          AppIcons.arrowBack,
+          width: AppSpacing.iconSizeMd,
+          height: AppSpacing.iconSizeMd,
+          colorFilter:
+              const ColorFilter.mode(AppColors.textPrimary, BlendMode.srcIn),
+        ),
         onPressed: () => Get.back(),
       ),
     );
@@ -158,16 +165,21 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.nightlight_round, size: 16, color: Colors.white),
-          SizedBox(width: 6),
+        children: [
+          SvgPicture.asset(
+            AppIcons.moon,
+            width: 16,
+            height: 16,
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          ),
+          const SizedBox(width: 6),
           Text(
             'DE GARDE',
-            style: TextStyle(
-              fontSize: 11,
+            style: AppTextStyles.labelSmall.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
+              fontSize: 11,
             ),
           ),
         ],
@@ -181,12 +193,12 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
 
   Widget _buildDetailsSheet(pharmacy) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.background,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -202,7 +214,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               ),
             ),
 
-            SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.lg),
 
             // ── Name + address header ──
             Row(
@@ -216,30 +228,33 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                         : AppColors.primarySoft,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(
-                    Icons.local_pharmacy_rounded,
-                    size: 28,
-                    color: pharmacy.isOnDutyTonight
-                        ? Colors.white
-                        : AppColors.primary,
+                  child: SvgPicture.asset(
+                    AppIcons.pharmacy,
+                    width: 28,
+                    height: 28,
+                    colorFilter: ColorFilter.mode(
+                      pharmacy.isOnDutyTonight
+                          ? Colors.white
+                          : AppColors.primary,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
-                SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         pharmacy.pharmacyName,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                        style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 6),
                       _buildInfoChip(
-                        icon: Icons.location_on_rounded,
+                        icon: AppIcons.location,
                         text: pharmacy.fullAddress,
                         iconColor: AppColors.error,
                         maxLines: 2,
@@ -252,9 +267,9 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
 
             // ── Distance badge ──
             if (pharmacy.distance != null) ...[
-              SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
               Container(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
@@ -266,15 +281,19 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.near_me_rounded,
-                        size: 16, color: AppColors.primary),
+                    SvgPicture.asset(
+                      AppIcons.directions,
+                      width: 16,
+                      height: 16,
+                      colorFilter: const ColorFilter.mode(
+                          AppColors.primary, BlendMode.srcIn),
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'À ${pharmacy.formattedDistance}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.labelLarge.copyWith(
                         color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -282,24 +301,24 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               ),
             ],
 
-            SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.xl),
 
             // ── Action buttons ──
             Row(
               children: [
                 Expanded(
                   child: _buildActionButton(
-                    icon: Icons.phone_rounded,
+                    icon: AppIcons.phone,
                     label: 'Appeler',
                     color: AppColors.primary,
                     onPressed: controller.callPharmacy,
                   ),
                 ),
                 if (pharmacy.hasWhatsapp) ...[
-                  SizedBox(width: AppSpacing.sm + 4),
+                  const SizedBox(width: AppSpacing.sm + 4),
                   Expanded(
                     child: _buildActionButton(
-                      icon: Icons.chat_rounded,
+                      icon: AppIcons.chat,
                       label: 'WhatsApp',
                       color: const Color(0xFF25D366),
                       onPressed: controller.openWhatsApp,
@@ -309,10 +328,10 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               ],
             ),
 
-            SizedBox(height: AppSpacing.sm + 4),
+            const SizedBox(height: AppSpacing.sm + 4),
 
             _buildActionButton(
-              icon: Icons.directions_rounded,
+              icon: AppIcons.directions,
               label: 'Obtenir l\'itinéraire',
               color: AppColors.primary,
               isOutlined: true,
@@ -321,9 +340,9 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
 
             // ── Opening hours ──
             if (controller.openingHoursList.isNotEmpty) ...[
-              SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
               _buildSectionCard(
-                icon: Icons.access_time_rounded,
+                icon: AppIcons.history,
                 title: 'Horaires d\'ouverture',
                 iconColor: AppColors.primary,
                 child: _buildOpeningHoursTable(),
@@ -331,23 +350,23 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
             ],
 
             // ── Contact ──
-            SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.md),
             _buildSectionCard(
-              icon: Icons.phone_rounded,
+              icon: AppIcons.phone,
               title: 'Contact',
               iconColor: AppColors.primary,
               child: Column(
                 children: [
                   _buildContactRow(
-                    icon: Icons.phone_rounded,
+                    icon: AppIcons.phone,
                     label: 'Téléphone',
                     value: pharmacy.phone,
                     color: AppColors.primary,
                   ),
                   if (pharmacy.hasWhatsapp) ...[
-                    SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.md),
                     _buildContactRow(
-                      icon: Icons.chat_rounded,
+                      icon: AppIcons.chat,
                       label: 'WhatsApp',
                       value: pharmacy.whatsappNumber!,
                       color: const Color(0xFF25D366),
@@ -357,7 +376,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               ),
             ),
 
-            SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),
@@ -388,8 +407,8 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
         final isToday = entry.key == todayLabel;
 
         return Container(
-          margin: EdgeInsets.only(bottom: AppSpacing.sm),
-          padding: EdgeInsets.symmetric(
+          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sm + 4,
             vertical: AppSpacing.sm,
           ),
@@ -410,15 +429,14 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                       width: 6,
                       height: 6,
                       margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
                     ),
                   Text(
                     entry.key,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
                       color:
                           isToday ? AppColors.primary : AppColors.textPrimary,
@@ -436,8 +454,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                 ),
                 child: Text(
                   entry.value,
-                  style: TextStyle(
-                    fontSize: 13,
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: isClosed ? AppColors.error : AppColors.success,
                     fontWeight: FontWeight.w600,
                   ),
@@ -455,7 +472,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildInfoChip({
-    required IconData icon,
+    required String icon,
     required String text,
     required Color iconColor,
     int maxLines = 1,
@@ -469,14 +486,18 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
             color: iconColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Icon(icon, size: 14, color: iconColor),
+          child: SvgPicture.asset(
+            icon,
+            width: 14,
+            height: 14,
+            colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+          ),
         ),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
             text,
-            style: TextStyle(
-              fontSize: 13,
+            style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
               height: 1.4,
             ),
@@ -489,7 +510,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
   }
 
   Widget _buildActionButton({
-    required IconData icon,
+    required String icon,
     required String label,
     required Color color,
     required VoidCallback onPressed,
@@ -522,12 +543,17 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: isOutlined ? color : Colors.white, size: 20),
+              SvgPicture.asset(
+                icon,
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(
+                    isOutlined ? color : Colors.white, BlendMode.srcIn),
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 15,
+                style: AppTextStyles.labelLarge.copyWith(
                   fontWeight: FontWeight.w600,
                   color: isOutlined ? color : Colors.white,
                 ),
@@ -540,13 +566,13 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
   }
 
   Widget _buildSectionCard({
-    required IconData icon,
+    required String icon,
     required String title,
     required Color iconColor,
     required Widget child,
   }) {
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md + 4),
+      padding: const EdgeInsets.all(AppSpacing.md + 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -570,20 +596,24 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
                   color: iconColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: SvgPicture.asset(
+                  icon,
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                ),
               ),
-              SizedBox(width: AppSpacing.sm + 4),
+              const SizedBox(width: AppSpacing.sm + 4),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: AppTextStyles.displayMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.md),
           child,
         ],
       ),
@@ -591,7 +621,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
   }
 
   Widget _buildContactRow({
-    required IconData icon,
+    required String icon,
     required String label,
     required String value,
     required Color color,
@@ -604,21 +634,28 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 20, color: color),
+          child: SvgPicture.asset(
+            icon,
+            width: 20,
+            height: 20,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          ),
         ),
-        SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style:
-                      TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text(
+                label,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
-                  fontSize: 15,
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),

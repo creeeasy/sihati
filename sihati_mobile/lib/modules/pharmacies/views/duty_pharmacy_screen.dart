@@ -479,7 +479,7 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
                 : hasWilaya
                     ? 'Aucune pharmacie de garde dans cette wilaya ce soir.'
                     : 'Aucune pharmacie de garde disponible pour le moment.',
-            icon: Icons.local_pharmacy_rounded,
+            icon: AppIcons.pharmacy,
             onRetry: controller.activeFiltersCount > 0
                 ? controller.clearFilters
                 : controller.refresh,
@@ -695,10 +695,14 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
                                 ),
                               ),
                               child: isSelected
-                                  ? const Icon(
-                                      Icons.check_rounded,
-                                      size: 12,
-                                      color: AppColors.white,
+                                  ? SvgPicture.asset(
+                                      AppIcons.verified,
+                                      width: 12,
+                                      height: 12,
+                                      colorFilter: const ColorFilter.mode(
+                                        AppColors.white,
+                                        BlendMode.srcIn,
+                                      ),
                                     )
                                   : null,
                             ),

@@ -63,4 +63,5 @@ class AppIcons {
   static const String language = '$_base/language.svg';
   static const String privacy = '$_base/privacy.svg';
   static const String help = '$_base/help.svg';
+  static const String darkMode     = '$_base/dark_mode.svg';
 }

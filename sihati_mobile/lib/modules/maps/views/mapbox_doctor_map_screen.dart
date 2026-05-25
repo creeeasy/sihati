@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 
 class MapboxDoctorMapScreen extends StatefulWidget {
   final List<DoctorModel> doctors;
@@ -30,7 +32,7 @@ class _MapboxDoctorMapScreenState extends State<MapboxDoctorMapScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.my_location),
+            icon: SvgPicture.asset(AppIcons.location, width: 24, height: 24, colorFilter: const ColorFilter.mode(AppColors.textPrimary, BlendMode.srcIn)),
             onPressed: _moveToUserLocation,
           ),
         ],
@@ -108,11 +110,8 @@ class _MapboxDoctorMapScreenState extends State<MapboxDoctorMapScreen> {
               color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.medical_services,
-              color: AppColors.primary,
-              size: 20,
-            ),
+            child: SvgPicture.asset(AppIcons.doctor,
+                width: 20, height: 20, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
           ),
           const SizedBox(width: 12),
           Text(

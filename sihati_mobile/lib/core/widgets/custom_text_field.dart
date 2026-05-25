@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../app/theme/app_colors.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String? hint;
-  final IconData? prefixIcon;
+  final String? prefixSvg;
   final Widget? suffixIcon;
   final bool obscureText;
   final TextInputType keyboardType;
@@ -20,7 +21,7 @@ class CustomTextField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.hint,
-    this.prefixIcon,
+    this.prefixSvg,
     this.suffixIcon,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
@@ -45,7 +46,17 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+        prefixIcon: prefixSvg != null
+            ? Padding(
+                padding: const EdgeInsets.all(12),
+                child: SvgPicture.asset(
+                  prefixSvg!,
+                  width: 20,
+                  height: 20,
+                  colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                ),
+              )
+            : null,
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: enabled ? AppColors.white : AppColors.background,

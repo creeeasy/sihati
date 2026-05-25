@@ -1,7 +1,9 @@
 // lib/modules/profile/views/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -93,8 +95,12 @@ class ProfileScreen extends GetView<ProfileController> {
         ),
         child: IconButton(
           padding: EdgeInsets.zero,
-          icon: const Icon(Icons.arrow_back_rounded,
-              color: Colors.white, size: 18),
+          icon: SvgPicture.asset(
+            AppIcons.arrowBack,
+            width: 18,
+            height: 18,
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          ),
           onPressed: () => Get.back(),
         ),
       ),
@@ -107,12 +113,11 @@ class ProfileScreen extends GetView<ProfileController> {
           ),
           child: Obx(() => IconButton(
                 padding: EdgeInsets.zero,
-                icon: Icon(
-                  controller.isEditing.value
-                      ? Icons.close_rounded
-                      : Icons.edit_rounded,
-                  color: Colors.white,
-                  size: 18,
+                icon: SvgPicture.asset(
+                  controller.isEditing.value ? AppIcons.close : AppIcons.edit,
+                  width: 18,
+                  height: 18,
+                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 ),
                 onPressed: controller.toggleEditMode,
               )),
@@ -123,16 +128,7 @@ class ProfileScreen extends GetView<ProfileController> {
           children: [
             Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF2E7BF6),
-                    Color(0xFF1E5BC6),
-                    Color(0xFF0D2460)
-                  ],
-                  stops: [0.0, 0.6, 1.0],
-                ),
+                gradient: AppColors.profileWaveGradient,
               ),
             ),
             Positioned(
@@ -268,19 +264,19 @@ class ProfileScreen extends GetView<ProfileController> {
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.medical_information_rounded,
-                          color: Colors.white, size: 32),
+                      child: SvgPicture.asset(
+                        AppIcons.medicalRecord,
+                        width: 32, height: 32,
+                        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Mon Dossier Médical',
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
+                          Text('Mon Dossier Médical',
+                              style: AppTextStyles.h5.copyWith(color: Colors.white)),
                           const SizedBox(height: 4),
                           Text('Accédez à votre historique complet',
                               style: AppTextStyles.labelMedium.copyWith(
@@ -288,8 +284,11 @@ class ProfileScreen extends GetView<ProfileController> {
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios,
-                        color: Colors.white, size: 18),
+                    SvgPicture.asset(
+                      AppIcons.arrowForward,
+                      width: 16, height: 16,
+                      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
@@ -297,7 +296,7 @@ class ProfileScreen extends GetView<ProfileController> {
                   children: [
                     Expanded(
                       child: _buildMedicalStatItem(
-                        icon: Icons.description_outlined,
+                        svgIcon: AppIcons.prescription,
                         count: controller.prescriptionsCount.value.toString(),
                         label: 'Ordonnances',
                       ),
@@ -308,7 +307,7 @@ class ProfileScreen extends GetView<ProfileController> {
                         color: Colors.white.withOpacity(0.3)),
                     Expanded(
                       child: _buildMedicalStatItem(
-                        icon: Icons.medication_outlined,
+                        svgIcon: AppIcons.medication,
                         count: controller.medicationsCount.value.toString(),
                         label: 'Médicaments',
                       ),
@@ -319,7 +318,7 @@ class ProfileScreen extends GetView<ProfileController> {
                         color: Colors.white.withOpacity(0.3)),
                     Expanded(
                       child: _buildMedicalStatItem(
-                        icon: Icons.calendar_today_outlined,
+                        svgIcon: AppIcons.calendar,
                         count: controller.consultationsCount.value.toString(),
                         label: 'Consultations',
                       ),
@@ -335,20 +334,24 @@ class ProfileScreen extends GetView<ProfileController> {
   }
 
   Widget _buildMedicalStatItem(
-      {required IconData icon, required String count, required String label}) {
+      {required String svgIcon, required String count, required String label}) {
     return Column(
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.9), size: 22),
+        SvgPicture.asset(
+          svgIcon,
+          width: 22, height: 22,
+          colorFilter: ColorFilter.mode(Colors.white.withOpacity(0.9), BlendMode.srcIn),
+        ),
         const SizedBox(height: 6),
         Text(count,
             style: const TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white)),
         const SizedBox(height: 2),
         Text(label,
-            style:
-                TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.8)),
+            style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: Colors.white),
             textAlign: TextAlign.center),
       ],
     );
@@ -364,14 +367,14 @@ class ProfileScreen extends GetView<ProfileController> {
       child: Column(
         children: [
           _ActionTile(
-            icon: Icons.bookmark_outlined,
+            svgIcon: AppIcons.favoriteFilled,
             title: 'Mes Favoris',
             subtitle: 'Pharmacies et médecins sauvegardés',
             onTap: controller.goToFavorites,
           ),
           const Divider(height: 1, color: AppColors.divider),
           _ActionTile(
-            icon: Icons.event_outlined,
+            svgIcon: AppIcons.appointment,
             title: 'Mes Rendez-vous',
             subtitle: 'Consultations à venir',
             onTap: controller.goToAppointments,
@@ -395,7 +398,7 @@ class ProfileScreen extends GetView<ProfileController> {
         return Column(
           children: [
             _ChifaTile(
-              icon: Icons.credit_card,
+              svgIcon: AppIcons.qrCode,
               title: 'Numéro Carte Chifa',
               value:
                   hasChifa ? _formatChifaNumber(chifaNumber!) : 'Non renseigné',
@@ -416,17 +419,18 @@ class ProfileScreen extends GetView<ProfileController> {
                     border: Border.all(color: AppColors.info.withOpacity(0.3)),
                   ),
                   child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 18, color: AppColors.info),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Le numéro Chifa vous permet de bénéficier de remboursements et d\'accéder à vos droits',
-                          style: TextStyle(fontSize: 11, color: AppColors.info),
-                        ),
-                      ),
-                    ],
-                  ),
+                     children: [
+                       SvgPicture.asset(AppIcons.info, width: 18, height: 18,
+                         colorFilter: const ColorFilter.mode(AppColors.info, BlendMode.srcIn)),
+                       const SizedBox(width: 10),
+                       Expanded(
+                         child: Text(
+                           'Le numéro Chifa vous permet de bénéficier de remboursements et d\'accéder à vos droits',
+                           style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.info),
+                         ),
+                       ),
+                     ],
+                   ),
                 ),
               ),
           ],
@@ -454,10 +458,11 @@ class ProfileScreen extends GetView<ProfileController> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.credit_card, color: AppColors.primary),
+            SvgPicture.asset(AppIcons.qrCode, width: 22, height: 22,
+              colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
             const SizedBox(width: 12),
             const Text('Carte Chifa',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontFamily: 'Nunito', fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
@@ -479,9 +484,13 @@ class ProfileScreen extends GetView<ProfileController> {
               ],
               decoration: InputDecoration(
                 hintText: '1234567890123',
-                prefixIcon: Icon(Icons.credit_card, color: AppColors.primary),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                prefixIcon: Padding(
+                padding: const EdgeInsets.all(12),
+                child: SvgPicture.asset(AppIcons.qrCode, width: 20, height: 20,
+                  colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
+              ),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: AppColors.primary, width: 2)),
@@ -490,7 +499,8 @@ class ProfileScreen extends GetView<ProfileController> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.info_outline, size: 14, color: AppColors.info),
+                SvgPicture.asset(AppIcons.info, width: 14, height: 14,
+                  colorFilter: const ColorFilter.mode(AppColors.info, BlendMode.srcIn)),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text('Entre 13 et 15 chiffres (Optionnel)',
@@ -510,8 +520,8 @@ class ProfileScreen extends GetView<ProfileController> {
                 },
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline,
-                        size: 18, color: AppColors.error),
+                    SvgPicture.asset(AppIcons.delete, width: 18, height: 18,
+                      colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn)),
                     const SizedBox(width: 8),
                     Text('Supprimer le numéro',
                         style: TextStyle(
@@ -598,37 +608,34 @@ class ProfileScreen extends GetView<ProfileController> {
         child: Column(
           children: [
             _FieldRow(
-              icon: Icons.email_rounded,
               label: 'Email',
               child: CustomTextField(
                 controller: controller.emailController,
                 label: 'Email',
                 hint: 'email@exemple.com',
-                prefixIcon: Icons.email_outlined,
+                prefixSvg: AppIcons.notification,
                 enabled: false,
                 readOnly: true,
               ),
             ),
             _FieldRow(
-              icon: Icons.person_rounded,
               label: 'Nom complet',
               child: CustomTextField(
                 controller: controller.fullNameController,
                 label: 'Nom complet',
                 hint: 'Votre nom complet',
-                prefixIcon: Icons.person_outline,
+                prefixSvg: AppIcons.profile,
                 enabled: isEditing,
                 readOnly: !isEditing,
               ),
             ),
             _FieldRow(
-              icon: Icons.phone_rounded,
               label: 'Téléphone',
               child: CustomTextField(
                 controller: controller.phoneController,
                 label: 'Téléphone',
                 hint: '0550 12 34 56',
-                prefixIcon: Icons.phone_outlined,
+                prefixSvg: AppIcons.phone,
                 keyboardType: TextInputType.phone,
                 enabled: isEditing,
                 readOnly: !isEditing,
@@ -703,29 +710,31 @@ class ProfileScreen extends GetView<ProfileController> {
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildLogoutButton() {
-    return GestureDetector(
-      onTap: controller.showLogoutConfirmation,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border:
-              Border.all(color: AppColors.error.withOpacity(0.5), width: 1.5),
-          boxShadow: AppColors.shadowSm,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
-            const SizedBox(width: 10),
-            const Text('Se déconnecter',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.error)),
-          ],
-        ),
+    return TextButton(
+      onPressed: controller.showLogoutConfirmation,
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.error,
+        minimumSize: const Size.fromHeight(52),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            AppIcons.logout,
+            width: 20, height: 20,
+            colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            'Se déconnecter',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.error,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -768,14 +777,14 @@ class _Card extends StatelessWidget {
 }
 
 class _ChifaTile extends StatelessWidget {
-  final IconData icon;
+  final String svgIcon;
   final String title;
   final String value;
   final String subtitle;
   final bool isVerified;
   final VoidCallback onTap;
   const _ChifaTile({
-    required this.icon,
+    required this.svgIcon,
     required this.title,
     required this.value,
     required this.subtitle,
@@ -796,13 +805,19 @@ class _ChifaTile extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color:
-                    isVerified ? AppColors.successLight : AppColors.primarySoft,
+                color: isVerified ? AppColors.successLight : AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon,
-                  color: isVerified ? AppColors.success : AppColors.primary,
-                  size: 22),
+              child: Center(
+                child: SvgPicture.asset(
+                  svgIcon,
+                  width: 22, height: 22,
+                  colorFilter: ColorFilter.mode(
+                    isVerified ? AppColors.success : AppColors.primary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -813,33 +828,33 @@ class _ChifaTile extends StatelessWidget {
                     children: [
                       Text(title,
                           style: const TextStyle(
+                              fontFamily: 'Inter',
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary)),
                       if (isVerified) ...[
                         const SizedBox(width: 6),
-                        Icon(Icons.verified,
-                            size: 14, color: AppColors.success),
+                        SvgPicture.asset(AppIcons.verified, width: 14, height: 14,
+                          colorFilter: const ColorFilter.mode(AppColors.success, BlendMode.srcIn)),
                       ],
                     ],
                   ),
                   const SizedBox(height: 2),
                   Text(value,
                       style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: isVerified
-                              ? AppColors.textPrimary
-                              : AppColors.info)),
+                          color: isVerified ? AppColors.textPrimary : AppColors.info)),
                   const SizedBox(height: 2),
                   Text(subtitle,
                       style: const TextStyle(
-                          fontSize: 11, color: AppColors.textSecondary)),
+                          fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                color: AppColors.textTertiary, size: 20),
+            SvgPicture.asset(AppIcons.arrowForward, width: 16, height: 16,
+              colorFilter: const ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn)),
           ],
         ),
       ),
@@ -848,12 +863,12 @@ class _ChifaTile extends StatelessWidget {
 }
 
 class _ActionTile extends StatelessWidget {
-  final IconData icon;
+  final String svgIcon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
   const _ActionTile(
-      {required this.icon,
+      {required this.svgIcon,
       required this.title,
       required this.subtitle,
       required this.onTap});
@@ -874,7 +889,13 @@ class _ActionTile extends StatelessWidget {
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 22),
+              child: Center(
+                child: SvgPicture.asset(
+                  svgIcon,
+                  width: 22, height: 22,
+                  colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -883,18 +904,19 @@ class _ActionTile extends StatelessWidget {
                 children: [
                   Text(title,
                       style: const TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary)),
                   const SizedBox(height: 2),
                   Text(subtitle,
                       style: const TextStyle(
-                          fontSize: 12, color: AppColors.textSecondary)),
+                          fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textTertiary, size: 20),
+            SvgPicture.asset(AppIcons.arrowForward, width: 16, height: 16,
+              colorFilter: const ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn)),
           ],
         ),
       ),
@@ -903,11 +925,9 @@ class _ActionTile extends StatelessWidget {
 }
 
 class _FieldRow extends StatelessWidget {
-  final IconData icon;
   final String label;
   final Widget child;
-  const _FieldRow(
-      {required this.icon, required this.label, required this.child});
+  const _FieldRow({required this.label, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -938,19 +958,21 @@ class _MessageBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-              isError
-                  ? Icons.error_outline_rounded
-                  : Icons.check_circle_outline_rounded,
-              color: isError ? AppColors.error : AppColors.success,
-              size: 18),
+          SvgPicture.asset(
+            isError ? AppIcons.errorIcon : AppIcons.verified,
+            width: 18, height: 18,
+            colorFilter: ColorFilter.mode(
+              isError ? AppColors.error : AppColors.success,
+              BlendMode.srcIn,
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(message,
                 style: TextStyle(
+                    fontFamily: 'Inter',
                     fontSize: 13,
-                    color:
-                        isError ? AppColors.errorDark : AppColors.successDark)),
+                    color: isError ? AppColors.errorDark : AppColors.successDark)),
           ),
         ],
       ),

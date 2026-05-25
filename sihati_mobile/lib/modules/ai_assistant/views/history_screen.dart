@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/app_spacing.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../app/constants/app_icons.dart';
 import '../controllers/history_controller.dart';
 import '../../../app/routes/app_routes.dart';
 
@@ -18,7 +20,7 @@ class HistoryScreen extends GetView<HistoryController> {
         elevation: 0,
         title: Row(
           children: [
-            Icon(Icons.history, size: 22, color: AppColors.primary),
+            SvgPicture.asset(AppIcons.history, width: 22, height: 22, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
             SizedBox(width: AppSpacing.sm + 2),
             Text('Historique', style: AppTextStyles.h5),
           ],
@@ -28,7 +30,7 @@ class HistoryScreen extends GetView<HistoryController> {
             if (controller.searchQuery.value.isEmpty)
               return const SizedBox.shrink();
             return IconButton(
-              icon: Icon(Icons.close, color: AppColors.textSecondary),
+              icon: SvgPicture.asset(AppIcons.close, width: 20, height: 20, colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn)),
               tooltip: 'Effacer',
               onPressed: controller.clearSearch,
             );
@@ -67,8 +69,11 @@ class _SearchBar extends StatelessWidget {
           hintText: 'Rechercher dans vos conversations...',
           hintStyle:
               AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
-          prefixIcon: Icon(Icons.search,
-              size: AppSizing.iconSm, color: AppColors.textTertiary),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: SvgPicture.asset(AppIcons.search,
+                width: AppSizing.iconSm, height: AppSizing.iconSm, colorFilter: const ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn)),
+          ),
           border: OutlineInputBorder(
             borderRadius: AppSizing.borderRadiusFull,
             borderSide: BorderSide(color: AppColors.border),
@@ -150,8 +155,8 @@ class _ConversationCard extends StatelessWidget {
                           color: AppColors.primarySoft,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.person,
-                            size: 14, color: AppColors.primary),
+                        child: SvgPicture.asset(AppIcons.profile,
+                            width: 14, height: 14, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
                       ),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
@@ -186,7 +191,7 @@ class _ConversationCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child:
-                      Icon(Icons.psychology, size: 14, color: AppColors.white),
+                      SvgPicture.asset(AppIcons.aiPsychology, width: 14, height: 14, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
                 ),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
@@ -310,8 +315,8 @@ class _DetailBubble extends StatelessWidget {
             color: isUser ? AppColors.primarySoft : null,
             shape: BoxShape.circle,
           ),
-          child: Icon(isUser ? Icons.person : Icons.psychology,
-              size: 15, color: isUser ? AppColors.primary : AppColors.white),
+          child: SvgPicture.asset(isUser ? AppIcons.profile : AppIcons.aiPsychology,
+              width: 15, height: 15, colorFilter: ColorFilter.mode(isUser ? AppColors.primary : AppColors.white, BlendMode.srcIn)),
         ),
         SizedBox(width: AppSpacing.sm + 2),
         Expanded(
@@ -340,8 +345,8 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.chat_bubble_outline,
-              size: AppSizing.iconXxl, color: AppColors.textDisabled),
+          SvgPicture.asset(AppIcons.chat,
+              width: AppSizing.iconXxl, height: AppSizing.iconXxl, colorFilter: const ColorFilter.mode(AppColors.textDisabled, BlendMode.srcIn)),
           SizedBox(height: AppSpacing.md),
           Text('Aucune conversation',
               style: AppTextStyles.bodyLarge
@@ -389,8 +394,8 @@ class _ErrorState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline,
-              size: AppSizing.iconXl, color: AppColors.error),
+          SvgPicture.asset(AppIcons.errorIcon,
+              width: AppSizing.iconXl, height: AppSizing.iconXl, colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn)),
           SizedBox(height: AppSpacing.sm + 4),
           Text(message,
               style: AppTextStyles.bodyMedium

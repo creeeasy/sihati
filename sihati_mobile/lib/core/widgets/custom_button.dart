@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../app/theme/app_colors.dart';
 
 class CustomButton extends StatelessWidget {
@@ -11,6 +12,7 @@ class CustomButton extends StatelessWidget {
   final double? width;
   final double height;
   final IconData? icon;
+  final String? svgIcon;
 
   const CustomButton({
     Key? key,
@@ -23,6 +25,7 @@ class CustomButton extends StatelessWidget {
     this.width,
     this.height = 50,
     this.icon,
+    this.svgIcon,
   }) : super(key: key);
 
   @override
@@ -79,18 +82,21 @@ class CustomButton extends StatelessWidget {
       );
     }
 
-    if (icon != null) {
+    if (icon != null || svgIcon != null) {
+      final iconColor = isOutlined ? (backgroundColor ?? AppColors.primary) : color;
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20),
+          if (svgIcon != null)
+            SvgPicture.asset(svgIcon!, width: 20, height: 20, colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn))
+          else if (icon != null)
+            Icon(icon, size: 20, color: iconColor),
           const SizedBox(width: 8),
           Text(
             text,
             style: TextStyle(
-              color:
-                  isOutlined ? (backgroundColor ?? AppColors.primary) : color,
+              color: iconColor,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),

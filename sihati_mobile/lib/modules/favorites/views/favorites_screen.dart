@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
 import 'package:sihati_mobile/core/models/pharmacy_model.dart';
 import '../../../app/theme/app_colors.dart';
@@ -46,7 +48,11 @@ class FavoritesScreen extends GetView<FavoritesController> {
       elevation: 0,
       backgroundColor: AppColors.primary,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_rounded, color: Colors.white),
+        icon: SvgPicture.asset(
+          AppIcons.arrowBack,
+          width: 20, height: 20,
+          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        ),
         onPressed: () => Get.back(),
       ),
       actions: [
@@ -59,7 +65,11 @@ class FavoritesScreen extends GetView<FavoritesController> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              icon: Icon(Icons.delete_outline_rounded, color: Colors.white),
+              icon: SvgPicture.asset(
+                AppIcons.delete,
+                width: 22, height: 22,
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
               onPressed: () => _showEpicDeleteDialog(controller),
             ),
           );
@@ -145,10 +155,10 @@ class FavoritesScreen extends GetView<FavoritesController> {
                             color: Colors.white.withOpacity(0.25),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Icon(
-                            Icons.favorite_rounded,
-                            color: Colors.white,
-                            size: 32,
+                          child: SvgPicture.asset(
+                            AppIcons.favoriteFilled,
+                            width: 32, height: 32,
+                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                           ),
                         ),
                         SizedBox(width: AppSpacing.md + 4),
@@ -179,10 +189,10 @@ class FavoritesScreen extends GetView<FavoritesController> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
-                                          Icons.bookmark_rounded,
-                                          color: Colors.white,
-                                          size: 14,
+                                        SvgPicture.asset(
+                                          AppIcons.favoriteFilled,
+                                          width: 14, height: 14,
+                                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                                         ),
                                         SizedBox(width: 6),
                                         Text(
@@ -212,7 +222,8 @@ class FavoritesScreen extends GetView<FavoritesController> {
         preferredSize: Size.fromHeight(52),
         child: Container(
           color: AppColors.background,
-          child: Obx(() => TabBar(
+          child: Builder(builder: (context) {
+            return TabBar(
                 indicatorColor: AppColors.primary,
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -232,7 +243,13 @@ class FavoritesScreen extends GetView<FavoritesController> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.local_pharmacy_rounded, size: 20),
+                        SvgPicture.asset(AppIcons.pharmacy, width: 20, height: 20,
+                           colorFilter: ColorFilter.mode(
+                             DefaultTabController.of(context).index == 0
+                               ? AppColors.primary
+                               : AppColors.textSecondary,
+                             BlendMode.srcIn,
+                           )),
                         SizedBox(width: 8),
                         Text('Pharmacies'),
                         if (controller.pharmacyCount > 0) ...[
@@ -262,7 +279,13 @@ class FavoritesScreen extends GetView<FavoritesController> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.medical_services_rounded, size: 20),
+                        SvgPicture.asset(AppIcons.doctor, width: 20, height: 20,
+                           colorFilter: ColorFilter.mode(
+                             DefaultTabController.of(context).index == 1
+                               ? AppColors.primary
+                               : AppColors.textSecondary,
+                             BlendMode.srcIn,
+                           )),
                         SizedBox(width: 8),
                         Text('Médecins'),
                         if (controller.doctorCount > 0) ...[
@@ -288,7 +311,8 @@ class FavoritesScreen extends GetView<FavoritesController> {
                     ),
                   ),
                 ],
-              )),
+              );
+          }),
         ),
       ),
     );
@@ -316,10 +340,10 @@ class FavoritesScreen extends GetView<FavoritesController> {
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.delete_sweep_rounded,
-                  color: AppColors.error,
-                  size: 40,
+                child: SvgPicture.asset(
+                  AppIcons.delete,
+                  width: 40, height: 40,
+                  colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
                 ),
               ),
               SizedBox(height: AppSpacing.lg),
@@ -425,13 +449,14 @@ class _PharmaciesTab extends StatelessWidget {
 
       if (pharmacies.isEmpty) {
         return EmptyState(
-          icon: Icons.local_pharmacy_rounded,
+          icon: AppIcons.pharmacy,
           message: 'Aucune pharmacie favorite',
           submessage: 'Commencez à sauvegarder vos pharmacies préférées',
           action: ElevatedButton.icon(
             onPressed: () => Get.toNamed(AppRoutes.PHARMACY_LIST),
-            icon: Icon(Icons.add_rounded, size: 20),
-            label: Text('Découvrir des pharmacies'),
+            icon: SvgPicture.asset(AppIcons.add, width: 20, height: 20,
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
+            label: const Text('Découvrir des pharmacies'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -483,13 +508,14 @@ class _DoctorsTab extends StatelessWidget {
 
       if (doctors.isEmpty) {
         return EmptyState(
-          icon: Icons.medical_services_rounded,
+          icon: AppIcons.doctor,
           message: 'Aucun médecin favori',
           submessage: 'Commencez à sauvegarder vos médecins préférés',
           action: ElevatedButton.icon(
             onPressed: () => Get.toNamed(AppRoutes.DOCTOR_LIST),
-            icon: Icon(Icons.add_rounded, size: 20),
-            label: Text('Trouver des médecins'),
+            icon: SvgPicture.asset(AppIcons.add, width: 20, height: 20,
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
+            label: const Text('Trouver des médecins'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -587,12 +613,13 @@ class _EpicPharmacyCard extends StatelessWidget {
                             : AppColors.primarySoft,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        Icons.local_pharmacy_rounded,
-                        color: pharmacy.isOnDutyTonight
-                            ? Colors.white
-                            : AppColors.primary,
-                        size: 26,
+                      child: SvgPicture.asset(
+                        pharmacy.isOnDutyTonight ? AppIcons.pharmacy : AppIcons.pharmacy,
+                        width: 26, height: 26,
+                        colorFilter: ColorFilter.mode(
+                          pharmacy.isOnDutyTonight ? Colors.white : AppColors.primary,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                     SizedBox(width: AppSpacing.md),
@@ -650,10 +677,10 @@ class _EpicPharmacyCard extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: Icon(
-                          Icons.favorite_rounded,
-                          color: AppColors.error,
-                          size: 22,
+                        icon: SvgPicture.asset(
+                          AppIcons.favoriteFilled,
+                          width: 22, height: 22,
+                          colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
                         ),
                         onPressed: onRemove,
                       ),
@@ -684,10 +711,10 @@ class _EpicPharmacyCard extends StatelessWidget {
                         color: AppColors.error.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(
-                        Icons.location_on_rounded,
-                        size: 16,
-                        color: AppColors.error,
+                      child: SvgPicture.asset(
+                        AppIcons.location,
+                        width: 16, height: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
                       ),
                     ),
                     SizedBox(width: AppSpacing.sm + 4),
@@ -713,10 +740,10 @@ class _EpicPharmacyCard extends StatelessWidget {
                         color: AppColors.secondary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(
-                        Icons.phone_rounded,
-                        size: 16,
-                        color: AppColors.secondary,
+                      child: SvgPicture.asset(
+                        AppIcons.phone,
+                        width: 16, height: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.secondary, BlendMode.srcIn),
                       ),
                     ),
                     SizedBox(width: AppSpacing.sm + 4),
@@ -742,11 +769,8 @@ class _EpicPharmacyCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.chat_rounded,
-                              size: 12,
-                              color: Colors.white,
-                            ),
+                            SvgPicture.asset(AppIcons.chat, width: 12, height: 12,
+                              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
                             SizedBox(width: 4),
                             Text(
                               'WhatsApp',
@@ -869,11 +893,8 @@ class _EpicDoctorCard extends StatelessWidget {
                       SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            size: 14,
-                            color: AppColors.textTertiary,
-                          ),
+                          SvgPicture.asset(AppIcons.location, width: 14, height: 14,
+                            colorFilter: const ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn)),
                           SizedBox(width: 4),
                           Text(
                             doctor.wilaya,
@@ -883,11 +904,8 @@ class _EpicDoctorCard extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 12),
-                          Icon(
-                            Icons.payments_rounded,
-                            size: 14,
-                            color: AppColors.textTertiary,
-                          ),
+                          SvgPicture.asset(AppIcons.phone, width: 14, height: 14,
+                            colorFilter: const ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn)),
                           SizedBox(width: 4),
                           Text(
                             doctor.formattedFee,
@@ -903,11 +921,8 @@ class _EpicDoctorCard extends StatelessWidget {
                         SizedBox(height: 6),
                         Row(
                           children: [
-                            Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: AppColors.warning,
-                            ),
+                            SvgPicture.asset(AppIcons.starFilled, width: 12, height: 12,
+                              colorFilter: const ColorFilter.mode(Colors.orange, BlendMode.srcIn)),
                             SizedBox(width: 4),
                             Text(
                               '${doctor.averageRating!.toStringAsFixed(1)}',
@@ -936,10 +951,10 @@ class _EpicDoctorCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: Icon(
-                      Icons.favorite_rounded,
-                      color: AppColors.error,
-                      size: 22,
+                    icon: SvgPicture.asset(
+                      AppIcons.favoriteFilled,
+                      width: 22, height: 22,
+                      colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
                     ),
                     onPressed: onRemove,
                   ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sihati_mobile/core/models/pharmacy_model.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/app_text_styles.dart';
 
 class PharmacyCard extends StatelessWidget {
   final PharmacyModel pharmacy;
@@ -37,7 +39,7 @@ class PharmacyCard extends StatelessWidget {
     final isOpenNow = pharmacy.isOpenNow;
 
     return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.sm),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -67,7 +69,7 @@ class PharmacyCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -85,28 +87,31 @@ class PharmacyCard extends StatelessWidget {
                                 : AppColors.primarySoft),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        Icons.local_pharmacy_rounded,
-                        size: 22,
-                        color: (isOpenNow || pharmacy.isOnDutyTonight)
-                            ? Colors.white
-                            : AppColors.primary,
+                      child: SvgPicture.asset(
+                        AppIcons.pharmacy,
+                        width: 22,
+                        height: 22,
+                        colorFilter: ColorFilter.mode(
+                          (isOpenNow || pharmacy.isOnDutyTonight)
+                              ? Colors.white
+                              : AppColors.primary,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
-                    SizedBox(width: AppSpacing.sm + 4),
+                    const SizedBox(width: AppSpacing.sm + 4),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             pharmacy.pharmacyName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                            style: AppTextStyles.labelMedium.copyWith(
                               color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 6),
+                          const SizedBox(height: 6),
                           Row(
                             children: [
                               // Open/Closed badge
@@ -129,10 +134,10 @@ class PharmacyCard extends StatelessWidget {
                                     const SizedBox(width: 4),
                                     Text(
                                       pharmacy.statusText,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
+                                      style: AppTextStyles.labelSmall.copyWith(
                                         color: pharmacy.statusColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 11,
                                       ),
                                     ),
                                   ],
@@ -150,16 +155,24 @@ class PharmacyCard extends StatelessWidget {
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    children: const [
-                                      Icon(Icons.nightlight_round,
-                                          size: 10, color: Colors.white),
-                                      SizedBox(width: 4),
+                                    children: [
+                                      SvgPicture.asset(
+                                        AppIcons.moon,
+                                        width: 10,
+                                        height: 10,
+                                        colorFilter: const ColorFilter.mode(
+                                          Colors.white,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
                                       Text(
                                         'GARDE',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
+                                        style:
+                                            AppTextStyles.labelSmall.copyWith(
                                           color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 10,
                                         ),
                                       ),
                                     ],
@@ -171,29 +184,37 @@ class PharmacyCard extends StatelessWidget {
                         ],
                       ),
                     ),
-
                   ],
                 ),
 
-                SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.sm),
 
                 // ── Today's hours ──
                 Row(
                   children: [
-                    Icon(Icons.schedule_rounded,
-                        size: 14, color: AppColors.textTertiary),
+                    SvgPicture.asset(
+                      AppIcons.history,
+                      width: 14,
+                      height: 14,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.textTertiary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         pharmacy.todayHours,
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
                 ),
 
-                SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.sm),
 
                 // ── Address ──
                 Row(
@@ -204,15 +225,24 @@ class PharmacyCard extends StatelessWidget {
                         color: AppColors.error.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(Icons.location_on_rounded,
-                          size: 14, color: AppColors.error),
+                      child: SvgPicture.asset(
+                        AppIcons.location,
+                        width: 14,
+                        height: 14,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.error,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
-                    SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         pharmacy.fullAddress,
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -220,12 +250,12 @@ class PharmacyCard extends StatelessWidget {
                   ],
                 ),
 
-                SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.sm),
 
                 // ── Distance badge (if available) ──
                 if (pharmacy.distance != null) ...[
                   Container(
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.sm + 4,
                         vertical: AppSpacing.sm - 2),
                     decoration: BoxDecoration(
@@ -237,21 +267,28 @@ class PharmacyCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.near_me_rounded,
-                            size: 14, color: AppColors.primary),
+                        SvgPicture.asset(
+                          AppIcons.directions,
+                          width: 14,
+                          height: 14,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.primary,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           pharmacy.formattedDistance,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.labelMedium.copyWith(
                             color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: AppSpacing.sm),
                 ],
 
                 // ── Bottom action row: phone + call button + WhatsApp ──
@@ -267,16 +304,23 @@ class PharmacyCard extends StatelessWidget {
                               color: AppColors.secondary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(Icons.phone_rounded,
-                                size: 14, color: AppColors.secondary),
+                            child: SvgPicture.asset(
+                              AppIcons.phone,
+                              width: 14,
+                              height: 14,
+                              colorFilter: const ColorFilter.mode(
+                                AppColors.secondary,
+                                BlendMode.srcIn,
+                              ),
+                            ),
                           ),
-                          SizedBox(width: AppSpacing.sm),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
                               pharmacy.phone,
-                              style: TextStyle(
-                                fontSize: 13,
+                              style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
+                                fontSize: 13,
                               ),
                             ),
                           ),
@@ -303,16 +347,23 @@ class PharmacyCard extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.call_rounded,
-                                size: 14, color: Colors.white),
-                            SizedBox(width: 5),
+                          children: [
+                            SvgPicture.asset(
+                              AppIcons.phone,
+                              width: 14,
+                              height: 14,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.white,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
                             Text(
                               'Appeler',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                              style: AppTextStyles.labelMedium.copyWith(
                                 color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
                               ),
                             ),
                           ],
@@ -332,16 +383,23 @@ class PharmacyCard extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.chat_rounded,
-                                size: 12, color: Colors.white),
-                            SizedBox(width: 4),
+                          children: [
+                            SvgPicture.asset(
+                              AppIcons.chat,
+                              width: 12,
+                              height: 12,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.white,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
                             Text(
                               'WA',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                              style: AppTextStyles.labelSmall.copyWith(
                                 color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11,
                               ),
                             ),
                           ],

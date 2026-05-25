@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_text_styles.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../app/constants/app_icons.dart';
 
 class ErrorDisplayWidget extends StatelessWidget {
   final String message;
@@ -30,10 +33,14 @@ class ErrorDisplayWidget extends StatelessWidget {
                 color: AppColors.error.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.error_outline,
-                size: 60,
-                color: AppColors.error,
+              child: SvgPicture.asset(
+                AppIcons.errorIcon,
+                width: 60,
+                height: 60,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.error,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
 
@@ -64,7 +71,15 @@ class ErrorDisplayWidget extends StatelessWidget {
               const SizedBox(height: 32),
               ElevatedButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
+                icon: SvgPicture.asset(
+                  AppIcons.history,
+                  width: AppSpacing.iconSizeMd,
+                  height: AppSpacing.iconSizeMd,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
                 label: Text(retryText ?? 'Réessayer'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
@@ -101,10 +116,14 @@ class InlineError extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: AppColors.error,
-            size: 20,
+          SvgPicture.asset(
+            AppIcons.errorIcon,
+            width: 20,
+            height: 20,
+            colorFilter: const ColorFilter.mode(
+              AppColors.error,
+              BlendMode.srcIn,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
