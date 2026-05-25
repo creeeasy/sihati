@@ -12,7 +12,9 @@ export const ALGERIAN_WILAYAS = [
   'El Tarf', 'Tindouf', 'Tissemsilt', 'El Oued', 'Khenchela',
   'Souk Ahras', 'Tipaza', 'Mila', 'Aïn Defla', 'Naâma',
   'Aïn Témouchent', 'Ghardaïa', 'Relizane',
-];
+  'Timimoun', 'Bordj Badji Mokhtar', 'Ouled Djellal', 'Béni Abbès',
+  'In Salah', 'In Guezzam', 'Touggourt', 'Djanet', 'El M\'Ghair', 'El Meniaa',
+] as const;
 
 export const validateCreate = Joi.object({
   pharmacyName: Joi.string().min(3).required().messages({
