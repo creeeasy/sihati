@@ -606,7 +606,7 @@ class PharmacyDetailScreen extends GetView<PharmacyDetailController> {
               const SizedBox(width: AppSpacing.sm + 4),
               Text(
                 title,
-                style: AppTextStyles.displayMedium.copyWith(
+                style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),

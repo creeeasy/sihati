@@ -5,6 +5,7 @@ import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
 import 'package:sihati_mobile/app/theme/app_spacing.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
+import 'package:sihati_mobile/core/utils/villes.dart';
 import 'package:sihati_mobile/core/widgets/empty_state.dart';
 import 'package:sihati_mobile/core/widgets/error_widget.dart';
 import 'package:sihati_mobile/core/widgets/loading_indicator.dart';
@@ -1303,9 +1304,9 @@ class _FilterBottomSheet extends StatelessWidget {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: controller.algerianWilayas.length,
+                  itemCount: algerianWilayas.length,
                   itemBuilder: (context, index) {
-                    final wilaya = controller.algerianWilayas[index];
+                    final wilaya = algerianWilayas[index];
                     final isSelected =
                         controller.selectedWilaya.value == wilaya;
                     return InkWell(

@@ -336,9 +336,4 @@ class ProfileController extends GetxController {
   void goToMedicalRecord() => Get.toNamed(AppRoutes.MEDICAL_RECORD);
   void goToFavorites() => Get.toNamed(AppRoutes.FAVORITES);
   void goToAppointments() => Get.toNamed(AppRoutes.MY_APPOINTMENTS);
-
-  void goToReminders() {
-    Get.snackbar('Info', 'Fonctionnalité à venir',
-        snackPosition: SnackPosition.BOTTOM);
-  }
 }

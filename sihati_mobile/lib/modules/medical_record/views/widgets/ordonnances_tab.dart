@@ -80,26 +80,6 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                           .copyWith(color: AppColors.textPrimary),
                     ),
                   ),
-                  // TODO: Implement filter functionality
-                  TextButton.icon(
-                    icon: SvgPicture.asset(AppIcons.filter,
-                        width: 18,
-                        height: 18,
-                        colorFilter: const ColorFilter.mode(
-                            AppColors.primary, BlendMode.srcIn)),
-                    label: Text('Filtrer', style: AppTextStyles.labelLarge),
-                    onPressed: () {
-                      Get.snackbar(
-                        'Info',
-                        'Fonctionnalité à venir',
-                        snackPosition: SnackPosition.BOTTOM,
-                        duration: const Duration(seconds: 2),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -352,49 +332,6 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                 ],
 
                 const SizedBox(height: AppSpacing.md),
-
-                // Actions
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: SvgPicture.asset(AppIcons.history,
-                            width: 18,
-                            height: 18,
-                            colorFilter: const ColorFilter.mode(
-                                AppColors.primary, BlendMode.srcIn)),
-                        label: Text('Voir détails',
-                            style: AppTextStyles.labelLarge),
-                        onPressed: () => _viewPrescriptionDetails(prescription),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                    if (prescription.fileUrl != null) ...[
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        icon: SvgPicture.asset(AppIcons.download,
-                            width: 18,
-                            height: 18,
-                            colorFilter: const ColorFilter.mode(
-                                Colors.white, BlendMode.srcIn)),
-                        label: Text('PDF',
-                            style: AppTextStyles.labelLarge
-                                .copyWith(color: Colors.white)),
-                        onPressed: () =>
-                            _downloadPrescriptionPDF(prescription.id),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
               ],
             ),
           ),
@@ -430,25 +367,5 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
       'Décembre'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
-  }
-
-  void _viewPrescriptionDetails(Prescription prescription) {
-    // TODO: Navigate to prescription detail screen
-    Get.snackbar(
-      'Ordonnance',
-      'Détails de l\'ordonnance du ${_formatDate(prescription.prescriptionDate)}',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
-  }
-
-  // NOTE: downloadPrescriptionPDF removed — backend returns JSON not PDF file stream.
-  // For prescriptions with fileUrl, open the URL directly:
-  Future<void> _downloadPrescriptionPDF(String prescriptionId) async {
-    Get.snackbar(
-      'Téléchargement',
-      'Fonctionnalité à venir (URL directe)',
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
 }

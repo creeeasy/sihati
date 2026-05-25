@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
 import 'package:sihati_mobile/app/theme/app_spacing.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
-import '../../../../core/widgets/custom_button.dart';
 import '../../controllers/medical_record_controller.dart';
 import '../../../../core/models/medical_document_model.dart';
 
@@ -36,14 +34,6 @@ class DocumentsTab extends GetView<MedicalRecordController> {
               Text('Vos documents médicaux apparaîtront ici',
                   style: AppTextStyles.bodyMedium
                       .copyWith(color: AppColors.textTertiary)),
-              const SizedBox(height: AppSpacing.lg),
-              CustomButton(
-                text: 'Ajouter un document',
-                svgIcon: AppIcons.upload,
-                onPressed: controller.uploadDocument,
-                isOutlined: true,
-                width: 200,
-              ),
             ],
           ),
         );
@@ -54,22 +44,6 @@ class DocumentsTab extends GetView<MedicalRecordController> {
         color: AppColors.primary,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CustomButton(
-                      text: 'Ajouter un document',
-                      svgIcon: AppIcons.upload,
-                      onPressed: controller.uploadDocument,
-                      isOutlined: true,
-                      height: 44,
-                    ),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -97,9 +71,10 @@ class DocumentsTab extends GetView<MedicalRecordController> {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _openDocument(document),
-          borderRadius: AppSpacing.cardRadius,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: AppSpacing.cardRadius,
+          ),
           child: Padding(
             padding: AppSpacing.paddingCard,
             child: Row(
@@ -167,16 +142,6 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                   ),
                 ),
                 IconButton(
-                  icon: SvgPicture.asset(
-                    AppIcons.search,
-                    width: AppSpacing.iconSizeMd,
-                    height: AppSpacing.iconSizeMd,
-                    colorFilter: const ColorFilter.mode(
-                        AppColors.primary, BlendMode.srcIn),
-                  ),
-                  onPressed: () => _openDocument(document),
-                ),
-                IconButton(
                   icon: SvgPicture.asset(AppIcons.delete,
                       width: 22,
                       height: 22,
@@ -203,25 +168,6 @@ class DocumentsTab extends GetView<MedicalRecordController> {
       }
     } catch (_) {}
     return 'DOC';
-  }
-
-  Future<void> _openDocument(MedicalDocument document) async {
-    try {
-      final uri = Uri.parse(document.fileUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        Get.snackbar('Erreur', 'Impossible d\'ouvrir le document',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white);
-      }
-    } catch (e) {
-      Get.snackbar('Erreur', 'Impossible d\'ouvrir le document',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white);
-    }
   }
 
   Future<void> _showDeleteConfirmation(MedicalDocument document) async {

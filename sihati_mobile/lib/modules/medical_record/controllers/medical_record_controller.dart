@@ -102,11 +102,6 @@ class MedicalRecordController extends GetxController {
     }
   }
 
-  void uploadDocument() async {
-    Get.snackbar('Document', 'Fonctionnalité à venir',
-        snackPosition: SnackPosition.BOTTOM);
-  }
-
   void refreshData() async => await loadMedicalData();
 
   List<MedicationHistory> getFilteredMedications() {

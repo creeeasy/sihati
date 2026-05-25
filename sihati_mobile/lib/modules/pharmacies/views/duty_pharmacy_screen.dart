@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:sihati_mobile/app/constants/app_icons.dart';
+import 'package:sihati_mobile/core/utils/villes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
@@ -642,9 +643,9 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: controller.wilayas.length,
+                  itemCount: algerianWilayas.length,
                   itemBuilder: (context, index) {
-                    final wilaya = controller.wilayas[index];
+                    final wilaya = algerianWilayas[index];
                     final isSelected =
                         controller.selectedWilaya.value == wilaya ||
                             (wilaya == 'Tous' &&

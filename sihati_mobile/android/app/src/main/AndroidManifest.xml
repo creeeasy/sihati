@@ -7,7 +7,7 @@
     <!-- ⬆️ END PERMISSIONS ⬆️ -->
     
     <application
-        android:label="sihati_mobile"
+        android:label="Sihati"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         

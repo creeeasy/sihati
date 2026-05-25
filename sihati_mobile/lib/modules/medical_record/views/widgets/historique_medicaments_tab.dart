@@ -35,17 +35,20 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                 AppIcons.medication,
                 width: 80,
                 height: 80,
-                colorFilter: ColorFilter.mode(AppColors.primary.withOpacity(0.3), BlendMode.srcIn),
+                colorFilter: ColorFilter.mode(
+                    AppColors.primary.withOpacity(0.3), BlendMode.srcIn),
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 'Aucun médicament',
-                style: AppTextStyles.title.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.title
+                    .copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Vos médicaments apparaîtront ici',
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textTertiary),
               ),
             ],
           ),
@@ -73,16 +76,9 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     Expanded(
                       child: Obx(() => Text(
                             '${_getFilteredMedications().length} médicaments',
-                            style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+                            style: AppTextStyles.labelLarge
+                                .copyWith(color: AppColors.textPrimary),
                           )),
-                    ),
-                    TextButton.icon(
-                      icon: SvgPicture.asset(AppIcons.download, width: 18, height: 18, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
-                      label: Text('Exporter', style: AppTextStyles.labelLarge),
-                      onPressed: _exportMedicationHistory,
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                      ),
                     ),
                   ],
                 ),
@@ -129,7 +125,8 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                                   Expanded(
                                     child: Text(
                                       'Afficher seulement les traitements en cours',
-                                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
+                                      style: AppTextStyles.labelMedium.copyWith(
+                                          color: AppColors.textPrimary),
                                       maxLines: 2,
                                     ),
                                   ),
@@ -168,14 +165,17 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                           AppIcons.verified,
                           width: 64,
                           height: 64,
-                          colorFilter: ColorFilter.mode(AppColors.success.withOpacity(0.5), BlendMode.srcIn),
+                          colorFilter: ColorFilter.mode(
+                              AppColors.success.withOpacity(0.5),
+                              BlendMode.srcIn),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           controller.showActiveOnly.value
                               ? 'Aucun traitement en cours'
                               : 'Aucun médicament dans l\'historique',
-                          style: AppTextStyles.title.copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.title
+                              .copyWith(color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -202,14 +202,17 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
   List<MedicationHistory> _getFilteredMedications() {
     if (controller.showActiveOnly.value) {
       return controller.medicationHistory
-          .where((m) => m.isContinuous || (m.endDate != null && m.endDate!.isAfter(DateTime.now())))
+          .where((m) =>
+              m.isContinuous ||
+              (m.endDate != null && m.endDate!.isAfter(DateTime.now())))
           .toList();
     }
     return controller.medicationHistory;
   }
 
   Widget _buildMedicationCard(MedicationHistory med) {
-    final isOngoing = med.isContinuous || (med.endDate != null && med.endDate!.isAfter(DateTime.now()));
+    final isOngoing = med.isContinuous ||
+        (med.endDate != null && med.endDate!.isAfter(DateTime.now()));
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
@@ -229,8 +232,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
           Container(
             padding: AppSpacing.paddingCard,
             decoration: BoxDecoration(
-              color:
-                  isOngoing ? AppColors.primarySoft : AppColors.background,
+              color: isOngoing ? AppColors.primarySoft : AppColors.background,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(AppSpacing.radiusLg),
                 topRight: Radius.circular(AppSpacing.radiusLg),
@@ -263,13 +265,15 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     children: [
                       Text(
                         med.medicationName,
-                        style: AppTextStyles.title.copyWith(color: AppColors.textPrimary),
+                        style: AppTextStyles.title
+                            .copyWith(color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 2),
                       // Get medication type/category if available
                       Text(
                         _getMedicationType(med),
-                        style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.labelSmall
+                            .copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -280,12 +284,14 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: isOngoing ? AppColors.primary : AppColors.textSecondary,
+                    color:
+                        isOngoing ? AppColors.primary : AppColors.textSecondary,
                     borderRadius: AppSpacing.chipRadius,
                   ),
                   child: Text(
                     isOngoing ? 'En cours' : 'Terminé',
-                    style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+                    style:
+                        AppTextStyles.labelSmall.copyWith(color: Colors.white),
                   ),
                 ),
               ],
@@ -364,14 +370,16 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                       children: [
                         SvgPicture.asset(
                           AppIcons.history,
-                          colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          colorFilter: const ColorFilter.mode(
+                              AppColors.primary, BlendMode.srcIn),
                           width: 20,
                           height: 20,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Traitement continu',
-                          style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary),
+                          style: AppTextStyles.labelLarge
+                              .copyWith(color: AppColors.primary),
                         ),
                       ],
                     ),
@@ -393,7 +401,8 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
           icon,
           width: 16,
           height: 16,
-          colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
+          colorFilter:
+              const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -402,12 +411,14 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
             children: [
               Text(
                 label,
-                style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.labelSmall
+                    .copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.labelMedium
+                    .copyWith(color: AppColors.textPrimary),
               ),
             ],
           ),
@@ -428,11 +439,13 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
           children: [
             Text(
               'Progression',
-              style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.labelSmall
+                  .copyWith(color: AppColors.textSecondary),
             ),
             Text(
               daysLeft > 0 ? '$daysLeft jours restants' : 'Terminé',
-              style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary),
+              style:
+                  AppTextStyles.labelSmall.copyWith(color: AppColors.primary),
             ),
           ],
         ),
@@ -475,25 +488,5 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
-  }
-
-  void _exportMedicationHistory() async {
-    try {
-      // TODO: Implement export functionality
-      Get.snackbar(
-        'Export',
-        'Export de l\'historique médicamenteux',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible d\'exporter l\'historique',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
   }
 }
