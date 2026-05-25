@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/custom_text_field.dart';
@@ -65,19 +66,7 @@ class ProfileScreen extends GetView<ProfileController> {
               const SizedBox(height: AppSpacing.lg),
               _buildPersonalInfoCard(),
               const SizedBox(height: AppSpacing.md),
-              _buildSettingsCard(),
-              const SizedBox(height: AppSpacing.md),
-              _buildAboutCard(),
-              const SizedBox(height: AppSpacing.lg),
               _buildLogoutButton(),
-              const SizedBox(height: AppSpacing.md),
-              Center(
-                child: Text('v1.0.0',
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w300,
-                        color: AppColors.textTertiary)),
-              ),
               const SizedBox(height: AppSpacing.md),
             ]),
           ),
@@ -222,23 +211,19 @@ class ProfileScreen extends GetView<ProfileController> {
       return Column(
         children: [
           Text(user.fullName,
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary),
+              style: AppTextStyles.displayMedium
+                  .copyWith(color: AppColors.textPrimary),
               textAlign: TextAlign.center),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.primarySoft,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: AppSpacing.chipRadius,
             ),
             child: Text(controller.getUserRole(),
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary)),
+                style: AppTextStyles.labelSmall
+                    .copyWith(color: AppColors.primary)),
           ),
         ],
       );
@@ -298,8 +283,7 @@ class ProfileScreen extends GetView<ProfileController> {
                                   color: Colors.white)),
                           const SizedBox(height: 4),
                           Text('Accédez à votre historique complet',
-                              style: TextStyle(
-                                  fontSize: 12,
+                              style: AppTextStyles.labelMedium.copyWith(
                                   color: Colors.white.withOpacity(0.9))),
                         ],
                       ),
@@ -391,13 +375,6 @@ class ProfileScreen extends GetView<ProfileController> {
             title: 'Mes Rendez-vous',
             subtitle: 'Consultations à venir',
             onTap: controller.goToAppointments,
-          ),
-          const Divider(height: 1, color: AppColors.divider),
-          _ActionTile(
-            icon: Icons.alarm_outlined,
-            title: 'Mes Rappels',
-            subtitle: 'Médicaments et rendez-vous',
-            onTap: controller.goToReminders,
           ),
         ],
       ),
@@ -722,76 +699,6 @@ class ProfileScreen extends GetView<ProfileController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // SETTINGS CARD
-  // ═══════════════════════════════════════════════════════════════
-
-  Widget _buildSettingsCard() {
-    return _Card(
-      title: 'Paramètres',
-      child: Column(
-        children: [
-          Obx(() => _SwitchRow(
-                icon: Icons.notifications_rounded,
-                title: 'Notifications',
-                subtitle: 'Recevoir des alertes et rappels',
-                value: controller.notificationsEnabled.value,
-                onChanged: controller.toggleNotifications,
-              )),
-          const Divider(height: 1, color: AppColors.divider),
-          Obx(() => _SwitchRow(
-                icon: Icons.dark_mode_rounded,
-                title: 'Mode sombre',
-                subtitle: 'Activer le thème sombre',
-                value: controller.darkModeEnabled.value,
-                onChanged: controller.toggleDarkMode,
-              )),
-          const Divider(height: 1, color: AppColors.divider),
-          Obx(() => _TileRow(
-                icon: Icons.language_rounded,
-                title: 'Langue',
-                subtitle: controller.language.value,
-                onTap: _showLanguageDialog,
-              )),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // ABOUT CARD
-  // ═══════════════════════════════════════════════════════════════
-
-  Widget _buildAboutCard() {
-    return _Card(
-      title: 'À propos',
-      child: Column(
-        children: [
-          _TileRow(
-            icon: Icons.description_rounded,
-            title: "Conditions d'utilisation",
-            onTap: () => Get.snackbar('Info', 'Fonctionnalité à implémenter',
-                snackPosition: SnackPosition.BOTTOM),
-          ),
-          const Divider(height: 1, color: AppColors.divider),
-          _TileRow(
-            icon: Icons.privacy_tip_rounded,
-            title: 'Politique de confidentialité',
-            onTap: () => Get.snackbar('Info', 'Fonctionnalité à implémenter',
-                snackPosition: SnackPosition.BOTTOM),
-          ),
-          const Divider(height: 1, color: AppColors.divider),
-          _TileRow(
-            icon: Icons.help_rounded,
-            title: "Centre d'aide",
-            onTap: () => Get.snackbar('Info', 'Fonctionnalité à implémenter',
-                snackPosition: SnackPosition.BOTTOM),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
   // LOGOUT BUTTON
   // ═══════════════════════════════════════════════════════════════
 
@@ -821,51 +728,6 @@ class ProfileScreen extends GetView<ProfileController> {
         ),
       ),
     );
-  }
-
-  void _showLanguageDialog() {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Choisir la langue',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildLanguageOption('Français'),
-            _buildLanguageOption('العربية'),
-            _buildLanguageOption('English'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Annuler',
-                style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageOption(String language) {
-    return Obx(() => ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(language, style: const TextStyle(fontSize: 15)),
-          leading: Radio<String>(
-            value: language,
-            groupValue: controller.language.value,
-            onChanged: (value) {
-              if (value != null) {
-                controller.changeLanguage(value);
-                Get.back();
-              }
-            },
-            activeColor: AppColors.primary,
-          ),
-        ));
   }
 }
 
@@ -1052,113 +914,6 @@ class _FieldRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
       child: child,
-    );
-  }
-}
-
-class _SwitchRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  const _SwitchRow(
-      {required this.icon,
-      required this.title,
-      required this.subtitle,
-      required this.value,
-      required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-                color: AppColors.primarySoft,
-                borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: AppColors.primary, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary)),
-                Text(subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppColors.textSecondary)),
-              ],
-            ),
-          ),
-          Switch(
-              value: value,
-              onChanged: onChanged,
-              activeColor: AppColors.primary),
-        ],
-      ),
-    );
-  }
-}
-
-class _TileRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
-  const _TileRow(
-      {required this.icon,
-      required this.title,
-      this.subtitle,
-      required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
-                  borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: AppColors.primary, size: 18),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary)),
-                  if (subtitle != null)
-                    Text(subtitle!,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textTertiary, size: 20),
-          ],
-        ),
-      ),
     );
   }
 }

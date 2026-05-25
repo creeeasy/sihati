@@ -1,28 +1,48 @@
 import 'package:flutter/material.dart';
 
 class AppSpacing {
+  // Component sizes
+  static const double buttonHeight = 52;
+  static const double inputHeight = 56;
+  static const double iconSizeSm = 18;
+  static const double iconSizeMd = 24;
+  static const double iconSizeLg = 32;
+  static const double avatarSizeSm = 36;
+  static const double avatarSizeMd = 48;
+  static const double avatarSizeLg = 72;
   // ═══════════════════════════════════════════════════════════════
   // Spacing Scale (4px base unit - follows Material Design)
   // ═══════════════════════════════════════════════════════════════
+  // Base scale
+  static const double xxs = 4;
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 24;
+  static const double xl = 32;
+  static const double xxl = 48;
+  static const double xxxl = 64;
+  // Screen insets
+  static const EdgeInsets paddingScreen = EdgeInsets.symmetric(horizontal: 24);
+  static const EdgeInsets paddingCard = EdgeInsets.all(16);
+  static const EdgeInsets paddingInput =
+      EdgeInsets.symmetric(horizontal: 12, vertical: 16);
 
-  static const double xs = 4.0;
-  static const double sm = 8.0;
-  static const double md = 16.0;
-  static const double lg = 24.0;
-  static const double xl = 32.0;
-  static const double xxl = 48.0;
-  static const double xxxl = 64.0;
+  static const double radiusXs = 6;
+  static const double radiusSm = 10;
+  static const double radiusMd = 14;
+  static const double radiusLg = 20;
+  static const double radiusXl = 28;
+  static const double radiusFull = 999;
 
   // ═══════════════════════════════════════════════════════════════
   // Padding Presets
   // ═══════════════════════════════════════════════════════════════
 
-  static const EdgeInsets paddingXs = EdgeInsets.all(xs);
-  static const EdgeInsets paddingSm = EdgeInsets.all(sm);
-  static const EdgeInsets paddingMd = EdgeInsets.all(md);
-  static const EdgeInsets paddingLg = EdgeInsets.all(lg);
-  static const EdgeInsets paddingXl = EdgeInsets.all(xl);
-
+  static BorderRadius get cardRadius => BorderRadius.circular(radiusLg);
+  static BorderRadius get inputRadius => BorderRadius.circular(radiusMd);
+  static BorderRadius get chipRadius => BorderRadius.circular(radiusFull);
+  static BorderRadius get buttonRadius => BorderRadius.circular(radiusFull);
   // Horizontal only
   static const EdgeInsets paddingHorizontalXs =
       EdgeInsets.symmetric(horizontal: xs);

@@ -1,15 +1,17 @@
-// lib/modules/medical_record/views/widgets/documents_tab.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../controllers/medical_record_controller.dart';
 import '../../../../core/models/medical_document_model.dart';
 
 class DocumentsTab extends GetView<MedicalRecordController> {
-  const DocumentsTab({Key? key}) : super(key: key);
+  const DocumentsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +27,15 @@ class DocumentsTab extends GetView<MedicalRecordController> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.folder_outlined,
-                  size: 80, color: AppColors.primary.withOpacity(0.3)),
+              //SvgPicture.asset(AppIcons.folder, width: 80, height: 80, colorFilter: ColorFilter.mode(AppColors.primary.withOpacity(0.3), BlendMode.srcIn)),
               const SizedBox(height: AppSpacing.md),
-              const Text('Aucun document',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary)),
+              Text('Aucun document',
+                  style: AppTextStyles.title
+                      .copyWith(color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.sm),
-              const Text('Vos documents médicaux apparaîtront ici',
-                  style:
-                      TextStyle(fontSize: 14, color: AppColors.textTertiary)),
+              Text('Vos documents médicaux apparaîtront ici',
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textTertiary)),
               const SizedBox(height: AppSpacing.lg),
               CustomButton(
                 text: 'Ajouter un document',
@@ -91,38 +90,38 @@ class DocumentsTab extends GetView<MedicalRecordController> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.surfaceCard,
+        borderRadius: AppSpacing.cardRadius,
+        border: Border.all(color: AppColors.borderDefault),
+        boxShadow: AppColors.shadowSm,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _openDocument(document),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppSpacing.cardRadius,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: AppSpacing.paddingCard,
             child: Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 40,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: _getDocumentColor(document.documentType)
                         .withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: _getDocumentColor(document.documentType)
+                            .withOpacity(0.3)),
                   ),
-                  child: Icon(
-                    _getDocumentIcon(document.documentType),
-                    color: _getDocumentColor(document.documentType),
-                    size: 28,
+                  child: Center(
+                    child: Text(
+                      _getFileExtension(document.fileUrl),
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: _getDocumentColor(document.documentType),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -131,34 +130,32 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(document.title,
-                          style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary),
+                          style: AppTextStyles.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       Text(document.documentTypeDisplayName,
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: _getDocumentColor(document.documentType),
-                              fontWeight: FontWeight.w600)),
+                          style: AppTextStyles.labelMedium.copyWith(
+                              color: _getDocumentColor(document.documentType))),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today_outlined,
-                              size: 12, color: AppColors.textTertiary),
+                          SvgPicture.asset(AppIcons.calendar,
+                              width: 12,
+                              height: 12,
+                              colorFilter: const ColorFilter.mode(
+                                  AppColors.textTertiary, BlendMode.srcIn)),
                           const SizedBox(width: 4),
                           Text(_formatDate(document.documentDate),
-                              style: const TextStyle(
-                                  fontSize: 12, color: AppColors.textTertiary)),
+                              style: AppTextStyles.labelSmall
+                                  .copyWith(color: AppColors.textTertiary)),
                           const SizedBox(width: 12),
                           const Icon(Icons.file_present_outlined,
                               size: 12, color: AppColors.textTertiary),
                           const SizedBox(width: 4),
                           Text(document.formattedFileSize,
-                              style: const TextStyle(
-                                  fontSize: 12, color: AppColors.textTertiary)),
+                              style: AppTextStyles.labelSmall
+                                  .copyWith(color: AppColors.textTertiary)),
                         ],
                       ),
                     ],
@@ -170,8 +167,11 @@ class DocumentsTab extends GetView<MedicalRecordController> {
                   onPressed: () => _openDocument(document),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      color: AppColors.error, size: 22),
+                  icon: SvgPicture.asset(AppIcons.delete,
+                      width: 22,
+                      height: 22,
+                      colorFilter: const ColorFilter.mode(
+                          AppColors.error, BlendMode.srcIn)),
                   onPressed: () => _showDeleteConfirmation(document),
                 ),
               ],
@@ -180,6 +180,19 @@ class DocumentsTab extends GetView<MedicalRecordController> {
         ),
       ),
     );
+  }
+
+  String _getFileExtension(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final path = uri.path;
+      if (path.contains('.')) {
+        final ext = path.split('.').last.toUpperCase();
+        if (ext.length <= 4) return ext;
+        return ext.substring(0, 3);
+      }
+    } catch (_) {}
+    return 'DOC';
   }
 
   Future<void> _openDocument(MedicalDocument document) async {
@@ -204,17 +217,43 @@ class DocumentsTab extends GetView<MedicalRecordController> {
   Future<void> _showDeleteConfirmation(MedicalDocument document) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('Supprimer le document'),
-        content: Text('Voulez-vous vraiment supprimer "${document.title}" ?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Column(
+          children: [
+            SvgPicture.asset(AppIcons.warning,
+                width: 40,
+                height: 40,
+                colorFilter:
+                    const ColorFilter.mode(AppColors.error, BlendMode.srcIn)),
+            const SizedBox(height: 16),
+            Text('Supprimer le document', style: AppTextStyles.headline),
+          ],
+        ),
+        content: Text('Voulez-vous vraiment supprimer "${document.title}" ?',
+            style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Annuler'),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Supprimer'),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Get.back(result: false),
+                  child: Text('Annuler',
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.textSecondary)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Get.back(result: true),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.error),
+                  child: Text('Supprimer',
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: Colors.white)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -222,23 +261,6 @@ class DocumentsTab extends GetView<MedicalRecordController> {
 
     if (confirmed == true) {
       await controller.deleteDocument(document.id);
-    }
-  }
-
-  IconData _getDocumentIcon(DocumentType type) {
-    switch (type) {
-      case DocumentType.labResult:
-        return Icons.science_rounded;
-      case DocumentType.radiology:
-        return Icons.health_and_safety_rounded;
-      case DocumentType.report:
-        return Icons.article_rounded;
-      case DocumentType.certificate:
-        return Icons.assignment_rounded;
-      case DocumentType.prescription:
-        return Icons.medication_rounded;
-      case DocumentType.other:
-        return Icons.insert_drive_file_rounded;
     }
   }
 

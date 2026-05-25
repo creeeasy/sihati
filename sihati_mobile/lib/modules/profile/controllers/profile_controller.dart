@@ -35,7 +35,6 @@ class ProfileController extends GetxController {
   final emailController = TextEditingController();
 
   final notificationsEnabled = true.obs;
-  final darkModeEnabled = false.obs;
   final language = 'Français'.obs;
 
   @override
@@ -57,9 +56,6 @@ class ProfileController extends GetxController {
   Future<void> _loadSettings() async {
     final notifications = await storageService.getBool('notifications_enabled');
     if (notifications != null) notificationsEnabled.value = notifications;
-
-    final darkMode = await storageService.getBool('dark_mode');
-    if (darkMode != null) darkModeEnabled.value = darkMode;
 
     final savedLanguage = await storageService.getString('language');
     if (savedLanguage != null) language.value = savedLanguage;
@@ -247,11 +243,6 @@ class ProfileController extends GetxController {
   Future<void> toggleNotifications(bool value) async {
     notificationsEnabled.value = value;
     await storageService.saveBool('notifications_enabled', value);
-  }
-
-  Future<void> toggleDarkMode(bool value) async {
-    darkModeEnabled.value = value;
-    await storageService.saveBool('dark_mode', value);
   }
 
   Future<void> changeLanguage(String newLanguage) async {

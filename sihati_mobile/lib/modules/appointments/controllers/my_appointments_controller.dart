@@ -55,19 +55,92 @@ class MyAppointmentsController extends GetxController {
   Future<void> cancelAppointment(AppointmentModel appointment) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('Annuler le rendez-vous'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                color: Color(0xFFF59E0B),
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Annuler le rendez-vous',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
         content: Text(
           'Voulez-vous vraiment annuler votre rendez-vous du ${appointment.formattedDate} à ${appointment.appointmentTime} ?',
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 14,
+            color: Color(0xFF374151),
+          ),
+          textAlign: TextAlign.center,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Non'),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Annuler le RDV'),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Get.back(result: false),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  child: const Text(
+                    'Non',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF4B5563),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Get.back(result: true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF4444),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  child: const Text(
+                    'Annuler le RDV',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

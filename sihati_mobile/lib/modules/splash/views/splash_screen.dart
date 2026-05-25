@@ -173,7 +173,7 @@ class _SplashContentState extends State<_SplashContent>
               child: const Text(
                 'SIHATI',
                 style: TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Outfit',
                   fontSize: 48,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
@@ -197,7 +197,7 @@ class _SplashContentState extends State<_SplashContent>
               child: Text(
                 'Votre santé, notre priorité',
                 style: TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                   fontSize: 14,
                   fontWeight: FontWeight.w300,
                   color: Colors.white.withOpacity(0.65),
@@ -231,7 +231,7 @@ class _SplashContentState extends State<_SplashContent>
                 Text(
                   'Chargement...',
                   style: TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     fontSize: 12,
                     fontWeight: FontWeight.w300,
                     color: Colors.white.withOpacity(0.4),
@@ -242,7 +242,7 @@ class _SplashContentState extends State<_SplashContent>
                 Text(
                   'v1.0.0',
                   style: TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     fontSize: 11,
                     fontWeight: FontWeight.w300,
                     color: Colors.white.withOpacity(0.25),

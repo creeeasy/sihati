@@ -20,7 +20,7 @@ class MedicationRepository {
 
   /// Search for medication by name
   /// Optionally uses current location to sort results by distance
-  Future<List<MedicationSearchResult>> searchMedication(
+  Future<List<MedicationModel>> searchMedication(
     String searchTerm, {
     bool useLocation = true,
     String? wilaya,
@@ -35,27 +35,8 @@ class MedicationRepository {
         throw Exception('Veuillez entrer au moins 2 caractères');
       }
 
-      double? latitude;
-      double? longitude;
-
-      if (useLocation) {
-        try {
-          final position = await _locationService.getCurrentLocation();
-          if (position != null) {
-            latitude = position.latitude;
-            longitude = position.longitude;
-          }
-        } catch (e) {
-          print('Failed to get location: $e');
-        }
-      }
-
       final results = await _medicationProvider.searchMedication(
         searchTerm,
-        latitude: latitude,
-        longitude: longitude,
-        wilaya: wilaya,
-        radius: radius,
       );
 
       return results;
@@ -65,7 +46,7 @@ class MedicationRepository {
   }
 
   /// Search medication with specific location
-  Future<List<MedicationSearchResult>> searchMedicationAt(
+  Future<List<MedicationModel>> searchMedicationAt(
     String searchTerm, {
     required double latitude,
     required double longitude,
@@ -79,10 +60,6 @@ class MedicationRepository {
 
       return await _medicationProvider.searchMedication(
         searchTerm,
-        latitude: latitude,
-        longitude: longitude,
-        wilaya: wilaya,
-        radius: radius,
       );
     } catch (e) {
       rethrow;

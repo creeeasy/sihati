@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
-import 'package:sihati_mobile/core/widgets/custom_button.dart';
 import 'package:sihati_mobile/core/widgets/loading_indicator.dart';
 import 'package:sihati_mobile/core/widgets/error_widget.dart';
 import 'package:sihati_mobile/core/widgets/sihati_mapbox.dart';
@@ -14,6 +16,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
           return const LoadingIndicator();
@@ -29,6 +32,51 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
         }
         return _buildContent();
       }),
+      bottomNavigationBar: Obx(() {
+        if (controller.doctor.value != null && !controller.isLoading.value) {
+          return _buildBottomBar();
+        }
+        return const SizedBox.shrink();
+      }),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, MediaQuery.of(Get.context!).padding.bottom + AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        boxShadow: AppColors.shadowMd,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      ),
+      child: InkWell(
+        onTap: controller.bookAppointment,
+        borderRadius: AppSpacing.buttonRadius,
+        child: Container(
+          width: double.infinity,
+          height: AppSpacing.buttonHeight,
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient,
+            borderRadius: AppSpacing.buttonRadius,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                AppIcons.calendar,
+                width: AppSpacing.iconSizeMd,
+                height: AppSpacing.iconSizeMd,
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                'Prendre rendez-vous',
+                style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -41,12 +89,15 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
           children: [
             Expanded(
               flex: 4,
-              child: SihatiMapbox(
-                latitude: doctor.latitude,
-                longitude: doctor.longitude,
-                markerTitle: doctor.clinicName,
-                height: double.infinity,
-                zoom: 15,
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+                child: SihatiMapbox(
+                  latitude: doctor.latitude,
+                  longitude: doctor.longitude,
+                  markerTitle: doctor.clinicName,
+                  height: double.infinity,
+                  zoom: 15,
+                ),
               ),
             ),
             Expanded(
@@ -66,15 +117,13 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
           child: Row(
             children: [
               _buildActionButton(
-                icon: controller.isFavorite.value
-                    ? Icons.favorite
-                    : Icons.favorite_border,
+                icon: controller.isFavorite.value ? AppIcons.favoriteFilled : AppIcons.favoriteOutlined,
                 onPressed: controller.toggleFavorite,
-                color: controller.isFavorite.value ? Colors.red : null,
+                color: controller.isFavorite.value ? AppColors.error : AppColors.textPrimary,
               ),
               const SizedBox(width: 8),
               _buildActionButton(
-                icon: Icons.share,
+                icon: AppIcons.share,
                 onPressed: controller.shareDoctor,
               ),
             ],
@@ -87,42 +136,30 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
   Widget _buildBackButton() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppColors.shadowSm,
       ),
       child: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        icon: SvgPicture.asset(AppIcons.arrowBack, width: AppSpacing.iconSizeMd, height: AppSpacing.iconSizeMd, colorFilter: const ColorFilter.mode(AppColors.textPrimary, BlendMode.srcIn)),
         onPressed: () => Get.back(),
       ),
     );
   }
 
   Widget _buildActionButton({
-    required IconData icon,
+    required String icon,
     required VoidCallback onPressed,
     Color? color,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceCard,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppColors.shadowSm,
       ),
       child: IconButton(
-        icon: Icon(icon, color: color ?? Colors.black),
+        icon: SvgPicture.asset(icon, width: AppSpacing.iconSizeMd, height: AppSpacing.iconSizeMd, colorFilter: ColorFilter.mode(color ?? AppColors.textPrimary, BlendMode.srcIn)),
         onPressed: onPressed,
       ),
     );
@@ -130,12 +167,13 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
 
   Widget _buildDetailsSheet(doctor) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+        boxShadow: AppColors.shadowMd,
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -144,53 +182,41 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppColors.borderDefault,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 CircleAvatar(
-                  radius: 35,
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  radius: AppSpacing.avatarSizeLg / 2,
+                  backgroundColor: AppColors.primarySoft,
                   child: Text(
                     _getInitials(doctor.doctorName),
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
+                    style: AppTextStyles.headline.copyWith(color: AppColors.primary),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         _formatDoctorName(doctor.doctorName),
-                        style: AppTextStyles.h4.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextStyles.headline,
                       ),
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
+                          color: AppColors.primarySoft,
+                          borderRadius: AppSpacing.chipRadius,
                         ),
                         child: Text(
                           doctor.specialty?.nameFr ?? 'Spécialiste',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
                         ),
                       ),
                     ],
@@ -198,120 +224,127 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                 ),
                 if (doctor.averageRating != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.warning100,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     ),
                     child: Column(
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.star,
-                                size: 16, color: Colors.amber),
+                            SvgPicture.asset(AppIcons.starFilled, width: 16, height: 16, colorFilter: const ColorFilter.mode(AppColors.warning, BlendMode.srcIn)),
                             const SizedBox(width: 4),
                             Text(
                               doctor.averageRating!.toStringAsFixed(1),
-                              style: AppTextStyles.subtitle1.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTextStyles.title.copyWith(color: AppColors.warning700),
                             ),
                           ],
                         ),
                         if (doctor.totalReviews != null)
                           Text(
                             '${doctor.totalReviews}',
-                            style: AppTextStyles.caption.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: AppTextStyles.labelSmall.copyWith(color: AppColors.warning700),
                           ),
                       ],
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 20),
-            CustomButton(
-              text: 'Prendre Rendez-vous',
-              icon: Icons.event,
-              onPressed: controller.bookAppointment,
-              height: 56,
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 Expanded(
-                  child: CustomButton(
-                    text: 'Appeler',
-                    icon: Icons.phone,
-                    isOutlined: true,
-                    onPressed: controller.callDoctor,
-                    height: 48,
+                  child: InkWell(
+                    onTap: controller.callDoctor,
+                    borderRadius: AppSpacing.buttonRadius,
+                    child: Container(
+                      height: AppSpacing.buttonHeight,
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySoft,
+                        borderRadius: AppSpacing.buttonRadius,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(AppIcons.phone, width: 20, height: 20, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
+                          const SizedBox(width: 8),
+                          Text('Appeler', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomButton(
-                    text: 'WhatsApp',
-                    icon: Icons.chat,
-                    isOutlined: true,
-                    onPressed: controller.openWhatsApp,
-                    height: 48,
+                if (doctor.whatsappNumber != null && doctor.whatsappNumber!.isNotEmpty) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: InkWell(
+                      onTap: controller.openWhatsApp,
+                      borderRadius: AppSpacing.buttonRadius,
+                      child: Container(
+                        height: AppSpacing.buttonHeight,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF25D366).withOpacity(0.1),
+                          borderRadius: AppSpacing.buttonRadius,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(AppIcons.chat, width: 20, height: 20, colorFilter: const ColorFilter.mode(Color(0xFF25D366), BlendMode.srcIn)),
+                            const SizedBox(width: 8),
+                            Text('WhatsApp', style: AppTextStyles.labelLarge.copyWith(color: const Color(0xFF25D366))),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             Obx(() {
               if (controller.nextAvailableSlot.value != null) {
                 return _buildNextSlotCard(controller.nextAvailableSlot.value!);
               }
               return const SizedBox.shrink();
             }),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 Expanded(
                   child: _buildQuickInfoCard(
-                    icon: Icons.attach_money,
+                    icon: AppIcons.doctor,
                     label: 'Consultation',
                     value: controller.formattedFee,
                     color: AppColors.success,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: _buildQuickInfoCard(
-                    icon: Icons.work_outline,
+                    icon: AppIcons.hospital,
                     label: 'Expérience',
-                    value: doctor.yearsOfExperience != null
-                        ? '${doctor.yearsOfExperience} ans'
-                        : 'N/A',
+                    value: doctor.yearsOfExperience != null ? '${doctor.yearsOfExperience} ans' : 'N/A',
                     color: AppColors.info,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
                 Expanded(
                   child: _buildQuickInfoCard(
-                    icon: Icons.near_me,
+                    icon: AppIcons.location,
                     label: 'Distance',
-                    value: doctor.distance != null
-                        ? '${doctor.distance!.toStringAsFixed(1)} km'
-                        : 'N/A',
+                    value: doctor.distance != null ? '${doctor.distance!.toStringAsFixed(1)} km' : 'N/A',
                     color: AppColors.primary,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: _buildQuickInfoCard(
-                    icon: Icons.location_city,
+                    icon: AppIcons.location,
                     label: 'Wilaya',
                     value: doctor.wilaya,
                     color: AppColors.warning,
@@ -320,30 +353,27 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
               ],
             ),
             if (doctor.bio != null && doctor.bio!.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.xl),
+              const Divider(color: AppColors.borderDefault),
+              const SizedBox(height: AppSpacing.md),
               _buildSectionTitle('À propos'),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 doctor.bio!,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: Colors.grey[700],
-                  height: 1.5,
-                ),
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
               ),
             ],
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.xl),
+            const Divider(color: AppColors.borderDefault),
+            const SizedBox(height: AppSpacing.md),
             _buildSectionTitle('Cabinet médical'),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.paddingCard,
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                color: AppColors.surfaceInput,
+                borderRadius: AppSpacing.cardRadius,
+                border: Border.all(color: AppColors.borderLight),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,24 +381,20 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                   if (doctor.clinicName.isNotEmpty) ...[
                     Row(
                       children: [
-                        Icon(Icons.business,
-                            size: 20, color: AppColors.primary),
-                        const SizedBox(width: 12),
+                        SvgPicture.asset(AppIcons.hospital, width: 20, height: 20, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
-                          child: Text(
-                            doctor.clinicName,
-                            style: AppTextStyles.subtitle2,
-                          ),
+                          child: Text(doctor.clinicName, style: AppTextStyles.title),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                   ],
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.location_on, size: 20, color: AppColors.error),
-                      const SizedBox(width: 12),
+                      SvgPicture.asset(AppIcons.location, width: 20, height: 20, colorFilter: const ColorFilter.mode(AppColors.error, BlendMode.srcIn)),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           controller.fullAddress,
@@ -377,62 +403,47 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  CustomButton(
-                    text: 'Obtenir l\'itinéraire',
-                    icon: Icons.directions,
-                    isOutlined: true,
-                    onPressed: controller.getDirections,
-                    height: 44,
+                  const SizedBox(height: AppSpacing.md),
+                  InkWell(
+                    onTap: controller.getDirections,
+                    borderRadius: AppSpacing.buttonRadius,
+                    child: Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.primary),
+                        borderRadius: AppSpacing.buttonRadius,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(AppIcons.directions, width: 18, height: 18, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
+                          const SizedBox(width: 8),
+                          Text('Obtenir l\'itinéraire', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.xl),
+            const Divider(color: AppColors.borderDefault),
+            const SizedBox(height: AppSpacing.md),
             _buildSectionTitle('Horaires de travail'),
-            const SizedBox(height: 12),
-            // NOTE: workingHours removed from backend Doctor model.
-            // Slots are available via GET /doctors/:id/available-slots?date=
+            const SizedBox(height: AppSpacing.sm),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.paddingCard,
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                color: AppColors.surfaceInput,
+                borderRadius: AppSpacing.cardRadius,
+                border: Border.all(color: AppColors.borderLight),
               ),
               child: Text(
                 'Voir les créneaux disponibles en réservant un rendez-vous',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
               ),
             ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-            _buildSectionTitle('Contact'),
-            const SizedBox(height: 12),
-            _buildContactTile(
-              icon: Icons.phone,
-              label: 'Téléphone',
-              value: doctor.phone,
-              color: AppColors.primary,
-              onTap: controller.callDoctor,
-            ),
-            if (doctor.whatsappNumber != null &&
-                doctor.whatsappNumber!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _buildContactTile(
-                icon: Icons.chat,
-                label: 'WhatsApp',
-                value: doctor.whatsappNumber!,
-                color: const Color(0xFF25D366),
-                onTap: controller.openWhatsApp,
-              ),
-            ],
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
           ],
         ),
       ),
@@ -442,21 +453,13 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
   Widget _buildNextSlotCard(String slot) {
     return InkWell(
       onTap: controller.bookAppointment,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.paddingCard,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.success.withOpacity(0.1),
-              AppColors.success.withOpacity(0.05),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.success.withOpacity(0.3),
-            width: 1.5,
-          ),
+          color: AppColors.success50,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: AppColors.success200),
         ),
         child: Row(
           children: [
@@ -464,42 +467,28 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: AppColors.success,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
-              child: const Icon(
-                Icons.schedule,
-                color: Colors.white,
-                size: 24,
-              ),
+              child: const Icon(Icons.schedule_rounded, color: Colors.white, size: 24),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Prochain créneau disponible',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.success,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.labelMedium.copyWith(color: AppColors.success700),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     slot,
-                    style: AppTextStyles.subtitle1.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.success,
-                    ),
+                    style: AppTextStyles.title.copyWith(color: AppColors.success700),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: AppColors.success,
-            ),
+            Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.success700),
           ],
         ),
       ),
@@ -507,7 +496,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
   }
 
   Widget _buildQuickInfoCard({
-    required IconData icon,
+    required String icon,
     required String label,
     required String value,
     required Color color,
@@ -516,29 +505,19 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-        ),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 22, color: color),
+          SvgPicture.asset(icon, width: 22, height: 22, colorFilter: ColorFilter.mode(color, BlendMode.srcIn)),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 2),
           Text(
             value,
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: AppTextStyles.labelLarge.copyWith(color: color),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -559,68 +538,8 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
           ),
         ),
         const SizedBox(width: 12),
-        Text(
-          title,
-          style: AppTextStyles.h5.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(title, style: AppTextStyles.headline),
       ],
-    );
-  }
-
-  Widget _buildContactTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 20, color: color),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: AppTextStyles.caption.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    value,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
-          ],
-        ),
-      ),
     );
   }
 
@@ -629,7 +548,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return name.substring(0, 1).toUpperCase();
+    return name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
   }
 
   String _formatDoctorName(String name) {
@@ -637,20 +556,5 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
       return name;
     }
     return 'Dr. $name';
-  }
-
-  bool _isToday(String day) {
-    final now = DateTime.now();
-    final weekDays = {
-      'Lundi': 1,
-      'Mardi': 2,
-      'Mercredi': 3,
-      'Jeudi': 4,
-      'Vendredi': 5,
-      'Samedi': 6,
-      'Dimanche': 7,
-    };
-    final todayIndex = now.weekday;
-    return weekDays[day] == todayIndex;
   }
 }

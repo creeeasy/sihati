@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
 import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import 'package:sihati_mobile/core/models/doctor_model.dart';
 import 'package:sihati_mobile/data/repositories/appointment_repository.dart';
@@ -18,296 +21,310 @@ class DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: AppSpacing.cardRadius,
+        boxShadow: AppColors.shadowSm,
+        border: Border.all(color: AppColors.borderLight),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: Center(
-                      child: Text(
-                        _getInitials(),
-                        style: AppTextStyles.h4.copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _formatDoctorName(doctor.doctorName),
-                          style: AppTextStyles.subtitle1,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            doctor.specialty?.nameFr ?? 'Spécialiste',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (doctor.averageRating != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            size: 14,
-                            color: AppColors.warning,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            doctor.averageRating!.toStringAsFixed(1),
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.warning,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          if (doctor.totalReviews != null)
-                            Text(
-                              ' (${doctor.totalReviews})',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.business_center_outlined,
-                      size: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        doctor.clinicName,
-                        style: AppTextStyles.bodyMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppSpacing.cardRadius,
+          child: Padding(
+            padding: AppSpacing.paddingCard,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 16,
-                      color: AppColors.textSecondary,
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySoft,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          _getInitials(),
+                          style: AppTextStyles.headline.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            doctor.clinicAddress,
-                            style: AppTextStyles.bodyMedium,
-                            maxLines: 2,
+                            _formatDoctorName(doctor.doctorName),
+                            style: AppTextStyles.title,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text(
-                            '${doctor.wilaya}${doctor.commune != null ? ', ${doctor.commune}' : ''}',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySoft,
+                              borderRadius: AppSpacing.chipRadius,
+                            ),
+                            child: Text(
+                              doctor.specialty?.nameFr ?? 'Spécialiste',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    if (doctor.averageRating != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.warning100,
+                          borderRadius: AppSpacing.chipRadius,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SvgPicture.asset(
+                              AppIcons.starFilled,
+                              width: 12,
+                              height: 12,
+                              colorFilter: const ColorFilter.mode(AppColors.warning, BlendMode.srcIn),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              doctor.averageRating!.toStringAsFixed(1),
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.warning,
+                              ),
+                            ),
+                            if (doctor.totalReviews != null)
+                              Text(
+                                ' (${doctor.totalReviews})',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.warning700,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        AppIcons.hospital,
+                        width: 16,
+                        height: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          doctor.clinicName,
+                          style: AppTextStyles.bodyMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SvgPicture.asset(
+                        AppIcons.location,
+                        width: 16,
+                        height: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              doctor.clinicAddress,
+                              style: AppTextStyles.bodyMedium,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${doctor.wilaya}${doctor.commune != null ? ', ${doctor.commune}' : ''}',
+                              style: AppTextStyles.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            AppIcons.phone,
+                            width: 16,
+                            height: 16,
+                            colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              doctor.phone,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.primary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (doctor.distance != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primarySoft,
+                          borderRadius: AppSpacing.chipRadius,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.near_me_rounded,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${doctor.distance!.toStringAsFixed(1)} km',
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppColors.successLight,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.attach_money_rounded,
+                              size: 12,
+                              color: AppColors.success,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            doctor.consultationFee != null
+                                ? '${doctor.consultationFee!.toStringAsFixed(0)} DA'
+                                : 'Prix non spécifié',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: doctor.consultationFee != null
+                                  ? AppColors.success
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (doctor.yearsOfExperience != null)
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppColors.infoLight,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.work_outline_rounded,
+                              size: 12,
+                              color: AppColors.info,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${doctor.yearsOfExperience} ans',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.info,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _buildNextAvailableSlot(),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    if (doctor.whatsappNumber != null &&
+                        doctor.whatsappNumber!.isNotEmpty)
+                      Expanded(
+                        child: _buildActionButton(
+                          icon: AppIcons.chat,
+                          label: 'WhatsApp',
+                          color: const Color(0xFF25D366),
+                          onTap: _openWhatsApp,
+                        ),
+                      ),
+                    if (doctor.whatsappNumber != null &&
+                        doctor.whatsappNumber!.isNotEmpty)
+                      const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      flex: 2,
+                      child: _buildActionButton(
+                        icon: AppIcons.calendar,
+                        label: 'Prendre RDV',
+                        color: AppColors.primary,
+                        onTap: _bookAppointment,
                       ),
                     ),
                   ],
                 ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.phone_outlined,
-                          size: 16,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            doctor.phone,
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.primary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (doctor.distance != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.near_me,
-                            size: 12,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${doctor.distance!.toStringAsFixed(1)} km',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.attach_money,
-                          size: 16,
-                          color: AppColors.success,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          doctor.consultationFee != null
-                              ? '${doctor.consultationFee!.toStringAsFixed(0)} DA'
-                              : 'Prix non spécifié',
-                          style: AppTextStyles.caption.copyWith(
-                            color: doctor.consultationFee != null
-                                ? AppColors.success
-                                : AppColors.textSecondary,
-                            fontWeight: doctor.consultationFee != null
-                                ? FontWeight.w500
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (doctor.yearsOfExperience != null)
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.work_outline,
-                          size: 16,
-                          color: AppColors.info,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${doctor.yearsOfExperience} ans',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.info,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildNextAvailableSlot(),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  if (doctor.whatsappNumber != null &&
-                      doctor.whatsappNumber!.isNotEmpty)
-                    Expanded(
-                      child: _buildActionButton(
-                        icon: Icons.message,
-                        label: 'WhatsApp',
-                        color: const Color(0xFF25D366),
-                        onTap: _openWhatsApp,
-                      ),
-                    ),
-                  if (doctor.whatsappNumber != null &&
-                      doctor.whatsappNumber!.isNotEmpty)
-                    const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: _buildActionButton(
-                      icon: Icons.event,
-                      label: 'Prendre RDV',
-                      color: AppColors.primary,
-                      onTap: _bookAppointment,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -322,21 +339,19 @@ class DoctorCard extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.successLight,
+              borderRadius: AppSpacing.chipRadius,
               border: Border.all(color: AppColors.success.withOpacity(0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.schedule, size: 16, color: AppColors.success),
+                const Icon(Icons.schedule_rounded, size: 14, color: AppColors.success),
                 const SizedBox(width: 6),
                 Text(
                   'Prochain créneau: ${snapshot.data}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.successDark,
                   ),
                 ),
               ],
@@ -359,29 +374,34 @@ class DoctorCard extends StatelessWidget {
   }
 
   Widget _buildActionButton({
-    required IconData icon,
+    required String icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppSpacing.buttonRadius,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppSpacing.buttonRadius,
         ),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(height: 2),
+            SvgPicture.asset(
+              icon,
+              width: 16,
+              height: 16,
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+            ),
+            const SizedBox(width: 6),
             Text(
               label,
-              style: AppTextStyles.caption.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: color,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

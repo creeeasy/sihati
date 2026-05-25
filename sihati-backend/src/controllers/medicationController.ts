@@ -22,7 +22,7 @@ export const getAllMedications = async (req: Request, res: Response, next: NextF
 // 📌 GET /api/medications/search
 export const searchMedications = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { q, category, requiresPrescription } = req.query;
+    const { q,  } = req.query;
     
     if (!q || (q as string).length < 2) {
       return res.status(400).json({ 
@@ -33,8 +33,6 @@ export const searchMedications = async (req: Request, res: Response, next: NextF
     
     const medications = await medicationService.searchMedications(
       q as string,
-      category as string,
-      requiresPrescription === 'true'
     );
     
     return res.json({ success: true, data: medications, count: medications.length });

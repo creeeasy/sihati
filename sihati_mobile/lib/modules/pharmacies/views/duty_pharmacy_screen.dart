@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_text_styles.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_widget.dart';
@@ -14,38 +17,35 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.neutral50,
 
-      // ── FABs: nearby toggle + clear all ──────────────────────
+      // ── FABs ─────────────────────────────────────────────────
       floatingActionButton: Obx(() => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // Clear all filters — only shown when filters are active
+              // Clear all — only when filters are active
               if (controller.activeFiltersCount > 0) ...[
-                FloatingActionButton.small(
+                _StyledMiniFab(
                   heroTag: 'clearDuty',
                   onPressed: controller.clearFilters,
-                  backgroundColor: AppColors.error,
-                  child: const Icon(Icons.filter_alt_off_rounded,
-                      color: Colors.white, size: 20),
+                  icon: AppIcons.close,
+                  color: AppColors.error,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSpacing.sm),
               ],
 
               // Nearby toggle
-              FloatingActionButton.extended(
+              _StyledExtendedFab(
                 heroTag: 'nearbyDuty',
                 onPressed: controller.toggleNearbyFilter,
-                icon: Icon(
-                  controller.showNearbyOnly.value
-                      ? Icons.location_off_rounded
-                      : Icons.near_me_rounded,
-                ),
-                label: Text(controller.showNearbyOnly.value
+                icon: controller.showNearbyOnly.value
+                    ? AppIcons.close
+                    : AppIcons.location,
+                label: controller.showNearbyOnly.value
                     ? 'Toutes les wilayas'
-                    : 'À proximité'),
-                backgroundColor: controller.showNearbyOnly.value
+                    : 'À proximité',
+                color: controller.showNearbyOnly.value
                     ? AppColors.error
                     : AppColors.primary,
               ),
@@ -64,7 +64,7 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // HEADER — gradient with wave, reactive count, wilaya button
+  // HEADER
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildHeader() {
@@ -73,133 +73,221 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: AppColors.primary,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-        onPressed: () => Get.back(),
+      backgroundColor: AppColors.primary800,
+      leading: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        child: _PressableWidget(
+          onTap: () => Get.back(),
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              border: Border.all(
+                color: AppColors.white.withOpacity(0.25),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                AppIcons.arrowBack,
+                width: AppSpacing.iconSizeMd,
+                height: AppSpacing.iconSizeMd,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.white,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
-      // Wilaya picker in action bar — now opens a proper bottom dialog
-      // (consistent with PharmacyListScreen's _showWilayaDialog)
       actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 8),
-          child: IconButton(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.location_on_rounded, color: Colors.white),
-                Obx(() {
-                  if (controller.selectedWilaya.value == null) {
-                    return const SizedBox();
-                  }
-                  return Positioned(
-                    right: -2,
-                    top: -2,
-                    child: Container(
-                      width: 8,
-                      height: 8,
+        // Wilaya picker action
+        Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.xs),
+          child: _PressableWidget(
+            onTap: _showWilayaDialog,
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                border: Border.all(
+                  color: AppColors.white.withOpacity(0.25),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    AppIcons.location,
+                    width: 16,
+                    height: 16,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Obx(() => Text(
+                        controller.selectedWilaya.value ?? 'Wilaya',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.white,
+                        ),
+                      )),
+                  // Dot indicator when filter is active
+                  Obx(() {
+                    if (controller.selectedWilaya.value == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return Container(
+                      margin: const EdgeInsets.only(left: 5),
+                      width: 6,
+                      height: 6,
                       decoration: const BoxDecoration(
-                        color: Colors.amber,
+                        color: AppColors.warning,
                         shape: BoxShape.circle,
                       ),
-                    ),
-                  );
-                }),
-              ],
+                    );
+                  }),
+                ],
+              ),
             ),
-            tooltip: 'Filtrer par wilaya',
-            onPressed: _showWilayaDialog,
           ),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
         background: Stack(
+          fit: StackFit.expand,
           children: [
+            // Deep gradient — slightly warmer/darker to distinguish from
+            // the standard pharmacy list screen
             Container(
               decoration: const BoxDecoration(
-                gradient: AppColors.primaryGradient,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primary900,
+                    AppColors.primary700,
+                  ],
+                ),
+              ),
+            ),
+
+            // Decorative circles
+            Positioned(
+              top: -24,
+              right: -24,
+              child: Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.white.withOpacity(0.06),
+                ),
               ),
             ),
             Positioned(
-              bottom: -2,
+              top: 70,
+              right: 70,
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.warning.withOpacity(0.15),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 50,
+              left: -16,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.white.withOpacity(0.05),
+                ),
+              ),
+            ),
+
+            // Smooth wave
+            Positioned(
+              bottom: -1,
               left: 0,
               right: 0,
               child: CustomPaint(
-                size: Size(Get.width, 30),
-                painter: _WavePainter(),
+                size: Size(Get.width, 32),
+                painter: _SmoothWavePainter(color: AppColors.neutral50),
               ),
             ),
-            Positioned(
-              top: 60,
-              right: -20,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 100,
-              left: 30,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.08),
-                ),
-              ),
-            ),
+
+            // Content
             SafeArea(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
+                padding: const EdgeInsets.fromLTRB(
                   AppSpacing.lg,
                   AppSpacing.md,
                   AppSpacing.lg,
-                  AppSpacing.xl,
+                  AppSpacing.xxl,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        // Pharmacy icon with night tint
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(16),
+                            color: AppColors.white.withOpacity(0.15),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusMd),
+                            border: Border.all(
+                              color: AppColors.white.withOpacity(0.25),
+                              width: 1,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.local_pharmacy_rounded,
-                            color: Colors.white,
-                            size: 32,
+                          child: SvgPicture.asset(
+                            AppIcons.moon,
+                            width: AppSpacing.iconSizeLg,
+                            height: AppSpacing.iconSizeLg,
+                            colorFilter: const ColorFilter.mode(
+                              AppColors.white,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
-                        SizedBox(width: AppSpacing.md),
+                        const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Pharmacies de garde',
-                                style: TextStyle(
+                                style: AppTextStyles.displaySmall.copyWith(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  height: 1.2,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              // Reactive count — like PharmacyListScreen
                               Obx(() => Text(
                                     controller.pharmacyCountLabel,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white.withOpacity(0.9),
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.white.withOpacity(0.85),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   )),
@@ -208,24 +296,45 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          color: Colors.white.withOpacity(0.9),
-                          size: 16,
+                    const SizedBox(height: AppSpacing.sm),
+
+                    // Date/time pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withOpacity(0.15),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusFull),
+                        border: Border.all(
+                          color: AppColors.white.withOpacity(0.2),
+                          width: 1,
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          controller.currentDateTime,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            AppIcons.reminder,
+                            width: 13,
+                            height: 13,
+                            colorFilter: ColorFilter.mode(
+                              AppColors.white.withOpacity(0.9),
+                              BlendMode.srcIn,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 5),
+                          Text(
+                            controller.currentDateTime,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.white.withOpacity(0.9),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -238,7 +347,7 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // ACTIVE FILTER BAR — mirrors PharmacyListScreen style
+  // ACTIVE FILTER BAR
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildActiveFilterBar() {
@@ -246,26 +355,30 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
       final count = controller.activeFiltersCount;
       final wilaya = controller.selectedWilaya.value;
 
-      if (count == 0) return const SizedBox(height: 8);
+      if (count == 0) return const SizedBox(height: AppSpacing.xs);
 
-      return Container(
-        margin: EdgeInsets.fromLTRB(
-            AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.xs,
+        ),
         child: Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
           children: [
             if (controller.showNearbyOnly.value)
-              _buildFilterChipBadge(
+              _buildFilterBadge(
                 label: 'À proximité',
-                icon: Icons.near_me_rounded,
+                icon: AppIcons.location,
                 color: AppColors.primary,
                 onClear: controller.toggleNearbyFilter,
               ),
             if (wilaya != null)
-              _buildFilterChipBadge(
+              _buildFilterBadge(
                 label: wilaya,
-                icon: Icons.location_on_rounded,
+                icon: AppIcons.location,
                 color: AppColors.secondary,
                 onClear: () => controller.filterByWilaya(null),
               ),
@@ -275,34 +388,51 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
     });
   }
 
-  Widget _buildFilterChipBadge({
+  Widget _buildFilterBadge({
     required String label,
-    required IconData icon,
+    required String icon,
     required Color color,
     required VoidCallback onClear,
   }) {
     return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs - 1,
+      ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1.5,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
+          SvgPicture.asset(
+            icon,
+            width: 13,
+            height: 13,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          ),
+          const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w600, color: color),
+            style: AppTextStyles.labelSmall.copyWith(
+              color: color,
+              fontSize: 12,
+            ),
           ),
           const SizedBox(width: 6),
-          GestureDetector(
+          _PressableWidget(
             onTap: onClear,
-            child: Icon(Icons.close_rounded, size: 16, color: color),
+            child: SvgPicture.asset(
+              AppIcons.close,
+              width: 12,
+              height: 12,
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+            ),
           ),
         ],
       ),
@@ -310,7 +440,7 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // PHARMACY LIST — fixed: empty vs error are separate states
+  // PHARMACY LIST
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildPharmacyList() {
@@ -319,11 +449,12 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
       if (controller.isLoading.value) {
         return const SliverFillRemaining(
           child: LoadingIndicator(
-              message: 'Chargement des pharmacies de garde...'),
+            message: 'Chargement des pharmacies de garde...',
+          ),
         );
       }
 
-      // Error (network / permission — not "empty result")
+      // Error
       if (controller.errorMessage.value.isNotEmpty) {
         return SliverFillRemaining(
           child: ErrorDisplayWidget(
@@ -335,9 +466,7 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
 
       final pharmacies = controller.pharmacies;
 
-      // Empty result — FIX: previously shown as ErrorDisplayWidget
-      // because the controller set errorMessage on empty. Now properly
-      // separated: empty list → EmptyState, real error → ErrorDisplayWidget.
+      // Empty
       if (pharmacies.isEmpty) {
         final isNearby = controller.showNearbyOnly.value;
         final hasWilaya = controller.selectedWilaya.value != null;
@@ -346,7 +475,7 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
           child: EmptyState(
             message: 'Aucune pharmacie de garde',
             submessage: isNearby
-                ? 'Aucune pharmacie de garde à proximité. Essayez d\'élargir la zone.'
+                ? "Aucune pharmacie de garde à proximité. Essayez d'élargir la zone."
                 : hasWilaya
                     ? 'Aucune pharmacie de garde dans cette wilaya ce soir.'
                     : 'Aucune pharmacie de garde disponible pour le moment.',
@@ -361,114 +490,155 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
         );
       }
 
+      // Results
       return SliverList(
         delegate: SliverChildListDelegate([
           // ── Success banner ──
-          Container(
-            margin: EdgeInsets.fromLTRB(
-                AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
-            padding: EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.successLight,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.success.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.success,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.nightlight_round,
-                      color: Colors.white, size: 22),
-                ),
-                SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${pharmacies.length} pharmacie${pharmacies.length > 1 ? 's' : ''} disponible${pharmacies.length > 1 ? 's' : ''}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.successDark,
-                        ),
-                      ),
-                      Text(
-                        controller.showNearbyOnly.value
-                            ? 'Les plus proches de vous cette nuit'
-                            : 'Ouvertes cette nuit dans votre région',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.successDark.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildSuccessBanner(pharmacies.length),
+          const SizedBox(height: AppSpacing.xs),
 
-          // ── Pharmacy cards ──
+          // ── Cards ──
           ...pharmacies.map((pharmacy) => Padding(
-                padding: EdgeInsets.fromLTRB(
-                    AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  0,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                ),
                 child: PharmacyCard(
                   pharmacy: pharmacy,
                   onTap: () => controller.goToPharmacyDetail(pharmacy.id),
                 ),
               )),
 
-          // Bottom padding so FAB doesn't overlap last card
-          SizedBox(height: AppSpacing.lg * 4),
+          // FAB clearance
+          const SizedBox(height: AppSpacing.xxxl + AppSpacing.lg),
         ]),
       );
     });
   }
 
+  Widget _buildSuccessBanner(int count) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.success50,
+        borderRadius: AppSpacing.cardRadius,
+        border: Border.all(
+          color: AppColors.success.withOpacity(0.25),
+          width: 1,
+        ),
+        boxShadow: AppColors.shadowSm,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.success,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.success.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: SvgPicture.asset(
+              AppIcons.moon,
+              width: AppSpacing.iconSizeMd,
+              height: AppSpacing.iconSizeMd,
+              colorFilter: const ColorFilter.mode(
+                AppColors.white,
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$count pharmacie${count > 1 ? 's' : ''} disponible${count > 1 ? 's' : ''}',
+                  style: AppTextStyles.h6.copyWith(
+                    color: AppColors.success700,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  controller.showNearbyOnly.value
+                      ? 'Les plus proches de vous cette nuit'
+                      : 'Ouvertes cette nuit dans votre région',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.success700.withOpacity(0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ═══════════════════════════════════════════════════════════════
-  // WILAYA DIALOG — same pattern as PharmacyListScreen for consistency
+  // WILAYA DIALOG
   // ═══════════════════════════════════════════════════════════════
 
   void _showWilayaDialog() {
     Get.dialog(
       Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        ),
+        backgroundColor: AppColors.surfaceCard,
         child: Container(
-          padding: EdgeInsets.all(AppSpacing.lg),
-          constraints: BoxConstraints(maxHeight: Get.height * 0.7),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          constraints: BoxConstraints(maxHeight: Get.height * 0.68),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Dialog header
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(AppSpacing.sm),
                     decoration: BoxDecoration(
                       color: AppColors.primarySoft,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     ),
-                    child: Icon(Icons.location_on_rounded,
-                        color: AppColors.primary, size: 24),
+                    child: SvgPicture.asset(
+                      AppIcons.location,
+                      width: AppSpacing.iconSizeMd,
+                      height: AppSpacing.iconSizeMd,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
-                  SizedBox(width: AppSpacing.md),
-                  const Text(
+                  const SizedBox(width: AppSpacing.md),
+                  Text(
                     'Sélectionner une wilaya',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTextStyles.h5,
                   ),
                 ],
               ),
-              SizedBox(height: AppSpacing.md),
-              Divider(color: AppColors.border),
+              const SizedBox(height: AppSpacing.md),
+              const Divider(color: AppColors.borderDefault, height: 1),
+              const SizedBox(height: AppSpacing.xs),
+
+              // List
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -479,54 +649,73 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
                         controller.selectedWilaya.value == wilaya ||
                             (wilaya == 'Tous' &&
                                 controller.selectedWilaya.value == null);
-                    return InkWell(
+
+                    return _PressableWidget(
                       onTap: () {
                         controller
                             .filterByWilaya(wilaya == 'Tous' ? null : wilaya);
                         Get.back();
                       },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm + 4,
+                          vertical: AppSpacing.sm + 2,
                         ),
                         margin: const EdgeInsets.only(bottom: 4),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primarySoft
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusMd),
+                          border: isSelected
+                              ? Border.all(
+                                  color: AppColors.primary.withOpacity(0.2),
+                                  width: 1,
+                                )
+                              : null,
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              isSelected
-                                  ? Icons.radio_button_checked_rounded
-                                  : Icons.radio_button_unchecked_rounded,
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textTertiary,
-                              size: 20,
+                            // Custom radio circle
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.neutral300,
+                                  width: 2,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      Icons.check_rounded,
+                                      size: 12,
+                                      color: AppColors.white,
+                                    )
+                                  : null,
                             ),
-                            SizedBox(width: AppSpacing.md),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
                               child: Text(
                                 wilaya,
-                                style: TextStyle(
-                                  fontSize: 15,
+                                style: AppTextStyles.bodyMedium.copyWith(
                                   fontWeight: isSelected
                                       ? FontWeight.w600
-                                      : FontWeight.normal,
+                                      : FontWeight.w400,
                                   color: isSelected
                                       ? AppColors.primary
                                       : AppColors.textPrimary,
                                 ),
                               ),
                             ),
-                            if (isSelected)
-                              Icon(Icons.check_rounded,
-                                  size: 18, color: AppColors.primary),
                           ],
                         ),
                       ),
@@ -543,22 +732,182 @@ class DutyPharmacyScreen extends GetView<DutyPharmacyController> {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// WAVE PAINTER — private to avoid conflict with PharmacyListScreen
+// STYLED FABs
 // ═══════════════════════════════════════════════════════════════
 
-class _WavePainter extends CustomPainter {
+class _StyledMiniFab extends StatelessWidget {
+  final String heroTag;
+  final VoidCallback onPressed;
+  final String icon;
+  final Color color;
+
+  const _StyledMiniFab({
+    required this.heroTag,
+    required this.onPressed,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: heroTag,
+      mini: true,
+      onPressed: onPressed,
+      backgroundColor: color,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      child: SvgPicture.asset(
+        icon,
+        width: AppSpacing.iconSizeSm,
+        height: AppSpacing.iconSizeSm,
+        colorFilter: const ColorFilter.mode(
+          AppColors.white,
+          BlendMode.srcIn,
+        ),
+      ),
+    );
+  }
+}
+
+class _StyledExtendedFab extends StatelessWidget {
+  final String heroTag;
+  final VoidCallback onPressed;
+  final String icon;
+  final String label;
+  final Color color;
+
+  const _StyledExtendedFab({
+    required this.heroTag,
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton.extended(
+      heroTag: heroTag,
+      onPressed: onPressed,
+      backgroundColor: color,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      icon: SvgPicture.asset(
+        icon,
+        width: AppSpacing.iconSizeSm,
+        height: AppSpacing.iconSizeSm,
+        colorFilter: const ColorFilter.mode(
+          AppColors.white,
+          BlendMode.srcIn,
+        ),
+      ),
+      label: Text(
+        label,
+        style: AppTextStyles.labelMedium.copyWith(
+          color: AppColors.white,
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRESS ANIMATION WRAPPER
+// ═══════════════════════════════════════════════════════════════
+
+class _PressableWidget extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const _PressableWidget({required this.child, this.onTap});
+
+  @override
+  State<_PressableWidget> createState() => _PressableWidgetState();
+}
+
+class _PressableWidgetState extends State<_PressableWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      reverseDuration: const Duration(milliseconds: 200),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.onTap == null) return widget.child;
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.forward(),
+      onTapUp: (_) {
+        _ctrl.reverse();
+        widget.onTap?.call();
+      },
+      onTapCancel: () => _ctrl.reverse(),
+      child: AnimatedBuilder(
+        animation: _scale,
+        builder: (_, child) => Transform.scale(
+          scale: _scale.value,
+          child: child,
+        ),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WAVE PAINTER
+// ═══════════════════════════════════════════════════════════════
+
+class _SmoothWavePainter extends CustomPainter {
+  final Color color;
+  const _SmoothWavePainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFF9FAFB)
+      ..color = color
       ..style = PaintingStyle.fill;
 
     final path = Path()
-      ..moveTo(0, size.height * 0.5)
-      ..quadraticBezierTo(size.width * 0.25, size.height * 0.2,
-          size.width * 0.5, size.height * 0.5)
-      ..quadraticBezierTo(
-          size.width * 0.75, size.height * 0.8, size.width, size.height * 0.5)
+      ..moveTo(0, size.height * 0.6)
+      ..cubicTo(
+        size.width * 0.2,
+        size.height * 0.0,
+        size.width * 0.4,
+        size.height * 0.0,
+        size.width * 0.5,
+        size.height * 0.5,
+      )
+      ..cubicTo(
+        size.width * 0.6,
+        size.height * 1.0,
+        size.width * 0.8,
+        size.height * 1.0,
+        size.width,
+        size.height * 0.4,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
@@ -567,5 +916,5 @@ class _WavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SmoothWavePainter old) => old.color != color;
 }

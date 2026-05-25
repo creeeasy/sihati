@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../../controllers/medical_record_controller.dart';
 import '../../../../core/models/medication_history_model.dart';
 
@@ -10,7 +13,7 @@ import '../../../../core/models/medication_history_model.dart';
 // ========================================
 
 class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
-  const HistoriqueMedicamentsTabContent({Key? key}) : super(key: key);
+  const HistoriqueMedicamentsTabContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,29 +31,21 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.medication_outlined,
-                size: 80,
-                color: AppColors.primary.withOpacity(0.3),
+              SvgPicture.asset(
+                AppIcons.medication,
+                width: 80,
+                height: 80,
+                colorFilter: ColorFilter.mode(AppColors.primary.withOpacity(0.3), BlendMode.srcIn),
               ),
               const SizedBox(height: AppSpacing.md),
-              const Text(
+              Text(
                 'Aucun médicament',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.title.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
+              Text(
                 'Vos médicaments apparaîtront ici',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  color: AppColors.textTertiary,
-                ),
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
               ),
             ],
           ),
@@ -66,7 +61,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
               color: Colors.white,
               border: Border(
                 bottom: BorderSide(
-                  color: AppColors.border,
+                  color: AppColors.borderLight,
                   width: 1,
                 ),
               ),
@@ -78,17 +73,12 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     Expanded(
                       child: Obx(() => Text(
                             '${_getFilteredMedications().length} médicaments',
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
+                            style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
                           )),
                     ),
                     TextButton.icon(
-                      icon: const Icon(Icons.file_download, size: 18),
-                      label: const Text('Exporter'),
+                      icon: SvgPicture.asset(AppIcons.download, width: 18, height: 18, colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn)),
+                      label: Text('Exporter', style: AppTextStyles.labelLarge),
                       onPressed: _exportMedicationHistory,
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
@@ -120,7 +110,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                                 border: Border.all(
                                   color: controller.showActiveOnly.value
                                       ? AppColors.primary.withOpacity(0.3)
-                                      : AppColors.border,
+                                      : AppColors.borderDefault,
                                   width: 1,
                                 ),
                               ),
@@ -136,12 +126,11 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
-                                    'Afficher seulement les traitements en cours',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
+                                  Expanded(
+                                    child: Text(
+                                      'Afficher seulement les traitements en cours',
+                                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
+                                      maxLines: 2,
                                     ),
                                   ),
                                 ],
@@ -175,21 +164,18 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.check_circle_outline,
-                          size: 64,
-                          color: AppColors.success.withOpacity(0.5),
+                        SvgPicture.asset(
+                          AppIcons.verified,
+                          width: 64,
+                          height: 64,
+                          colorFilter: ColorFilter.mode(AppColors.success.withOpacity(0.5), BlendMode.srcIn),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           controller.showActiveOnly.value
                               ? 'Aucun traitement en cours'
                               : 'Aucun médicament dans l\'historique',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppTextStyles.title.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -226,27 +212,28 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
     final isOngoing = med.isContinuous || (med.endDate != null && med.endDate!.isAfter(DateTime.now()));
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surfaceCard,
+        borderRadius: AppSpacing.cardRadius,
         border: Border.all(
           color: isOngoing
               ? AppColors.primary.withOpacity(0.3)
-              : AppColors.border,
+              : AppColors.borderDefault,
           width: isOngoing ? 2 : 1,
         ),
+        boxShadow: AppColors.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: AppSpacing.paddingCard,
             decoration: BoxDecoration(
               color:
                   isOngoing ? AppColors.primarySoft : AppColors.background,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft: Radius.circular(AppSpacing.radiusLg),
+                topRight: Radius.circular(AppSpacing.radiusLg),
               ),
             ),
             child: Row(
@@ -259,12 +246,14 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                         : Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    Icons.medication,
-                    color: isOngoing
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
-                    size: 24,
+                  child: SvgPicture.asset(
+                    AppIcons.medication,
+                    colorFilter: ColorFilter.mode(
+                      isOngoing ? AppColors.primary : AppColors.textSecondary,
+                      BlendMode.srcIn,
+                    ),
+                    width: 24,
+                    height: 24,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -274,22 +263,13 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     children: [
                       Text(
                         med.medicationName,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+                        style: AppTextStyles.title.copyWith(color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 2),
                       // Get medication type/category if available
                       Text(
                         _getMedicationType(med),
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -299,14 +279,13 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     horizontal: 10,
                     vertical: 5,
                   ),
-                    child: Text(
+                  decoration: BoxDecoration(
+                    color: isOngoing ? AppColors.primary : AppColors.textSecondary,
+                    borderRadius: AppSpacing.chipRadius,
+                  ),
+                  child: Text(
                     isOngoing ? 'En cours' : 'Terminé',
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
                   ),
                 ),
               ],
@@ -315,13 +294,13 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
 
           // Content
           Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: AppSpacing.paddingCard,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Dosage
                 _buildInfoRow(
-                  Icons.access_time,
+                  AppIcons.medicalRecord,
                   'Posologie',
                   med.dosage,
                 ),
@@ -330,7 +309,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
 
                 // Frequency
                 _buildInfoRow(
-                  Icons.repeat,
+                  AppIcons.history,
                   'Fréquence',
                   med.frequency,
                 ),
@@ -339,7 +318,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
 
                 // Dates
                 _buildInfoRow(
-                  Icons.calendar_today,
+                  AppIcons.calendar,
                   'Période',
                   _formatDateRange(med),
                 ),
@@ -349,7 +328,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                 // Reason
                 if (med.reason != null && med.reason!.isNotEmpty)
                   _buildInfoRow(
-                    Icons.note_outlined,
+                    AppIcons.info,
                     'Raison',
                     med.reason!,
                   ),
@@ -359,7 +338,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                 // Prescribed by
                 if (med.prescribedBy != null && med.prescribedBy!.isNotEmpty)
                   _buildInfoRow(
-                    Icons.person_outline,
+                    AppIcons.doctor,
                     'Prescrit par',
                     med.prescribedBy!,
                   ),
@@ -379,24 +358,20 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.primarySoft,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppSpacing.inputRadius,
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
-                          Icons.all_inclusive,
-                          color: AppColors.primary,
-                          size: 20,
+                        SvgPicture.asset(
+                          AppIcons.history,
+                          colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          width: 20,
+                          height: 20,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
                           'Traitement continu',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary),
                         ),
                       ],
                     ),
@@ -410,14 +385,15 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(String icon, String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
+        SvgPicture.asset(
           icon,
-          size: 16,
-          color: AppColors.textSecondary,
+          width: 16,
+          height: 16,
+          colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -426,21 +402,12 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
               ),
             ],
           ),
@@ -459,22 +426,13 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Progression',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
             ),
             Text(
               daysLeft > 0 ? '$daysLeft jours restants' : 'Terminé',
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 12,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary),
             ),
           ],
         ),
@@ -483,7 +441,7 @@ class HistoriqueMedicamentsTabContent extends GetView<MedicalRecordController> {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: progress / 100,
-            backgroundColor: AppColors.border,
+            backgroundColor: AppColors.borderLight,
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
             minHeight: 6,
           ),

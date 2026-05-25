@@ -4,7 +4,6 @@ import 'package:sihati_mobile/core/models/pharmacy_with_stock.dart';
 import '../../core/services/api_service.dart';
 import '../../app/constants/api_constants.dart';
 import '../../core/models/medication_model.dart';
-import '../../core/models/medication_search_result.dart';
 
 /// Medication provider — communicates with the Sihati backend
 ///
@@ -24,20 +23,10 @@ class MedicationProvider {
 
   /// Search medications by name and return results with pharmacies
   /// Backend: GET /medications/search
-  Future<List<MedicationSearchResult>> searchMedication(
-    String searchTerm, {
-    double? latitude,
-    double? longitude,
-    String? wilaya,
-    double radius = 10,
-  }) async {
+  Future<List<MedicationModel>> searchMedication(String searchTerm) async {
     try {
       final queryParams = <String, dynamic>{
         'q': searchTerm,
-        if (latitude != null) 'lat': latitude,
-        if (longitude != null) 'lng': longitude,
-        if (wilaya != null && wilaya.isNotEmpty) 'wilaya': wilaya,
-        'radius': radius,
       };
 
       final response = await _apiService.get(
@@ -47,10 +36,12 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> resultsJson = data is List ? data : (data['results'] ?? data);
 
+        final List<dynamic> resultsJson =
+            data is List ? data : (data['results'] ?? data);
         return resultsJson
-            .map((json) => MedicationSearchResult.fromJson(json))
+            .map((json) =>
+                MedicationModel.fromJson(json as Map<String, dynamic>))
             .toList();
       }
       throw Exception('Failed to search medications');
@@ -118,7 +109,8 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> medicationsJson = data is List ? data : (data['medications'] ?? data);
+        final List<dynamic> medicationsJson =
+            data is List ? data : (data['medications'] ?? data);
 
         return medicationsJson
             .map((json) => MedicationModel.fromJson(json))
@@ -142,7 +134,8 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> medicationsJson = data is List ? data : (data['medications'] ?? data);
+        final List<dynamic> medicationsJson =
+            data is List ? data : (data['medications'] ?? data);
 
         return medicationsJson
             .map((json) => MedicationModel.fromJson(json))
@@ -179,7 +172,8 @@ class MedicationProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        final List<dynamic> pharmaciesJson = data is List ? data : (data['pharmacies'] ?? data);
+        final List<dynamic> pharmaciesJson =
+            data is List ? data : (data['pharmacies'] ?? data);
 
         return pharmaciesJson
             .map((json) => PharmacyWithStock.fromJson(json))

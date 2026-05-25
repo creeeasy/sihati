@@ -1,14 +1,16 @@
-// lib/modules/medical_record/views/widgets/bilan_tab.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../../controllers/medical_record_controller.dart';
 import '../../../../core/models/medication_history_model.dart';
 import '../../../../core/models/allergy_model.dart';
 
 class BilanTab extends GetView<MedicalRecordController> {
-  const BilanTab({Key? key}) : super(key: key);
+  const BilanTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class BilanTab extends GetView<MedicalRecordController> {
             children: [
               Expanded(
                 child: Obx(() => _buildStatCard(
-                      icon: Icons.description_outlined,
+                      icon: AppIcons.prescription,
                       count: controller.ordonnancesCount.value.toString(),
                       label: 'Ordonnances',
                       color: AppColors.primary,
@@ -32,7 +34,7 @@ class BilanTab extends GetView<MedicalRecordController> {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Obx(() => _buildStatCard(
-                      icon: Icons.medication_outlined,
+                      icon: AppIcons.medication,
                       count: controller.medicationsCount.value.toString(),
                       label: 'Médicaments',
                       color: AppColors.success,
@@ -45,21 +47,21 @@ class BilanTab extends GetView<MedicalRecordController> {
             children: [
               Expanded(
                 child: Obx(() => _buildStatCard(
-                      icon: Icons.calendar_today_outlined,
+                      icon: AppIcons.calendar,
                       count: controller.consultationsCount.value.toString(),
                       label: 'Consultations',
                       color: AppColors.warning,
                     )),
               ),
               const SizedBox(width: AppSpacing.md),
-              Expanded(
+              /*  Expanded(
                 child: Obx(() => _buildStatCard(
-                      icon: Icons.folder_outlined,
+                      //icon: AppIcons.folder,
                       count: controller.documentsCount.value.toString(),
                       label: 'Documents',
                       color: AppColors.info,
                     )),
-              ),
+              ), */
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -81,31 +83,27 @@ class BilanTab extends GetView<MedicalRecordController> {
 
     if (consultation == null) {
       return Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: AppSpacing.paddingCard,
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          borderRadius: AppSpacing.cardRadius,
+          border: Border.all(color: AppColors.borderDefault),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             'Aucune consultation récente',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary),
           ),
         ),
       );
     }
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: AppSpacing.paddingCard,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primarySoft,
-            AppColors.primarySoft.withOpacity(0.5)
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.primarySoft,
+        borderRadius: AppSpacing.cardRadius,
         border:
             Border.all(color: AppColors.primary.withOpacity(0.3), width: 1.5),
       ),
@@ -120,23 +118,23 @@ class BilanTab extends GetView<MedicalRecordController> {
                   color: AppColors.primary.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.history,
-                    color: AppColors.primary, size: 24),
+                child: SvgPicture.asset(AppIcons.history,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.primary, BlendMode.srcIn),
+                    width: 24,
+                    height: 24),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Dernière consultation',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary)),
+                    Text('Dernière consultation',
+                        style: AppTextStyles.labelLarge
+                            .copyWith(color: AppColors.primary)),
                     const SizedBox(height: 2),
                     Text(consultation.formattedDate,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary)),
+                        style: AppTextStyles.bodySmall),
                   ],
                 ),
               ),
@@ -145,13 +143,11 @@ class BilanTab extends GetView<MedicalRecordController> {
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.success,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppSpacing.chipRadius,
                 ),
-                child: const Text('Terminée',
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
+                child: Text('Terminée',
+                    style:
+                        AppTextStyles.labelSmall.copyWith(color: Colors.white)),
               ),
             ],
           ),
@@ -160,27 +156,29 @@ class BilanTab extends GetView<MedicalRecordController> {
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
-              const Icon(Icons.person_outline,
-                  size: 18, color: AppColors.textSecondary),
+              SvgPicture.asset(AppIcons.doctor,
+                  width: 18,
+                  height: 18,
+                  colorFilter: const ColorFilter.mode(
+                      AppColors.textSecondary, BlendMode.srcIn)),
               const SizedBox(width: 8),
               Text(consultation.doctor?.fullName ?? 'Médecin non spécifié',
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary)),
+                  style: AppTextStyles.labelLarge),
             ],
           ),
           const SizedBox(height: 8),
           if (consultation.diagnosis != null) ...[
             Row(
               children: [
-                const Icon(Icons.healing,
-                    size: 18, color: AppColors.textSecondary),
+                SvgPicture.asset(AppIcons.heart,
+                    width: 18,
+                    height: 18,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.textSecondary, BlendMode.srcIn)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(consultation.diagnosis!,
-                      style: const TextStyle(
-                          fontSize: 13, color: AppColors.textSecondary)),
+                      style: AppTextStyles.bodySmall),
                 ),
               ],
             ),
@@ -191,17 +189,17 @@ class BilanTab extends GetView<MedicalRecordController> {
   }
 
   Widget _buildStatCard({
-    required IconData icon,
+    required String icon,
     required String count,
     required String label,
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: AppSpacing.paddingCard,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
+        color: AppColors.surfaceCard,
+        borderRadius: AppSpacing.cardRadius,
+        boxShadow: AppColors.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,41 +210,34 @@ class BilanTab extends GetView<MedicalRecordController> {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: SvgPicture.asset(icon,
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                width: 24,
+                height: 24),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(count,
-              style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary)),
+              style: AppTextStyles.displayMedium
+                  .copyWith(color: AppColors.textPrimary, fontSize: 28)),
           const SizedBox(height: 2),
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500)),
+              style: AppTextStyles.labelMedium
+                  .copyWith(color: AppColors.textSecondary)),
         ],
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(title,
-        style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary));
+    return Text(title, style: AppTextStyles.headline);
   }
 
   Widget _buildAllergiesCard() {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: AppSpacing.paddingCard,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.errorLight, AppColors.errorLight.withOpacity(0.5)],
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.error50,
+        borderRadius: AppSpacing.cardRadius,
         border: Border.all(color: AppColors.error.withOpacity(0.3), width: 1.5),
       ),
       child: Column(
@@ -254,24 +245,26 @@ class BilanTab extends GetView<MedicalRecordController> {
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded,
-                  color: AppColors.error, size: 24),
+              SvgPicture.asset(AppIcons.warning,
+                  colorFilter:
+                      const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
+                  width: 24,
+                  height: 24),
               const SizedBox(width: 12),
-              const Text('Allergies déclarées',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.errorDark)),
+              Text('Allergies déclarées',
+                  style:
+                      AppTextStyles.title.copyWith(color: AppColors.error700)),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
           Obx(() {
             if (controller.allergies.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(16.0),
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Center(
                   child: Text('Aucune allergie déclarée',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary)),
                 ),
               );
             }
@@ -290,38 +283,42 @@ class BilanTab extends GetView<MedicalRecordController> {
   }
 
   Widget _buildAllergyChip(Allergy allergy) {
+    final severityColor = _getSeverityColor(allergy.severity);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.error.withOpacity(0.3), width: 1),
+        color: AppColors.surfaceCard,
+        boxShadow: AppColors.shadowXs,
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: AppColors.error, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(allergy.allergyName,
-                style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.errorDark)),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: _getSeverityColor(allergy.severity).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: severityColor, width: 3)),
+        ),
+        child: Row(
+          children: [
+            SvgPicture.asset(AppIcons.warning,
+                colorFilter:
+                    const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
+                width: 18,
+                height: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(allergy.allergyName,
+                  style: AppTextStyles.labelLarge
+                      .copyWith(color: AppColors.error700)),
             ),
-            child: Text(allergy.formattedSeverity,
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: _getSeverityColor(allergy.severity))),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: severityColor.withOpacity(0.1),
+                borderRadius: AppSpacing.chipRadius,
+              ),
+              child: Text(allergy.formattedSeverity,
+                  style:
+                      AppTextStyles.labelSmall.copyWith(color: severityColor)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -329,31 +326,32 @@ class BilanTab extends GetView<MedicalRecordController> {
   Color _getSeverityColor(AllergySeverity severity) {
     switch (severity) {
       case AllergySeverity.severe:
-        return Colors.red;
+        return AppColors.error;
       case AllergySeverity.moderate:
-        return Colors.orange;
+        return AppColors.warning;
       case AllergySeverity.mild:
-        return Colors.green;
+        return AppColors.success;
     }
   }
 
   Widget _buildCurrentMedicationsCard() {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: AppSpacing.paddingCard,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
+        color: AppColors.surfaceCard,
+        borderRadius: AppSpacing.cardRadius,
+        boxShadow: AppColors.shadowSm,
       ),
       child: Column(
         children: [
           Obx(() {
             if (controller.currentMedications.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(16.0),
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Center(
                   child: Text('Aucun traitement en cours',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary)),
                 ),
               );
             }
@@ -365,7 +363,7 @@ class BilanTab extends GetView<MedicalRecordController> {
                   children: [
                     _buildMedicationItem(medication),
                     if (entry.key < controller.currentMedications.length - 1)
-                      const Divider(height: 24),
+                      const Divider(height: 24, color: AppColors.borderLight),
                   ],
                 );
               }).toList(),
@@ -392,22 +390,14 @@ class BilanTab extends GetView<MedicalRecordController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(medication.medicationName,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary)),
+              Text(medication.medicationName, style: AppTextStyles.title),
               const SizedBox(height: 4),
-              Text(medication.dosage,
-                  style: const TextStyle(
-                      fontSize: 13, color: AppColors.textSecondary)),
+              Text(medication.dosage, style: AppTextStyles.bodySmall),
               const SizedBox(height: 2),
               Text(
                 '${medication.frequency} • ${medication.isContinuous ? 'En continu' : 'Jusqu\'au ${_formatEndDate(medication.endDate)}'}\nPrescrit par: ${medication.prescribedBy ?? 'Médecin'}',
-                style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600),
+                style:
+                    AppTextStyles.labelSmall.copyWith(color: AppColors.primary),
               ),
             ],
           ),
@@ -416,14 +406,12 @@ class BilanTab extends GetView<MedicalRecordController> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.success50,
+              borderRadius: AppSpacing.chipRadius,
             ),
             child: Text('${medication.progressPercentage!.toInt()}%',
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.success)),
+                style: AppTextStyles.labelMedium
+                    .copyWith(color: AppColors.success700)),
           ),
       ],
     );

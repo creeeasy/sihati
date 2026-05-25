@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../../controllers/medical_record_controller.dart';
 import '../../../../core/models/consultation_model.dart';
 
 class ConsultationsTab extends GetView<MedicalRecordController> {
-  const ConsultationsTab({Key? key}) : super(key: key);
+  const ConsultationsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,29 +27,21 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 80,
-                color: AppColors.primary.withOpacity(0.3),
+              SvgPicture.asset(
+                AppIcons.consultation,
+                width: 80,
+                height: 80,
+                colorFilter: ColorFilter.mode(AppColors.primary.withOpacity(0.3), BlendMode.srcIn),
               ),
               const SizedBox(height: AppSpacing.md),
-              const Text(
+              Text(
                 'Aucune consultation',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.title.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Vos consultations apparaîtront ici',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  color: AppColors.textTertiary,
-                ),
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
               ),
             ],
           ),
@@ -75,24 +70,18 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.surfaceCard,
+        borderRadius: AppSpacing.cardRadius,
+        border: Border.all(color: AppColors.borderDefault),
+        boxShadow: AppColors.shadowSm,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => isExpanded.toggle(),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppSpacing.cardRadius,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: AppSpacing.paddingCard,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -103,13 +92,16 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primarySoft,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
-                        Icons.medical_services_outlined,
-                        color: AppColors.primary,
-                        size: 24,
+                      child: Center(
+                        child: SvgPicture.asset(
+                          AppIcons.doctor,
+                          colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          width: 24,
+                          height: 24,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -119,21 +111,12 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                         children: [
                           Text(
                             doctor?.fullName ?? 'Consultation médicale',
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
+                            style: AppTextStyles.title,
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'Consultation médicale',
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -144,17 +127,12 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.success50,
+                        borderRadius: AppSpacing.chipRadius,
                       ),
                       child: Text(
                         consultation.formattedDate,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.success,
-                        ),
+                        style: AppTextStyles.labelMedium.copyWith(color: AppColors.success700),
                       ),
                     ),
                   ],
@@ -166,20 +144,17 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                 if (consultation.diagnosis != null) ...[
                   Row(
                     children: [
-                      const Icon(
-                        Icons.healing_outlined,
-                        size: 16,
-                        color: AppColors.textSecondary,
+                      SvgPicture.asset(
+                        AppIcons.heart,
+                        width: 16,
+                        height: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           consultation.diagnosis!,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                            color: AppColors.textPrimary,
-                          ),
+                          style: AppTextStyles.bodyMedium,
                         ),
                       ),
                     ],
@@ -191,20 +166,17 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                 if (consultation.chiefComplaint != null) ...[
                   Row(
                     children: [
-                      const Icon(
-                        Icons.description_outlined,
-                        size: 16,
-                        color: AppColors.textSecondary,
+                      SvgPicture.asset(
+                        AppIcons.medicalRecord,
+                        width: 16,
+                        height: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           consultation.chiefComplaint!,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
                         ),
                       ),
                     ],
@@ -219,56 +191,36 @@ class ConsultationsTab extends GetView<MedicalRecordController> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Divider(height: AppSpacing.lg),
+                      const Divider(height: AppSpacing.lg, color: AppColors.borderLight),
 
                       // Traitement
                       if (consultation.treatmentPlan != null) ...[
-                        const Text(
+                        Text(
                           'Traitement prescrit',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
+                          style: AppTextStyles.labelLarge,
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           consultation.treatmentPlan!,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
 
                       // Notes
                       if (consultation.notes != null) ...[
-                        const Text(
+                        Text(
                           'Notes du médecin',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
+                          style: AppTextStyles.labelLarge,
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           consultation.notes!,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
                           softWrap: true,
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
-
-                      // NOTE: durationMinutes removed — not in backend Consultation model.
                     ],
                   );
                 }),

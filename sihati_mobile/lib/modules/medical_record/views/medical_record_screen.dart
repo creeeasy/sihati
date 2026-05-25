@@ -1,7 +1,10 @@
-// lib/modules/medical_record/views/medical_record_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../app/theme/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../controllers/medical_record_controller.dart';
 import 'widgets/bilan_tab.dart';
 import 'widgets/ordonnances_tab.dart';
@@ -10,7 +13,7 @@ import 'widgets/consultations_tab.dart';
 import 'widgets/documents_tab.dart';
 
 class MedicalRecordScreen extends GetView<MedicalRecordController> {
-  const MedicalRecordScreen({Key? key}) : super(key: key);
+  const MedicalRecordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,7 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
         children: [
           Container(
             decoration:
-                const BoxDecoration(gradient: AppColors.primaryGradient),
+                const BoxDecoration(gradient: AppColors.homeHeaderGradient),
           ),
           Positioned(
             top: -30,
@@ -99,8 +102,8 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
           ),
           Positioned(
             bottom: 36,
-            left: 24,
-            right: 24,
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -112,8 +115,11 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.arrow_back_rounded,
-                        color: Colors.white, size: 20),
+                    child: SvgPicture.asset(AppIcons.arrowBack,
+                        width: 20,
+                        height: 20,
+                        colorFilter: const ColorFilter.mode(
+                            Colors.white, BlendMode.srcIn)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -123,39 +129,38 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
                     color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.medical_information_rounded,
-                      color: Colors.white, size: 32),
+                  child: SvgPicture.asset(AppIcons.medicalRecord,
+                      width: 32,
+                      height: 32,
+                      colorFilter: const ColorFilter.mode(
+                          Colors.white, BlendMode.srcIn)),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Mon Dossier Médical',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: -0.5,
-                  ),
+                  style:
+                      AppTextStyles.displayMedium.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.25),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: AppSpacing.chipRadius,
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.verified_user_rounded,
-                          size: 14, color: Colors.white),
-                      SizedBox(width: 6),
+                      SvgPicture.asset(AppIcons.verified,
+                          width: 14,
+                          height: 14,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn)),
+                      const SizedBox(width: 6),
                       Text(
                         'Données sécurisées et confidentielles',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
+                        style: AppTextStyles.labelMedium
+                            .copyWith(color: Colors.white),
                       ),
                     ],
                   ),
@@ -170,32 +175,73 @@ class MedicalRecordScreen extends GetView<MedicalRecordController> {
 
   Widget _buildTabs() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+        border:
+            Border(bottom: BorderSide(color: AppColors.borderLight, width: 1)),
       ),
       child: TabBar(
         isScrollable: true,
         labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.textSecondary,
-        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        labelStyle: AppTextStyles.labelLarge,
         unselectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+            AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w500),
         indicatorColor: AppColors.primary,
         indicatorWeight: 3,
+        indicatorSize: TabBarIndicatorSize.label,
         onTap: controller.changeTab,
-        tabs: const [
-          Tab(icon: Icon(Icons.dashboard_outlined, size: 20), text: 'Bilan'),
+        tabs: [
           Tab(
-              icon: Icon(Icons.description_outlined, size: 20),
+              icon: SvgPicture.asset(AppIcons.medicalRecord,
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(
+                      controller.tabIndex.value == 0
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      BlendMode.srcIn)),
+              text: 'Bilan'),
+          Tab(
+              icon: SvgPicture.asset(AppIcons.prescription,
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(
+                      controller.tabIndex.value == 1
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      BlendMode.srcIn)),
               text: 'Ordonnances'),
           Tab(
-              icon: Icon(Icons.medication_outlined, size: 20),
+              icon: SvgPicture.asset(AppIcons.medication,
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(
+                      controller.tabIndex.value == 2
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      BlendMode.srcIn)),
               text: 'Médicaments'),
           Tab(
-              icon: Icon(Icons.calendar_today_outlined, size: 20),
+              icon: SvgPicture.asset(AppIcons.consultation,
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(
+                      controller.tabIndex.value == 3
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      BlendMode.srcIn)),
               text: 'Consultations'),
-          Tab(icon: Icon(Icons.folder_outlined, size: 20), text: 'Documents'),
+          Tab(
+              icon: SvgPicture.asset(AppIcons.medicalRecord,
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(
+                      controller.tabIndex.value == 4
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      BlendMode.srcIn)),
+              text: 'Documents'),
         ],
       ),
     );

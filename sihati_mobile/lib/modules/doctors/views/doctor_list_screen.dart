@@ -1,8 +1,10 @@
-// lib/modules/doctors/views/doctor_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import 'package:sihati_mobile/app/theme/app_colors.dart';
 import 'package:sihati_mobile/app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import 'package:sihati_mobile/core/widgets/empty_state.dart';
 import 'package:sihati_mobile/core/widgets/error_widget.dart';
 import 'package:sihati_mobile/core/widgets/loading_indicator.dart';
@@ -15,200 +17,247 @@ class DoctorListScreen extends GetView<DoctorListController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.neutral50,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          _buildHeader(),
+          _buildSliverAppBar(),
           SliverToBoxAdapter(child: _buildSearchSection()),
-          SliverToBoxAdapter(
-              child: _buildTopRatedStrip()), // getTopRatedDoctors
-          SliverToBoxAdapter(
-              child: _buildSpecialtyQuickRow()), // getDoctorsBySpecialty
+          SliverToBoxAdapter(child: _buildTopRatedStrip()),
+          SliverToBoxAdapter(child: _buildSpecialtyQuickRow()),
           SliverToBoxAdapter(child: _buildActiveFilterBar()),
-          SliverToBoxAdapter(child: _buildViewModeLabel()),
+          SliverToBoxAdapter(child: _buildListHeader()),
           _buildDoctorsList(),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
         ],
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // HEADER
-  // ═══════════════════════════════════════════════════════════════
+  // ─── Sliver App Bar ──────────────────────────────────────────────────────────
 
-  Widget _buildHeader() {
+  Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 190,
+      expandedHeight: 200,
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: AppColors.primary,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-        onPressed: () => Get.back(),
+      backgroundColor: AppColors.primary700,
+      // Back button
+      leading: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        child: GestureDetector(
+          onTap: () => Get.back(),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                AppIcons.arrowBack,
+                width: AppSpacing.iconSizeMd,
+                height: AppSpacing.iconSizeMd,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
+            ),
+          ),
+        ),
       ),
       actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.tune_rounded, color: Colors.white),
-            onPressed: _showFilterBottomSheet,
+        Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.sm),
+          child: GestureDetector(
+            onTap: _showFilterBottomSheet,
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: SvgPicture.asset(
+                AppIcons.filter,
+                width: AppSpacing.iconSizeMd,
+                height: AppSpacing.iconSizeMd,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
+            ),
           ),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            Container(
-              decoration:
-                  const BoxDecoration(gradient: AppColors.primaryGradient),
-            ),
-            Positioned(
-              bottom: -2,
-              left: 0,
-              right: 0,
-              child: CustomPaint(
-                size: Size(Get.width, 40),
-                painter: _WavePainter(),
-              ),
-            ),
-            Positioned(
-              top: 60,
-              right: -30,
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 110,
-              left: -20,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.08),
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md,
-                    AppSpacing.lg, AppSpacing.xl + 4),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.medical_services_rounded,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                        SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Médecins',
-                                style: TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Obx(() => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.25),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                            Icons.health_and_safety_rounded,
-                                            color: Colors.white,
-                                            size: 14),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          '${controller.filteredDoctors.length} médecin${controller.filteredDoctors.length > 1 ? 's' : ''}',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+        titlePadding: EdgeInsets.zero,
+        background: _buildAppBarBackground(),
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // SEARCH  — triggers backend searchByName via controller debounce
-  // ═══════════════════════════════════════════════════════════════
+  Widget _buildAppBarBackground() {
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.homeHeaderGradient),
+      child: Stack(
+        children: [
+          // Decorative circles
+          Positioned(
+            top: 40,
+            right: -40,
+            child: _decorCircle(140, 0.08),
+          ),
+          Positioned(
+            top: 100,
+            left: -30,
+            child: _decorCircle(90, 0.06),
+          ),
+          Positioned(
+            bottom: 30,
+            right: 60,
+            child: _decorCircle(50, 0.1),
+          ),
+          // Wave at bottom
+          Positioned(
+            bottom: -1,
+            left: 0,
+            right: 0,
+            child: CustomPaint(
+              size: Size(Get.width, 44),
+              painter: _WavePainter(),
+            ),
+          ),
+          // Content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Icon badge
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm + 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusMd),
+                        ),
+                        child: SvgPicture.asset(
+                          AppIcons.doctor,
+                          width: 28,
+                          height: 28,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Médecins',
+                              style: AppTextStyles.displaySmall
+                                  .copyWith(color: Colors.white, height: 1.1),
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              'Trouvez votre spécialiste',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Colors.white.withOpacity(0.75),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Count badge
+                      Obx(() =>
+                          _buildCountBadge(controller.filteredDoctors.length)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountBadge(int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm, vertical: AppSpacing.xxs + 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.22),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            AppIcons.verified,
+            width: 13,
+            height: 13,
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            '$count médecin${count > 1 ? 's' : ''}',
+            style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _decorCircle(double size, double opacity) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(opacity),
+      ),
+    );
+  }
+
+  // ─── Search ──────────────────────────────────────────────────────────────────
 
   Widget _buildSearchSection() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.1),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          color: AppColors.surfaceCard,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(color: AppColors.borderDefault, width: 1.5),
+          boxShadow: AppColors.shadowMd,
         ),
         child: Obx(() => TextField(
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Rechercher un médecin...',
-                hintStyle:
-                    TextStyle(color: AppColors.textTertiary, fontSize: 15),
+                hintStyle: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textTertiary),
                 prefixIcon: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   child: controller.isNameSearchLoading.value
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -216,19 +265,27 @@ class DoctorListScreen extends GetView<DoctorListController> {
                             color: AppColors.primary,
                           ),
                         )
-                      : Icon(Icons.search_rounded,
-                          color: AppColors.primary, size: 24),
+                      : SvgPicture.asset(
+                          AppIcons.search,
+                          colorFilter: const ColorFilter.mode(
+                              AppColors.primary, BlendMode.srcIn),
+                        ),
                 ),
                 suffixIcon: controller.searchQuery.value.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.close_rounded,
-                            color: AppColors.textSecondary, size: 20),
                         onPressed: () => controller.searchDoctorsByName(''),
+                        icon: SvgPicture.asset(
+                          AppIcons.close,
+                          width: 18,
+                          height: 18,
+                          colorFilter: const ColorFilter.mode(
+                              AppColors.textSecondary, BlendMode.srcIn),
+                        ),
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md, vertical: AppSpacing.md + 2),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md, vertical: AppSpacing.md),
               ),
               onChanged: controller.searchDoctorsByName,
             )),
@@ -236,23 +293,21 @@ class DoctorListScreen extends GetView<DoctorListController> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // TOP RATED STRIP  — getTopRatedDoctors
-  // ═══════════════════════════════════════════════════════════════
+  // ─── Top-Rated Strip ─────────────────────────────────────────────────────────
 
   Widget _buildTopRatedStrip() {
     return Obx(() {
-      // Hide strip when user is actively filtering/searching
       if (controller.hasActiveFilters) return const SizedBox.shrink();
       if (controller.isTopRatedLoading.value) {
-        return Container(
-          height: 140,
-          alignment: Alignment.center,
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-                strokeWidth: 2, color: AppColors.primary),
+        return const SizedBox(
+          height: 148,
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: AppColors.primary),
+            ),
           ),
         );
       }
@@ -262,30 +317,34 @@ class DoctorListScreen extends GetView<DoctorListController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(
-                AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
             child: Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm, vertical: AppSpacing.xxs + 2),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                    color: AppColors.warning50,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    border: Border.all(
+                        color: AppColors.warning500.withOpacity(0.35)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(Icons.star_rounded, size: 16, color: Colors.amber),
-                      SizedBox(width: 5),
+                    children: [
+                      SvgPicture.asset(
+                        AppIcons.starFilled,
+                        width: 15,
+                        height: 15,
+                        colorFilter: const ColorFilter.mode(
+                            AppColors.warning500, BlendMode.srcIn),
+                      ),
+                      const SizedBox(width: 5),
                       Text(
                         'Mieux notés',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                        ),
+                        style: AppTextStyles.labelMedium
+                            .copyWith(color: AppColors.warning700),
                       ),
                     ],
                   ),
@@ -294,162 +353,34 @@ class DoctorListScreen extends GetView<DoctorListController> {
             ),
           ),
           SizedBox(
-            height: 130,
+            height: 136,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               physics: const BouncingScrollPhysics(),
               itemCount: controller.topRatedDoctors.length,
               itemBuilder: (context, index) {
                 final doc = controller.topRatedDoctors[index];
-                return GestureDetector(
+                return _TopRatedCard(
+                  doctor: doc,
                   onTap: () => controller.goToDoctorDetail(doc.id),
-                  child: Container(
-                    width: 200,
-                    margin: const EdgeInsets.only(right: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                          color: Colors.amber.withOpacity(0.3), width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amber.withOpacity(0.08),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            // Avatar
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor:
-                                  AppColors.primary.withOpacity(0.1),
-                              child: Text(
-                                _initials(doc.doctorName),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _formatName(doc.doctorName),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    doc.specialty?.nameFr ?? 'Spécialiste',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // Rating row
-                        Row(
-                          children: [
-                            const Icon(Icons.star_rounded,
-                                size: 14, color: Colors.amber),
-                            const SizedBox(width: 4),
-                            Text(
-                              doc.averageRating?.toStringAsFixed(1) ?? '—',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.amber,
-                              ),
-                            ),
-                            if (doc.totalReviews != null) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                '(${doc.totalReviews})',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textTertiary),
-                              ),
-                            ],
-                            const Spacer(),
-                            if (doc.consultationFee != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.successLight,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '${doc.consultationFee!.toStringAsFixed(0)} DA',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.success,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        // Wilaya
-                        Row(
-                          children: [
-                            Icon(Icons.location_on_rounded,
-                                size: 12, color: AppColors.error),
-                            const SizedBox(width: 3),
-                            Expanded(
-                              child: Text(
-                                doc.wilaya,
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                 );
               },
             ),
           ),
-          SizedBox(height: AppSpacing.sm),
-          Divider(color: AppColors.border, height: 1),
-          SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.sm),
+          Divider(
+              color: AppColors.neutral200,
+              height: 1,
+              indent: AppSpacing.md,
+              endIndent: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
         ],
       );
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // SPECIALTY QUICK ROW  — getDoctorsBySpecialty
-  // ═══════════════════════════════════════════════════════════════
+  // ─── Specialty Chips ─────────────────────────────────────────────────────────
 
   Widget _buildSpecialtyQuickRow() {
     return Obx(() {
@@ -459,41 +390,42 @@ class DoctorListScreen extends GetView<DoctorListController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(
-                AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
             child: Row(
               children: [
-                Icon(Icons.medical_services_rounded,
-                    size: 16, color: AppColors.primary),
-                const SizedBox(width: 6),
-                const Text(
+                SvgPicture.asset(
+                  AppIcons.stethoscope,
+                  width: AppSpacing.iconSizeSm,
+                  height: AppSpacing.iconSizeSm,
+                  colorFilter: const ColorFilter.mode(
+                      AppColors.primary, BlendMode.srcIn),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
                   'Spécialités',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.labelLarge
+                      .copyWith(color: AppColors.textPrimary),
                 ),
               ],
             ),
           ),
           SizedBox(
-            height: 38,
+            height: 40,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               physics: const BouncingScrollPhysics(),
               children: [
-                // "Tous" chip
-                _buildSpecialtyChip(
+                _SpecialtyChip(
                   label: 'Tous',
                   isSelected: controller.selectedSpecialtyId.value == null,
                   onTap: () => controller.filterBySpecialty(null),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.xs),
                 ...controller.specialties.map((s) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: _buildSpecialtyChip(
+                      padding: const EdgeInsets.only(right: AppSpacing.xs),
+                      child: _SpecialtyChip(
                         label: s.nameFr,
                         isSelected:
                             controller.selectedSpecialtyId.value == s.id,
@@ -503,118 +435,50 @@ class DoctorListScreen extends GetView<DoctorListController> {
               ],
             ),
           ),
-          SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.sm),
         ],
       );
     });
   }
 
-  Widget _buildSpecialtyChip({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: 1.5,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : AppColors.textPrimary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // ACTIVE FILTER BAR
-  // ═══════════════════════════════════════════════════════════════
+  // ─── Active Filter Bar ───────────────────────────────────────────────────────
 
   Widget _buildActiveFilterBar() {
     return Obx(() {
       if (!controller.hasActiveFilters) return const SizedBox.shrink();
 
-      return Container(
-        margin: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md, 0, AppSpacing.md, AppSpacing.xs),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           child: Row(
             children: [
               if (controller.selectedSpecialtyId.value != null)
-                _buildFilterPill(
+                _FilterPill(
                   label: controller
                       .getSpecialtyName(controller.selectedSpecialtyId.value),
                   onDelete: () => controller.filterBySpecialty(null),
                 ),
-              if (controller.selectedWilaya.value != null &&
-                  controller.selectedWilaya.value!.isNotEmpty)
-                _buildFilterPill(
+              if (controller.selectedWilaya.value?.isNotEmpty == true)
+                _FilterPill(
                   label: controller.selectedWilaya.value!,
                   onDelete: () => controller.filterByWilaya(null),
                 ),
               if (controller.useLocation.value)
-                _buildFilterPill(
+                _FilterPill(
                   label: 'À proximité',
-                  onDelete: () => controller.toggleNearbyFilter(),
+                  onDelete: controller.toggleNearbyFilter,
                 ),
               if (controller.searchQuery.value.isNotEmpty)
-                _buildFilterPill(
+                _FilterPill(
                   label: '"${controller.searchQuery.value}"',
                   onDelete: () => controller.searchDoctorsByName(''),
                 ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: controller.clearFilters,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: AppColors.errorLight,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.close_rounded,
-                          size: 14, color: AppColors.error),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Effacer',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              const SizedBox(width: AppSpacing.xs),
+              // Clear all
+              _ClearAllButton(onTap: controller.clearFilters),
             ],
           ),
         ),
@@ -622,93 +486,40 @@ class DoctorListScreen extends GetView<DoctorListController> {
     });
   }
 
-  Widget _buildFilterPill({
-    required String label,
-    required VoidCallback onDelete,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white)),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: onDelete,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                shape: BoxShape.circle,
+  // ─── List Header ─────────────────────────────────────────────────────────────
+
+  Widget _buildListHeader() {
+    return Obx(() => Padding(
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.xxs),
+          child: Row(
+            children: [
+              Text(
+                controller.viewModeLabel,
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.textPrimary),
               ),
-              child: const Icon(Icons.close_rounded,
-                  size: 12, color: Colors.white),
-            ),
+              const Spacer(),
+              if (controller.isLoading.value)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // VIEW MODE LABEL  — shows what mode is active
-  // ═══════════════════════════════════════════════════════════════
-
-  Widget _buildViewModeLabel() {
-    return Obx(() {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(
-            AppSpacing.md, AppSpacing.xs ?? 4, AppSpacing.md, 0),
-        child: Row(
-          children: [
-            Text(
-              controller.viewModeLabel,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            if (controller.isLoading.value)
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.primary),
-              ),
-          ],
-        ),
-      );
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // DOCTORS LIST
-  // ═══════════════════════════════════════════════════════════════
+  // ─── Doctors List ────────────────────────────────────────────────────────────
 
   Widget _buildDoctorsList() {
     return Obx(() {
       if (controller.isLoading.value && controller.filteredDoctors.isEmpty) {
-        return const SliverFillRemaining(
-          child: LoadingIndicator(),
-        );
+        return const SliverFillRemaining(child: LoadingIndicator());
       }
 
       if (controller.errorMessage.value.isNotEmpty) {
@@ -724,7 +535,7 @@ class DoctorListScreen extends GetView<DoctorListController> {
         return SliverFillRemaining(
           child: EmptyState(
             message: 'Aucun médecin trouvé',
-            submessage: 'Essayez de modifier vos filtres',
+            submessage: 'Essayez de modifier vos filtres de recherche',
             icon: Icons.medical_services_rounded,
             onRetry: controller.refreshData,
             retryText: 'Actualiser',
@@ -733,13 +544,14 @@ class DoctorListScreen extends GetView<DoctorListController> {
       }
 
       return SliverPadding(
-        padding: EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md, AppSpacing.xs, AppSpacing.md, 0),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final doctor = controller.filteredDoctors[index];
               return Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.md),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: DoctorCard(
                   doctor: doctor,
                   onTap: () => controller.goToDoctorDetail(doctor.id),
@@ -753,22 +565,20 @@ class DoctorListScreen extends GetView<DoctorListController> {
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // FILTER BOTTOM SHEET  — getDoctorsByWilaya wired to wilaya picker
-  // ═══════════════════════════════════════════════════════════════
+  // ─── Filter Bottom Sheet ─────────────────────────────────────────────────────
 
   void _showFilterBottomSheet() {
     showModalBottomSheet(
       context: Get.context!,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _FilterBottomSheet(controller: controller),
+      builder: (_) => _FilterBottomSheet(controller: controller),
     );
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────
+  // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-  String _initials(String name) {
+  static String _initials(String name) {
     final parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
@@ -776,15 +586,314 @@ class DoctorListScreen extends GetView<DoctorListController> {
     return name.isNotEmpty ? name[0].toUpperCase() : '?';
   }
 
-  String _formatName(String name) {
+  static String _formatName(String name) {
     if (name.startsWith('Dr') || name.startsWith('DR')) return name;
     return 'Dr. $name';
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// FILTER BOTTOM SHEET  (separate widget for cleanliness)
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
+// Private Extracted Widgets
+// ═════════════════════════════════════════════════════════════════════════════
+
+/// Top-rated horizontal card
+class _TopRatedCard extends StatefulWidget {
+  final dynamic doctor;
+  final VoidCallback onTap;
+  const _TopRatedCard({required this.doctor, required this.onTap});
+
+  @override
+  State<_TopRatedCard> createState() => _TopRatedCardState();
+}
+
+class _TopRatedCardState extends State<_TopRatedCard> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final doc = widget.doctor;
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          width: 210,
+          margin: const EdgeInsets.only(right: AppSpacing.sm),
+          padding: AppSpacing.cardPaddingSmall,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: AppSpacing.cardRadius,
+            border: Border.all(
+              color: AppColors.warning200.withOpacity(0.7),
+              width: 1.5,
+            ),
+            boxShadow: _pressed
+                ? AppColors.shadowLg
+                : [
+                    BoxShadow(
+                      color: AppColors.warning500.withOpacity(0.07),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Avatar
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: AppColors.primary50,
+                    child: Text(
+                      DoctorListScreen._initials(doc.doctorName),
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DoctorListScreen._formatName(doc.doctorName),
+                          style: AppTextStyles.labelMedium
+                              .copyWith(color: AppColors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        // Specialty pill
+                        Container(
+                          margin: const EdgeInsets.only(top: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary50,
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusFull),
+                          ),
+                          child: Text(
+                            doc.specialty?.nameFr ?? 'Spécialiste',
+                            style: AppTextStyles.labelSmall
+                                .copyWith(color: AppColors.primary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  SvgPicture.asset(
+                    AppIcons.starFilled,
+                    width: 14,
+                    height: 14,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.warning500, BlendMode.srcIn),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    doc.averageRating?.toStringAsFixed(1) ?? '—',
+                    style: AppTextStyles.labelMedium
+                        .copyWith(color: AppColors.warning700),
+                  ),
+                  if (doc.totalReviews != null) ...[
+                    const SizedBox(width: 3),
+                    Text(
+                      '(${doc.totalReviews})',
+                      style: AppTextStyles.labelSmall
+                          .copyWith(color: AppColors.textTertiary),
+                    ),
+                  ],
+                  const Spacer(),
+                  if (doc.consultationFee != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.success50,
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusXs),
+                      ),
+                      child: Text(
+                        '${doc.consultationFee!.toStringAsFixed(0)} DA',
+                        style: AppTextStyles.labelSmall
+                            .copyWith(color: AppColors.success700),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xxs + 2),
+              Row(
+                children: [
+                  SvgPicture.asset(
+                    AppIcons.location,
+                    width: 12,
+                    height: 12,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.error, BlendMode.srcIn),
+                  ),
+                  const SizedBox(width: 3),
+                  Expanded(
+                    child: Text(
+                      doc.wilaya ?? '',
+                      style: AppTextStyles.labelSmall
+                          .copyWith(color: AppColors.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Animated specialty chip
+class _SpecialtyChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _SpecialtyChip(
+      {required this.label, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm, vertical: AppSpacing.xxs + 3),
+        decoration: BoxDecoration(
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          color: isSelected ? null : AppColors.surfaceCard,
+          borderRadius: AppSpacing.chipRadius,
+          border: Border.all(
+            color: isSelected ? Colors.transparent : AppColors.borderDefault,
+            width: 1.5,
+          ),
+          boxShadow: isSelected ? AppColors.shadowPrimary : AppColors.shadowXs,
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: isSelected ? AppColors.textOnPrimary : AppColors.textPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Active filter pill
+class _FilterPill extends StatelessWidget {
+  final String label;
+  final VoidCallback onDelete;
+  const _FilterPill({required this.label, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm, vertical: AppSpacing.xxs + 2),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: AppSpacing.chipRadius,
+        boxShadow: AppColors.shadowPrimary,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.labelMedium
+                .copyWith(color: AppColors.textOnPrimary),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          GestureDetector(
+            onTap: onDelete,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.28),
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                AppIcons.close,
+                width: 12,
+                height: 12,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Clear all filters button
+class _ClearAllButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ClearAllButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm, vertical: AppSpacing.xxs + 2),
+        decoration: BoxDecoration(
+          color: AppColors.error50,
+          borderRadius: AppSpacing.chipRadius,
+          border: Border.all(color: AppColors.error500.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              AppIcons.close,
+              width: 13,
+              height: 13,
+              colorFilter:
+                  const ColorFilter.mode(AppColors.error, BlendMode.srcIn),
+            ),
+            const SizedBox(width: AppSpacing.xxs),
+            Text(
+              'Effacer',
+              style: AppTextStyles.labelMedium.copyWith(color: AppColors.error),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Filter Bottom Sheet
+// ═════════════════════════════════════════════════════════════════════════════
 
 class _FilterBottomSheet extends StatelessWidget {
   final DoctorListController controller;
@@ -794,8 +903,9 @@ class _FilterBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        color: AppColors.surfaceCard,
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.85,
@@ -805,287 +915,46 @@ class _FilterBottomSheet extends StatelessWidget {
         builder: (context, scrollController) {
           return Column(
             children: [
-              // ── Header ──
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primarySoft, Colors.white],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(28)),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: AppColors.border,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(Icons.tune_rounded,
-                              color: Colors.white, size: 22),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Filtres avancés',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              Obx(() => Text(
-                                    controller.getFilterSummary(),
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  )),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Content ──
+              // Header
+              _buildSheetHeader(),
+              // Body
               Expanded(
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   children: [
-                    // Sort
                     _buildSection(
                       title: 'Trier par',
-                      icon: Icons.sort_rounded,
-                      child: Obx(() => Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: [
-                              _buildSortChip('Proximité', 'distance'),
-                              _buildSortChip('Note', 'rating'),
-                              _buildSortChip('Prix', 'fee'),
-                              _buildSortChip('Expérience', 'experience'),
-                            ],
-                          )),
+                      icon: AppIcons.filter,
+                      child: Wrap(
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          _buildSortChip('Proximité', 'distance'),
+                          _buildSortChip('Note', 'rating'),
+                          _buildSortChip('Prix', 'fee'),
+                          _buildSortChip('Expérience', 'experience'),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Wilaya — getDoctorsByWilaya
+                    const SizedBox(height: AppSpacing.lg),
                     _buildSection(
                       title: 'Wilaya',
-                      icon: Icons.location_on_rounded,
-                      child: Obx(() => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (controller.selectedWilaya.value != null)
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primarySoft,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color:
-                                            AppColors.primary.withOpacity(0.3)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.place_rounded,
-                                          size: 16, color: AppColors.primary),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        controller.selectedWilaya.value!,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.primary,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      GestureDetector(
-                                        onTap: () =>
-                                            controller.filterByWilaya(null),
-                                        child: Icon(Icons.close_rounded,
-                                            size: 16, color: AppColors.primary),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              GestureDetector(
-                                onTap: () => _showWilayaDialog(context),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.background,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: AppColors.border),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.location_city_rounded,
-                                          color: AppColors.primary, size: 20),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          controller.selectedWilaya.value ??
-                                              'Choisir une wilaya',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            color: controller
-                                                        .selectedWilaya.value !=
-                                                    null
-                                                ? AppColors.textPrimary
-                                                : AppColors.textTertiary,
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(Icons.keyboard_arrow_down_rounded,
-                                          color: AppColors.textSecondary),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )),
+                      icon: AppIcons.location,
+                      child: _buildWilayaSelector(context),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Nearby
+                    const SizedBox(height: AppSpacing.lg),
                     _buildSection(
                       title: 'Localisation',
-                      icon: Icons.near_me_rounded,
-                      child: Obx(() => GestureDetector(
-                            onTap: controller.toggleNearbyFilter,
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: controller.useLocation.value
-                                    ? AppColors.primarySoft
-                                    : AppColors.background,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: controller.useLocation.value
-                                      ? AppColors.primary.withOpacity(0.4)
-                                      : AppColors.border,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: controller.useLocation.value
-                                          ? AppColors.primary
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(
-                                      Icons.near_me_rounded,
-                                      color: controller.useLocation.value
-                                          ? Colors.white
-                                          : AppColors.primary,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: const [
-                                        Text(
-                                          'À proximité',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.textPrimary,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Médecins proches de vous',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.textSecondary),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Switch(
-                                    value: controller.useLocation.value,
-                                    onChanged: (_) =>
-                                        controller.toggleNearbyFilter(),
-                                    activeColor: AppColors.primary,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )),
+                      icon: AppIcons.location,
+                      child: _buildLocationToggle(),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
               ),
-
-              // ── Apply button ──
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5)),
-                  ],
-                ),
-                child: SafeArea(
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Voir les résultats',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              // CTA
+              _buildSheetCTA(context),
             ],
           );
         },
@@ -1093,13 +962,315 @@ class _FilterBottomSheet extends StatelessWidget {
     );
   }
 
+  Widget _buildSheetHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.md),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary50, AppColors.surfaceCard],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      ),
+      child: Column(
+        children: [
+          // Handle
+          Container(
+            width: 44,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.neutral300,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  boxShadow: AppColors.shadowPrimary,
+                ),
+                child: SvgPicture.asset(
+                  AppIcons.filter,
+                  width: 20,
+                  height: 20,
+                  colorFilter:
+                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Filtres avancés', style: AppTextStyles.h5),
+                    Obx(() => Text(
+                          controller.getFilterSummary(),
+                          style: AppTextStyles.bodySmall,
+                        )),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSheetCTA(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        boxShadow: AppColors.shadowMd,
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          height: AppSpacing.buttonHeight,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: AppSpacing.buttonRadius,
+              boxShadow: AppColors.shadowPrimary,
+            ),
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: AppSpacing.buttonRadius),
+              ),
+              child: Text(
+                'Voir les résultats',
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.textOnPrimary),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required String icon,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            SvgPicture.asset(
+              icon,
+              width: AppSpacing.iconSizeSm,
+              height: AppSpacing.iconSizeSm,
+              colorFilter:
+                  const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(title, style: AppTextStyles.h6),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        child,
+      ],
+    );
+  }
+
+  Widget _buildSortChip(String label, String value) {
+    return Obx(() {
+      final isSelected = controller.sortBy.value == value;
+      return GestureDetector(
+        onTap: () {
+          controller.changeSortBy(value);
+          Navigator.pop(Get.context!);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.xs + 2),
+          decoration: BoxDecoration(
+            gradient: isSelected ? AppColors.primaryGradient : null,
+            color: isSelected ? null : AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : AppColors.borderDefault,
+              width: 1.5,
+            ),
+            boxShadow:
+                isSelected ? AppColors.shadowPrimary : AppColors.shadowXs,
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.labelMedium.copyWith(
+              color: isSelected ? Colors.white : AppColors.textPrimary,
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildWilayaSelector(BuildContext context) {
+    return Obx(() => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (controller.selectedWilaya.value != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(AppIcons.location,
+                        width: 15,
+                        height: 15,
+                        colorFilter: const ColorFilter.mode(
+                            AppColors.primary, BlendMode.srcIn)),
+                    const SizedBox(width: AppSpacing.xxs),
+                    Text(controller.selectedWilaya.value!,
+                        style: AppTextStyles.labelMedium
+                            .copyWith(color: AppColors.primary)),
+                    const SizedBox(width: AppSpacing.xs),
+                    GestureDetector(
+                      onTap: () => controller.filterByWilaya(null),
+                      child: SvgPicture.asset(AppIcons.close,
+                          width: 14,
+                          height: 14,
+                          colorFilter: const ColorFilter.mode(
+                              AppColors.primary, BlendMode.srcIn)),
+                    ),
+                  ],
+                ),
+              ),
+            GestureDetector(
+              onTap: () => _showWilayaDialog(context),
+              child: Container(
+                padding: AppSpacing.inputPadding,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceInput,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  border: Border.all(color: AppColors.borderDefault),
+                ),
+                child: Row(
+                  children: [
+                    SvgPicture.asset(AppIcons.location,
+                        width: AppSpacing.iconSizeMd,
+                        height: AppSpacing.iconSizeMd,
+                        colorFilter: const ColorFilter.mode(
+                            AppColors.primary, BlendMode.srcIn)),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        controller.selectedWilaya.value ?? 'Choisir une wilaya',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: controller.selectedWilaya.value != null
+                              ? AppColors.textPrimary
+                              : AppColors.textTertiary,
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.keyboard_arrow_down_rounded,
+                        color: AppColors.textSecondary, size: 20),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ));
+  }
+
+  Widget _buildLocationToggle() {
+    return Obx(() => GestureDetector(
+          onTap: controller.toggleNearbyFilter,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: controller.useLocation.value
+                  ? AppColors.primarySoft
+                  : AppColors.neutral50,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              border: Border.all(
+                color: controller.useLocation.value
+                    ? AppColors.primary.withOpacity(0.4)
+                    : AppColors.borderDefault,
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(AppSpacing.xs + 2),
+                  decoration: BoxDecoration(
+                    gradient: controller.useLocation.value
+                        ? AppColors.primaryGradient
+                        : null,
+                    color: controller.useLocation.value
+                        ? null
+                        : AppColors.surfaceCard,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    boxShadow: controller.useLocation.value
+                        ? AppColors.shadowPrimary
+                        : null,
+                  ),
+                  child: Icon(
+                    Icons.near_me_rounded,
+                    color: controller.useLocation.value
+                        ? Colors.white
+                        : AppColors.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('À proximité', style: AppTextStyles.labelLarge),
+                      Text(
+                        'Médecins proches de votre position',
+                        style: AppTextStyles.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: controller.useLocation.value,
+                  onChanged: (_) => controller.toggleNearbyFilter(),
+                  activeColor: AppColors.primary,
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
+
   void _showWilayaDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl)),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           constraints: BoxConstraints(maxHeight: Get.height * 0.65),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1108,27 +1279,23 @@ class _FilterBottomSheet extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(AppSpacing.xs + 2),
                     decoration: BoxDecoration(
                       color: AppColors.primarySoft,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     ),
-                    child: Icon(Icons.location_on_rounded,
-                        color: AppColors.primary, size: 22),
+                    child: SvgPicture.asset(AppIcons.location,
+                        width: 20,
+                        height: 20,
+                        colorFilter: const ColorFilter.mode(
+                            AppColors.primary, BlendMode.srcIn)),
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Choisir une wilaya',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text('Choisir une wilaya', style: AppTextStyles.h5),
                 ],
               ),
-              const SizedBox(height: 12),
-              Divider(color: AppColors.border),
+              const SizedBox(height: AppSpacing.sm),
+              const Divider(color: AppColors.borderDefault),
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -1139,20 +1306,21 @@ class _FilterBottomSheet extends StatelessWidget {
                         controller.selectedWilaya.value == wilaya;
                     return InkWell(
                       onTap: () {
-                        Navigator.pop(context); // close dialog
-                        Navigator.pop(Get.context!); // close bottom sheet
-                        // getDoctorsByWilaya triggered here
+                        Navigator.pop(context);
+                        Navigator.pop(Get.context!);
                         controller.filterByWilaya(wilaya);
                       },
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
-                        margin: const EdgeInsets.only(bottom: 4),
+                            horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+                        margin: const EdgeInsets.only(bottom: AppSpacing.xxs),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primarySoft
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusSm),
                         ),
                         child: Row(
                           children: [
@@ -1165,12 +1333,11 @@ class _FilterBottomSheet extends StatelessWidget {
                                   : AppColors.textTertiary,
                               size: 18,
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: Text(
                                 wilaya,
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: AppTextStyles.bodyMedium.copyWith(
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.normal,
@@ -1193,95 +1360,25 @@ class _FilterBottomSheet extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        child,
-      ],
-    );
-  }
-
-  Widget _buildSortChip(String label, String value) {
-    return Obx(() {
-      final isSelected = controller.sortBy.value == value;
-      return GestureDetector(
-        onTap: () {
-          controller.changeSortBy(value);
-          Navigator.pop(Get.context!);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: isSelected ? AppColors.primaryGradient : null,
-            color: isSelected ? null : Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isSelected ? Colors.transparent : AppColors.border,
-              width: 1.5,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    )
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : AppColors.textPrimary,
-            ),
-          ),
-        ),
-      );
-    });
-  }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// WAVE PAINTER
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
+// Wave Painter
+// ═════════════════════════════════════════════════════════════════════════════
 
 class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFF9FAFB)
+      ..color = AppColors.neutral50
       ..style = PaintingStyle.fill;
 
     final path = Path()
-      ..moveTo(0, size.height * 0.5)
-      ..quadraticBezierTo(size.width * 0.25, size.height * 0.2,
-          size.width * 0.5, size.height * 0.5)
+      ..moveTo(0, size.height * 0.55)
+      ..quadraticBezierTo(size.width * 0.25, size.height * 0.15,
+          size.width * 0.5, size.height * 0.55)
       ..quadraticBezierTo(
-          size.width * 0.75, size.height * 0.8, size.width, size.height * 0.5)
+          size.width * 0.75, size.height * 0.95, size.width, size.height * 0.55)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();

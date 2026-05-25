@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
+import 'package:sihati_mobile/app/theme/app_colors.dart';
+import 'package:sihati_mobile/app/theme/app_spacing.dart';
+import 'package:sihati_mobile/app/theme/app_text_styles.dart';
 import '../../controllers/medical_record_controller.dart';
 import '../../../../core/models/prescription_model.dart';
 
@@ -10,7 +13,7 @@ import '../../../../core/models/prescription_model.dart';
 // ========================================
 
 class OrdonnancesTabContent extends GetView<MedicalRecordController> {
-  const OrdonnancesTabContent({Key? key}) : super(key: key);
+  const OrdonnancesTabContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,29 +31,24 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.description_outlined,
-                size: 80,
-                color: AppColors.primary.withOpacity(0.3),
+              SvgPicture.asset(
+                AppIcons.prescription,
+                width: 80,
+                height: 80,
+                colorFilter: ColorFilter.mode(
+                    AppColors.primary.withOpacity(0.3), BlendMode.srcIn),
               ),
               const SizedBox(height: AppSpacing.md),
-              const Text(
+              Text(
                 'Aucune ordonnance',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.title
+                    .copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
+              Text(
                 'Vos ordonnances apparaîtront ici',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  color: AppColors.textTertiary,
-                ),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textTertiary),
               ),
             ],
           ),
@@ -68,7 +66,7 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                 color: Colors.white,
                 border: Border(
                   bottom: BorderSide(
-                    color: AppColors.border,
+                    color: AppColors.borderLight,
                     width: 1,
                   ),
                 ),
@@ -78,18 +76,18 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                   Expanded(
                     child: Text(
                       '${controller.prescriptions.length} ordonnances',
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.textPrimary),
                     ),
                   ),
                   // TODO: Implement filter functionality
                   TextButton.icon(
-                    icon: const Icon(Icons.filter_list, size: 18),
-                    label: const Text('Filtrer'),
+                    icon: SvgPicture.asset(AppIcons.filter,
+                        width: 18,
+                        height: 18,
+                        colorFilter: const ColorFilter.mode(
+                            AppColors.primary, BlendMode.srcIn)),
+                    label: Text('Filtrer', style: AppTextStyles.labelLarge),
                     onPressed: () {
                       Get.snackbar(
                         'Info',
@@ -128,24 +126,25 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
   Widget _buildOrdonnanceCard(Prescription prescription) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surfaceCard,
+        borderRadius: AppSpacing.cardRadius,
         border: Border.all(
-          color: AppColors.border,
+          color: AppColors.borderDefault,
           width: 1.5,
         ),
+        boxShadow: AppColors.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: AppSpacing.paddingCard,
             decoration: const BoxDecoration(
               color: AppColors.primarySoft,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft: Radius.circular(AppSpacing.radiusLg),
+                topRight: Radius.circular(AppSpacing.radiusLg),
               ),
             ),
             child: Row(
@@ -156,10 +155,12 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                     color: AppColors.primary.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.description,
-                    color: AppColors.primary,
-                    size: 24,
+                  child: SvgPicture.asset(
+                    AppIcons.prescription,
+                    colorFilter: const ColorFilter.mode(
+                        AppColors.primary, BlendMode.srcIn),
+                    width: 24,
+                    height: 24,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -169,21 +170,14 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                     children: [
                       Text(
                         _formatDate(prescription.prescriptionDate),
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
+                        style: AppTextStyles.title
+                            .copyWith(color: AppColors.primary),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         prescription.doctor?.doctorName ?? 'Médecin',
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.labelMedium
+                            .copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -192,13 +186,15 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.success50,
+                      borderRadius: AppSpacing.chipRadius,
                     ),
-                    child: const Icon(
-                      Icons.check_circle,
-                      color: AppColors.success,
-                      size: 20,
+                    child: SvgPicture.asset(
+                      AppIcons.verified,
+                      colorFilter: const ColorFilter.mode(
+                          AppColors.success, BlendMode.srcIn),
+                      width: 20,
+                      height: 20,
                     ),
                   ),
               ],
@@ -207,28 +203,26 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
 
           // Content
           Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: AppSpacing.paddingCard,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Specialty
                 Row(
                   children: [
-                    const Icon(
-                      Icons.medical_services_outlined,
-                      size: 16,
-                      color: AppColors.textSecondary,
+                    SvgPicture.asset(
+                      AppIcons.doctor,
+                      width: 16,
+                      height: 16,
+                      colorFilter: const ColorFilter.mode(
+                          AppColors.textSecondary, BlendMode.srcIn),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       prescription.doctor?.specialty?.nameFr ??
                           'Spécialité non spécifiée',
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.labelMedium
+                          .copyWith(color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -236,14 +230,10 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                 const SizedBox(height: AppSpacing.md),
 
                 // Medications
-                const Text(
+                Text(
                   'Médicaments prescrits',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.labelLarge
+                      .copyWith(color: AppColors.textPrimary),
                 ),
 
                 const SizedBox(height: 8),
@@ -270,32 +260,22 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                                   children: [
                                     Text(
                                       med.medicationName,
-                                      style: const TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
-                                      ),
+                                      style: AppTextStyles.labelLarge.copyWith(
+                                          color: AppColors.textPrimary),
                                     ),
                                     if (med.dosage != null ||
                                         med.frequency != null)
                                       Text(
                                         _formatMedicationDetails(med),
-                                        style: const TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 12,
-                                          color: AppColors.textSecondary,
-                                        ),
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(
+                                                color: AppColors.textSecondary),
                                       ),
                                     if (med.durationDays != null)
                                       Text(
                                         'Durée: ${med.durationDays} jours',
-                                        style: const TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 12,
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(color: AppColors.primary),
                                       ),
                                   ],
                                 ),
@@ -311,25 +291,24 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                     margin: const EdgeInsets.only(top: AppSpacing.md),
                     padding: const EdgeInsets.all(AppSpacing.sm),
                     decoration: BoxDecoration(
-                      color: AppColors.errorLight,
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.error50,
+                      borderRadius: AppSpacing.inputRadius,
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          size: 16,
-                          color: AppColors.error,
+                        SvgPicture.asset(
+                          AppIcons.warning,
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                              AppColors.error, BlendMode.srcIn),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Ordonnance expirée depuis le ${_formatDate(prescription.expiryDate)}',
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 12,
-                              color: AppColors.error,
-                            ),
+                            style: AppTextStyles.labelSmall
+                                .copyWith(color: AppColors.error700),
                           ),
                         ),
                       ],
@@ -342,8 +321,8 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: AppColors.infoLight,
-                      borderRadius: BorderRadius.circular(12),
+                      //color: AppColors.info50,
+                      borderRadius: AppSpacing.inputRadius,
                       border: Border.all(
                         color: AppColors.info.withOpacity(0.3),
                         width: 1,
@@ -352,20 +331,19 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.info_outline,
-                          size: 16,
-                          color: AppColors.info,
+                        SvgPicture.asset(
+                          AppIcons.info,
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                              AppColors.info, BlendMode.srcIn),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             prescription.notes!,
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 12,
-                              color: AppColors.black,
-                            ),
+                            style: AppTextStyles.labelSmall
+                                .copyWith(color: AppColors.textPrimary),
                           ),
                         ),
                       ],
@@ -380,25 +358,38 @@ class OrdonnancesTabContent extends GetView<MedicalRecordController> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        icon: const Icon(Icons.visibility, size: 18),
-                        label: const Text('Voir détails'),
+                        icon: SvgPicture.asset(AppIcons.history,
+                            width: 18,
+                            height: 18,
+                            colorFilter: const ColorFilter.mode(
+                                AppColors.primary, BlendMode.srcIn)),
+                        label: Text('Voir détails',
+                            style: AppTextStyles.labelLarge),
                         onPressed: () => _viewPrescriptionDetails(prescription),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
                           side: const BorderSide(color: AppColors.primary),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ),
                     if (prescription.fileUrl != null) ...[
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
-                        icon: const Icon(Icons.download, size: 18),
-                        label: const Text('PDF'),
+                        icon: SvgPicture.asset(AppIcons.download,
+                            width: 18,
+                            height: 18,
+                            colorFilter: const ColorFilter.mode(
+                                Colors.white, BlendMode.srcIn)),
+                        label: Text('PDF',
+                            style: AppTextStyles.labelLarge
+                                .copyWith(color: Colors.white)),
                         onPressed: () =>
                             _downloadPrescriptionPDF(prescription.id),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ],

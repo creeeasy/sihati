@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sihati_mobile/core/models/medication_search_result.dart';
+import 'package:sihati_mobile/core/models/medication_model.dart';
 import 'package:sihati_mobile/data/repositories/medication_repository.dart';
 import 'package:sihati_mobile/app/routes/app_routes.dart';
 
@@ -9,21 +9,21 @@ class MedicationSearchController extends GetxController {
 
   MedicationSearchController({required this.medicationRepository});
 
-  // State
-  final searchResults = <MedicationSearchResult>[].obs;
+  final searchResults = <MedicationModel>[].obs;
   final searchController = TextEditingController();
   final isLoading = false.obs;
   final errorMessage = ''.obs;
-  final useLocation = true.obs;
   final hasSearched = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Auto-fill search from arguments (e.g. from AI chat or medication detail)
     final args = Get.arguments;
     if (args is Map && args['searchQuery'] != null) {
       searchController.text = args['searchQuery'] as String;
+      searchMedication();
+    } else if (args is String) {
+      searchController.text = args;
       searchMedication();
     }
   }
@@ -54,7 +54,7 @@ class MedicationSearchController extends GetxController {
 
       final results = await medicationRepository.searchMedication(
         query,
-        useLocation: useLocation.value,
+        useLocation: false,
       );
 
       searchResults.value = results;
@@ -63,7 +63,7 @@ class MedicationSearchController extends GetxController {
       if (results.isEmpty) {
         Get.snackbar(
           'Aucun résultat',
-          'Aucune pharmacie ne dispose de ce médicament',
+          'Aucun médicament trouvé',
           snackPosition: SnackPosition.BOTTOM,
         );
       }
@@ -74,53 +74,14 @@ class MedicationSearchController extends GetxController {
     }
   }
 
-  void toggleLocation() {
-    useLocation.value = !useLocation.value;
-    if (hasSearched.value && searchResults.isNotEmpty) {
-      _reSortResults();
-    }
-  }
-
-  Future<void> _reSortResults() async {
-    if (useLocation.value) {
-      try {
-        isLoading.value = true;
-        final sortedResults = await medicationRepository.sortResultsByDistance(
-          searchResults.toList(),
-        );
-        searchResults.value = sortedResults;
-      } catch (e) {
-        // Silently fail — keep original order
-      } finally {
-        isLoading.value = false;
-      }
-    }
-  }
-
-  // ─── Navigation ───────────────────────────────────────────
-
-  /// ✅ CORRIGÉ: Navigate to pharmacy detail with String ID
-  void goToPharmacyDetail(String pharmacyId) {
-    Get.toNamed('${AppRoutes.PHARMACY_DETAIL}/$pharmacyId');
-  }
-
-// Controller
   void goToMedicationDetail(String medicationId) {
     Get.toNamed('${AppRoutes.MEDICATION_DETAIL}/$medicationId');
   }
-
-  // ─── Helpers ──────────────────────────────────────────────
 
   void clearSearch() {
     searchController.clear();
     searchResults.clear();
     hasSearched.value = false;
     errorMessage.value = '';
-  }
-
-  String getStockMessage(int count) {
-    if (count == 0) return 'Non disponible';
-    if (count == 1) return 'Disponible dans 1 pharmacie';
-    return 'Disponible dans $count pharmacies';
   }
 }

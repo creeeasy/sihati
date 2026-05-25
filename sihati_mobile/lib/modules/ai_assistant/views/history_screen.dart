@@ -108,7 +108,7 @@ class _Body extends StatelessWidget {
         onRefresh: controller.loadHistory,
         color: AppColors.primary,
         child: ListView.separated(
-          padding: AppSpacing.paddingMd,
+          //padding: AppSpacing.paddingMd,
           itemCount: items.length,
           separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm + 2),
           itemBuilder: (context, i) => _ConversationCard(item: items[i]),
@@ -252,8 +252,8 @@ class _DetailSheet extends StatelessWidget {
                   color: AppColors.border,
                   borderRadius: AppSizing.borderRadiusXs),
             ),
-            Padding(
-              padding: AppSpacing.paddingMd,
+            Container(
+              //padding: AppSpacing.paddingMd,
               child: Row(
                 children: [
                   Text('Conversation', style: AppTextStyles.h5),
@@ -277,7 +277,7 @@ class _DetailSheet extends StatelessWidget {
             Expanded(
               child: ListView(
                 controller: scrollController,
-                padding: AppSpacing.paddingMd,
+                //padding: AppSpacing.paddingMd,
                 children: [
                   _DetailBubble(text: item.userMessage, isUser: true),
                   SizedBox(height: AppSpacing.sm + 4),
@@ -316,7 +316,7 @@ class _DetailBubble extends StatelessWidget {
         SizedBox(width: AppSpacing.sm + 2),
         Expanded(
           child: Container(
-            padding: AppSpacing.paddingSm,
+            //padding: AppSpacing.paddingSm,
             decoration: BoxDecoration(
               color: isUser ? AppColors.primarySoft : AppColors.background,
               borderRadius: AppSizing.borderRadiusMd,

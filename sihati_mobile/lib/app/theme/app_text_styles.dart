@@ -226,4 +226,48 @@ class AppTextStyles {
     letterSpacing: 0.1,
     color: AppColors.textSecondary,
   );
+
+  static const String _heading = 'Nunito';
+  static const String _body = 'Inter';
+  static const TextStyle headline = TextStyle(
+    fontFamily: _heading,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    height: 1.3,
+    letterSpacing: -0.1,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle title = TextStyle(
+    fontFamily: _body,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+    letterSpacing: 0,
+    color: AppColors.textPrimary,
+  );
+  static const TextStyle subtitle = TextStyle(
+    fontFamily: _body,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    height: 1.5,
+    letterSpacing: 0,
+    color: AppColors.textSecondary,
+  );
+  static const TextStyle input = TextStyle(
+    fontFamily: _body,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 1.5,
+    letterSpacing: 0,
+    color: AppColors.textPrimary,
+  );
+  static const TextStyle helper = TextStyle(
+    fontFamily: _body,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 1.5,
+    letterSpacing: 0.1,
+    color: AppColors.textTertiary,
+  );
 }

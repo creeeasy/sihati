@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/app/constants/app_icons.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_text_styles.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_widget.dart';
@@ -15,45 +18,34 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.neutral50,
 
-      // ── FABs ─────────────────────────────────────────────────
+      // ── FABs ────────────────────────────────────────────────
       floatingActionButton: Obx(() => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // Map / List toggle
-              FloatingActionButton(
+              // Map / List toggle — mini FAB
+              _StyledMiniFab(
                 heroTag: 'mapToggle',
-                mini: true,
                 onPressed: controller.toggleMapView,
-                backgroundColor: AppColors.primary,
-                child: Icon(
-                  controller.showMapView.value
-                      ? Icons.list_rounded
-                      : Icons.map_rounded,
-                  color: Colors.white,
-                ),
+                icon: controller.showMapView.value
+                    ? AppIcons.menu
+                    : AppIcons.location,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
 
-              // Open-only toggle
-              // FIX: now calls toggleActiveFilter() directly so toggling OFF
-              // does NOT wipe wilaya / nearby / search (old bug via clearFilters).
-              FloatingActionButton.extended(
+              // Open-only toggle — extended FAB
+              _StyledExtendedFab(
                 heroTag: 'openToggle',
                 onPressed: controller.toggleActiveFilter,
-                icon: Icon(
-                  controller.showActiveOnly.value
-                      ? Icons.clear_all_rounded
-                      : Icons.storefront_rounded,
-                ),
-                label: Text(
-                  controller.showActiveOnly.value
-                      ? 'Afficher tout'
-                      : 'Ouvertes',
-                ),
-                backgroundColor: controller.showActiveOnly.value
+                icon: controller.showActiveOnly.value
+                    ? AppIcons.close
+                    : AppIcons.pharmacy,
+                label: controller.showActiveOnly.value
+                    ? 'Afficher tout'
+                    : 'Ouvertes',
+                color: controller.showActiveOnly.value
                     ? AppColors.error
                     : AppColors.success,
               ),
@@ -69,6 +61,468 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
           SliverToBoxAdapter(child: _buildFilterChips()),
           _buildBody(),
         ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HEADER
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildHeader() {
+    return SliverAppBar(
+      expandedHeight: 156,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: AppColors.primary800,
+      leading: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        child: _PressableWidget(
+          onTap: () => Get.back(),
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              border: Border.all(
+                color: AppColors.white.withOpacity(0.25),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                AppIcons.arrowBack,
+                width: AppSpacing.iconSizeMd,
+                height: AppSpacing.iconSizeMd,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.white,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.homeHeaderGradient,
+              ),
+            ),
+
+            // Decorative circles
+            Positioned(
+              top: -24,
+              right: -24,
+              child: Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.white.withOpacity(0.07),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 60,
+              right: 60,
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.white.withOpacity(0.08),
+                ),
+              ),
+            ),
+
+            // Smooth wave at bottom
+            Positioned(
+              bottom: -1,
+              left: 0,
+              right: 0,
+              child: CustomPaint(
+                size: Size(Get.width, 32),
+                painter: _SmoothWavePainter(color: AppColors.neutral50),
+              ),
+            ),
+
+            // Header content
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.xxl,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Icon block
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withOpacity(0.2),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusMd),
+                            border: Border.all(
+                              color: AppColors.white.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: SvgPicture.asset(
+                            AppIcons.pharmacy,
+                            width: AppSpacing.iconSizeLg,
+                            height: AppSpacing.iconSizeLg,
+                            colorFilter: const ColorFilter.mode(
+                              AppColors.white,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Pharmacies',
+                                style: AppTextStyles.displaySmall.copyWith(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Obx(() => Text(
+                                    controller.activePharmaciesCount,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.white.withOpacity(0.85),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SEARCH BAR
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceCard,
+          borderRadius: AppSpacing.cardRadius,
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppColors.shadowMd,
+        ),
+        child: TextField(
+          onChanged: controller.searchPharmacies,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textPrimary,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Rechercher une pharmacie...',
+            hintStyle: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textTertiary,
+            ),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: SvgPicture.asset(
+                AppIcons.search,
+                width: AppSpacing.iconSizeMd,
+                height: AppSpacing.iconSizeMd,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+            suffixIcon: Obx(() {
+              if (controller.isSearchLoading.value) {
+                return const Padding(
+                  padding: EdgeInsets.all(14),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                );
+              }
+              if (controller.searchQuery.value.isNotEmpty) {
+                return IconButton(
+                  icon: SvgPicture.asset(
+                    AppIcons.close,
+                    width: 18,
+                    height: 18,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.textSecondary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  onPressed: () => controller.searchPharmacies(''),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.md,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ACTIVE FILTER BAR
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildActiveFilterBar() {
+    return Obx(() {
+      if (controller.activeFiltersCount == 0) return const SizedBox();
+
+      return Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs + 2,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.primary50,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            SvgPicture.asset(
+              AppIcons.filter,
+              width: 16,
+              height: 16,
+              colorFilter: const ColorFilter.mode(
+                AppColors.primary,
+                BlendMode.srcIn,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: Text(
+                '${controller.activeFiltersCount} filtre${controller.activeFiltersCount > 1 ? 's' : ''} actif${controller.activeFiltersCount > 1 ? 's' : ''}',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            _PressableWidget(
+              onTap: controller.clearFilters,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.error100,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(
+                      AppIcons.close,
+                      width: 12,
+                      height: 12,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.error,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Effacer',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.error,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // FILTER CHIPS
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildFilterChips() {
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        physics: const BouncingScrollPhysics(),
+        children: [
+          // Ouvertes
+          Obx(() => _buildFilterChip(
+                label: 'Ouvertes',
+                icon: AppIcons.pharmacy,
+                isSelected: controller.showActiveOnly.value,
+                onTap: controller.toggleActiveFilter,
+                color: AppColors.success,
+              )),
+          const SizedBox(width: AppSpacing.xs),
+
+          // À proximité
+          Obx(() => _buildFilterChip(
+                label: 'À proximité',
+                icon: AppIcons.location,
+                isSelected: controller.showNearbyOnly.value,
+                onTap: controller.toggleNearbyFilter,
+                color: AppColors.primary,
+              )),
+          const SizedBox(width: AppSpacing.xs),
+
+          // Wilaya
+          Obx(() => _buildFilterChip(
+                label: controller.selectedWilaya.value ?? 'Wilaya',
+                icon: AppIcons.location,
+                isSelected: controller.selectedWilaya.value != null,
+                onTap: _showWilayaDialog,
+                color: AppColors.secondary,
+              )),
+          const SizedBox(width: AppSpacing.xs),
+
+          // De garde — nav chip (amber)
+          _buildFilterChip(
+            label: 'De garde',
+            icon: AppIcons.moon,
+            isSelected: false,
+            onTap: controller.goToDutyPharmacies,
+            color: AppColors.warning,
+            isNavChip: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required String icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Color color,
+    bool isNavChip = false,
+  }) {
+    return _PressableWidget(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color
+              : isNavChip
+                  ? color.withOpacity(0.1)
+                  : AppColors.surfaceCard,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color:
+                isSelected ? color : color.withOpacity(isNavChip ? 0.5 : 0.3),
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : AppColors.shadowXs,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              icon,
+              width: 14,
+              height: 14,
+              colorFilter: ColorFilter.mode(
+                isSelected ? AppColors.white : color,
+                BlendMode.srcIn,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs - 2),
+            Text(
+              label,
+              style: AppTextStyles.labelMedium.copyWith(
+                fontSize: 13,
+                color: isSelected ? AppColors.white : AppColors.textPrimary,
+              ),
+            ),
+            if (isNavChip) ...[
+              const SizedBox(width: 4),
+              SvgPicture.asset(
+                AppIcons.arrowForward,
+                width: 10,
+                height: 10,
+                colorFilter: ColorFilter.mode(
+                  color,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -105,7 +559,7 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
           submessage = 'Toutes les pharmacies sont fermées pour le moment';
         } else if (controller.showNearbyOnly.value) {
           message = 'Aucune pharmacie à proximité';
-          submessage = 'Essayez d\'élargir votre recherche';
+          submessage = "Essayez d'élargir votre recherche";
         } else if (controller.searchQuery.value.isNotEmpty) {
           message = 'Aucun résultat';
           submessage =
@@ -130,14 +584,22 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
       }
 
       return SliverPadding(
-        padding: EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.xs,
+          AppSpacing.md,
+          AppSpacing.xxl,
+        ),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final pharmacy = pharmacies[index];
-              return PharmacyCard(
-                pharmacy: pharmacy,
-                onTap: () => controller.goToPharmacyDetail(pharmacy.id),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: PharmacyCard(
+                  pharmacy: pharmacy,
+                  onTap: () => controller.goToPharmacyDetail(pharmacy.id),
+                ),
               );
             },
             childCount: pharmacies.length,
@@ -153,13 +615,12 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
 
   Widget _buildMapView(List pharmacies) {
     return Obx(() {
-      final idx =
-          controller.centredIndex.value.clamp(0, pharmacies.length - 1) as int;
+      final idx = controller.centredIndex.value.clamp(0, pharmacies.length - 1);
       final centred = pharmacies[idx];
 
       return Stack(
         children: [
-          // Map centred on selected pharmacy
+          // Full-screen map
           SihatiMapbox(
             latitude: centred.latitude,
             longitude: centred.longitude,
@@ -168,37 +629,38 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
             zoom: 13,
           ),
 
-          // Pharmacy count pill
+          // Count pill at top
           Positioned(
             top: AppSpacing.md,
             left: 0,
             right: 0,
             child: Center(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  boxShadow: AppColors.shadowMd,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.local_pharmacy_rounded,
-                        size: 16, color: AppColors.primary),
-                    const SizedBox(width: 6),
+                    SvgPicture.asset(
+                      AppIcons.pharmacy,
+                      width: 14,
+                      height: 14,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
                     Text(
                       '${pharmacies.length} pharmacie${pharmacies.length > 1 ? 's' : ''}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -208,123 +670,157 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
             ),
           ),
 
-          // Horizontal card strip — tap re-centres map + navigates to detail
+          // Horizontal card strip
           Positioned(
             bottom: 80,
             left: 0,
             right: 0,
             child: SizedBox(
-              height: 160,
+              height: 168,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                ),
                 physics: const BouncingScrollPhysics(),
                 itemCount: pharmacies.length,
                 itemBuilder: (context, index) {
                   final pharmacy = pharmacies[index];
                   final isSelected = controller.centredIndex.value == index;
 
-                  return GestureDetector(
+                  return _PressableWidget(
                     onTap: () =>
                         controller.selectMapPharmacy(index, pharmacy.id),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 260,
-                      margin: EdgeInsets.only(right: AppSpacing.sm),
-                      padding: EdgeInsets.all(AppSpacing.md),
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      width: 264,
+                      margin: const EdgeInsets.only(right: AppSpacing.sm),
+                      padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : pharmacy.isOpenNow
-                                  ? AppColors.success
-                                  : AppColors.border,
-                          width: (isSelected ||
-                                  pharmacy.isOpenNow ||
-                                  pharmacy.isOnDutyTonight)
-                              ? 2
-                              : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black
-                                .withOpacity(isSelected ? 0.18 : 0.10),
-                            blurRadius: isSelected ? 20 : 12,
-                            offset: const Offset(0, 6),
+                        color: AppColors.surfaceCard,
+                        borderRadius: AppSpacing.cardRadius,
+                        // Left-border accent pattern (status-coded)
+                        border: Border(
+                          left: BorderSide(
+                            color: isSelected
+                                ? AppColors.primary
+                                : pharmacy.isOpenNow
+                                    ? AppColors.success
+                                    : AppColors.neutral300,
+                            width: 4,
                           ),
-                        ],
+                          top: BorderSide(
+                            color: isSelected
+                                ? AppColors.primary.withOpacity(0.2)
+                                : AppColors.borderLight,
+                            width: 1,
+                          ),
+                          right: BorderSide(
+                            color: isSelected
+                                ? AppColors.primary.withOpacity(0.2)
+                                : AppColors.borderLight,
+                            width: 1,
+                          ),
+                          bottom: BorderSide(
+                            color: isSelected
+                                ? AppColors.primary.withOpacity(0.2)
+                                : AppColors.borderLight,
+                            width: 1,
+                          ),
+                        ),
+                        boxShadow: isSelected
+                            ? AppColors.shadowPrimary
+                            : AppColors.shadowMd,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Name + status
+                          // Name + status badge
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(8),
+                                padding:
+                                    const EdgeInsets.all(AppSpacing.xs - 2),
                                 decoration: BoxDecoration(
                                   color: pharmacy.isOpenNow
-                                      ? AppColors.success
+                                      ? AppColors.success50
                                       : AppColors.primarySoft,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(
+                                      AppSpacing.radiusSm),
                                 ),
-                                child: Icon(
-                                  Icons.local_pharmacy_rounded,
-                                  size: 18,
-                                  color: pharmacy.isOpenNow
-                                      ? Colors.white
-                                      : AppColors.primary,
+                                child: SvgPicture.asset(
+                                  AppIcons.pharmacy,
+                                  width: 16,
+                                  height: 16,
+                                  colorFilter: ColorFilter.mode(
+                                    pharmacy.isOpenNow
+                                        ? AppColors.success
+                                        : AppColors.primary,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppSpacing.xs),
                               Expanded(
                                 child: Text(
                                   pharmacy.pharmacyName,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                                  style: AppTextStyles.labelMedium.copyWith(
                                     color: AppColors.textPrimary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const SizedBox(width: AppSpacing.xs),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 3),
+                                  horizontal: AppSpacing.xs,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: pharmacy.statusColor.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(
+                                      AppSpacing.radiusFull),
                                 ),
                                 child: Text(
                                   pharmacy.statusText,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
+                                  style: AppTextStyles.labelSmall.copyWith(
                                     color: pharmacy.statusColor,
+                                    fontSize: 10,
                                   ),
                                 ),
                               ),
                             ],
                           ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.xs),
+                          Divider(
+                            color: AppColors.neutral100,
+                            height: 1,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
 
                           // Address
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.location_on_rounded,
-                                  size: 12, color: AppColors.error),
+                              SvgPicture.asset(
+                                AppIcons.location,
+                                width: 12,
+                                height: 12,
+                                colorFilter: const ColorFilter.mode(
+                                  AppColors.error,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   pharmacy.fullAddress,
-                                  style: TextStyle(
+                                  style: AppTextStyles.bodySmall.copyWith(
                                     fontSize: 11,
-                                    color: AppColors.textSecondary,
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -333,37 +829,45 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
                             ],
                           ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.xs - 2),
 
                           // Hours + distance
                           Row(
                             children: [
-                              Icon(Icons.schedule_rounded,
-                                  size: 12, color: AppColors.textTertiary),
+                              SvgPicture.asset(
+                                AppIcons.reminder,
+                                width: 12,
+                                height: 12,
+                                colorFilter: const ColorFilter.mode(
+                                  AppColors.textTertiary,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   pharmacy.todayHours,
-                                  style: TextStyle(
+                                  style: AppTextStyles.bodySmall.copyWith(
                                     fontSize: 11,
-                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ),
                               if (pharmacy.distance != null)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                    horizontal: AppSpacing.xs,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.primarySoft,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(
+                                        AppSpacing.radiusFull),
                                   ),
                                   child: Text(
                                     pharmacy.formattedDistance,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
+                                    style: AppTextStyles.labelSmall.copyWith(
                                       color: AppColors.primary,
+                                      fontSize: 10,
                                     ),
                                   ),
                                 ),
@@ -383,413 +887,56 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // HEADER
-  // ═══════════════════════════════════════════════════════════════
-
-  Widget _buildHeader() {
-    return SliverAppBar(
-      expandedHeight: 160,
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: AppColors.primary,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-        onPressed: () => Get.back(),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: AppColors.primaryGradient,
-              ),
-            ),
-            Positioned(
-              bottom: -2,
-              left: 0,
-              right: 0,
-              child: CustomPaint(
-                size: Size(Get.width, 30),
-                painter: _WavePainter(),
-              ),
-            ),
-            Positioned(
-              top: 60,
-              right: -20,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 90,
-              left: 30,
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.08),
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                    AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xl),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(Icons.store_rounded,
-                              color: Colors.white, size: 28),
-                        ),
-                        SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Pharmacies',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Obx(() => Text(
-                                    controller.activePharmaciesCount,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  )),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // SEARCH BAR — with backend search spinner
-  // ═══════════════════════════════════════════════════════════════
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: TextField(
-          onChanged: controller.searchPharmacies,
-          decoration: InputDecoration(
-            hintText: 'Rechercher une pharmacie...',
-            hintStyle: TextStyle(color: AppColors.textTertiary, fontSize: 15),
-            prefixIcon: Container(
-              padding: const EdgeInsets.all(12),
-              child: Icon(Icons.search_rounded,
-                  color: AppColors.primary, size: 22),
-            ),
-            // FIX: suffix shows a spinner during backend search,
-            // a clear button when there is a query, or nothing otherwise.
-            suffixIcon: Obx(() {
-              if (controller.isSearchLoading.value) {
-                return Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                );
-              }
-              if (controller.searchQuery.value.isNotEmpty) {
-                return IconButton(
-                  icon: Icon(Icons.close_rounded,
-                      color: AppColors.textSecondary, size: 20),
-                  onPressed: () => controller.searchPharmacies(''),
-                );
-              }
-              return const SizedBox.shrink();
-            }),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.md, vertical: AppSpacing.md),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // ACTIVE FILTER BAR
-  // ═══════════════════════════════════════════════════════════════
-
-  Widget _buildActiveFilterBar() {
-    return Obx(() {
-      if (controller.activeFiltersCount == 0) return const SizedBox();
-
-      return Container(
-        margin: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-        padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: AppColors.primarySoft,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.filter_list_rounded, size: 16, color: AppColors.primary),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '${controller.activeFiltersCount} filtre${controller.activeFiltersCount > 1 ? 's' : ''} actif${controller.activeFiltersCount > 1 ? 's' : ''}',
-                style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-            GestureDetector(
-              onTap: controller.clearFilters,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.errorLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.close_rounded, size: 14, color: AppColors.error),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Effacer',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.error),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // FILTER CHIPS — added "De garde" navigation chip
-  // ═══════════════════════════════════════════════════════════════
-
-  Widget _buildFilterChips() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            // Ouvertes
-            Obx(() => _buildFilterChip(
-                  label: 'Ouvertes',
-                  icon: Icons.storefront_rounded,
-                  isSelected: controller.showActiveOnly.value,
-                  onTap: controller.toggleActiveFilter,
-                  color: AppColors.success,
-                )),
-            SizedBox(width: AppSpacing.sm),
-
-            // À proximité
-            Obx(() => _buildFilterChip(
-                  label: 'À proximité',
-                  icon: Icons.near_me_rounded,
-                  isSelected: controller.showNearbyOnly.value,
-                  onTap: controller.toggleNearbyFilter,
-                  color: AppColors.primary,
-                )),
-            SizedBox(width: AppSpacing.sm),
-
-            // Wilaya
-            Obx(() => _buildFilterChip(
-                  label: controller.selectedWilaya.value ?? 'Wilaya',
-                  icon: Icons.location_on_rounded,
-                  isSelected: controller.selectedWilaya.value != null,
-                  onTap: _showWilayaDialog,
-                  color: AppColors.secondary,
-                )),
-            SizedBox(width: AppSpacing.sm),
-
-            // De garde — navigation shortcut to the duty screen.
-            // Styled as an amber accent chip to distinguish it from
-            // filter chips (it navigates instead of filtering).
-            _buildFilterChip(
-              label: 'De garde',
-              icon: Icons.nightlight_round,
-              isSelected: false,
-              onTap: controller.goToDutyPharmacies,
-              color: const Color(0xFFE9960A), // amber / night tone
-              isNavChip: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-    required Color color,
-    bool isNavChip = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color
-              : isNavChip
-                  ? color.withOpacity(0.10)
-                  : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? color : color.withOpacity(0.4),
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon,
-                size: 16,
-                color: isSelected
-                    ? Colors.white
-                    : isNavChip
-                        ? color
-                        : color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isSelected
-                    ? Colors.white
-                    : isNavChip
-                        ? color
-                        : AppColors.textPrimary,
-              ),
-            ),
-            // Arrow hint for nav chip
-            if (isNavChip) ...[
-              const SizedBox(width: 4),
-              Icon(Icons.arrow_forward_ios_rounded, size: 11, color: color),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
   // WILAYA DIALOG
   // ═══════════════════════════════════════════════════════════════
 
   void _showWilayaDialog() {
     Get.dialog(
       Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        ),
+        backgroundColor: AppColors.surfaceCard,
         child: Container(
-          padding: EdgeInsets.all(AppSpacing.lg),
-          constraints: BoxConstraints(maxHeight: Get.height * 0.7),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          constraints: BoxConstraints(maxHeight: Get.height * 0.68),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Dialog header
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(AppSpacing.sm),
                     decoration: BoxDecoration(
                       color: AppColors.primarySoft,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     ),
-                    child: Icon(Icons.location_on_rounded,
-                        color: AppColors.primary, size: 24),
+                    child: SvgPicture.asset(
+                      AppIcons.location,
+                      width: AppSpacing.iconSizeMd,
+                      height: AppSpacing.iconSizeMd,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
-                  SizedBox(width: AppSpacing.md),
-                  const Text(
+                  const SizedBox(width: AppSpacing.md),
+                  Text(
                     'Sélectionner une wilaya',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTextStyles.h5,
                   ),
                 ],
               ),
-              SizedBox(height: AppSpacing.md),
-              Divider(color: AppColors.border),
+              const SizedBox(height: AppSpacing.md),
+              Divider(color: AppColors.borderDefault, height: 1),
+              const SizedBox(height: AppSpacing.xs),
+
+              // Wilaya list
               Flexible(
                 child: ListView.builder(
-                  // ← REMOVED Obx wrapper
                   shrinkWrap: true,
                   itemCount: controller.wilayas.length,
                   itemBuilder: (context, index) {
@@ -798,54 +945,72 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
                         controller.selectedWilaya.value == wilaya ||
                             (wilaya == 'Tous' &&
                                 controller.selectedWilaya.value == null);
-                    return InkWell(
+
+                    return _PressableWidget(
                       onTap: () {
                         controller
                             .filterByWilaya(wilaya == 'Tous' ? null : wilaya);
                         Get.back();
                       },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm + 4,
+                          vertical: AppSpacing.sm + 2,
                         ),
                         margin: const EdgeInsets.only(bottom: 4),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primarySoft
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusMd),
+                          border: isSelected
+                              ? Border.all(
+                                  color: AppColors.primary.withOpacity(0.2),
+                                  width: 1,
+                                )
+                              : null,
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              isSelected
-                                  ? Icons.radio_button_checked_rounded
-                                  : Icons.radio_button_unchecked_rounded,
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textTertiary,
-                              size: 20,
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.neutral300,
+                                  width: 2,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      Icons.check_rounded,
+                                      size: 12,
+                                      color: AppColors.white,
+                                    )
+                                  : null,
                             ),
-                            SizedBox(width: AppSpacing.md),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
                               child: Text(
                                 wilaya,
-                                style: TextStyle(
-                                  fontSize: 15,
+                                style: AppTextStyles.bodyMedium.copyWith(
                                   fontWeight: isSelected
                                       ? FontWeight.w600
-                                      : FontWeight.normal,
+                                      : FontWeight.w400,
                                   color: isSelected
                                       ? AppColors.primary
                                       : AppColors.textPrimary,
                                 ),
                               ),
                             ),
-                            if (isSelected)
-                              Icon(Icons.check_rounded,
-                                  size: 18, color: AppColors.primary),
                           ],
                         ),
                       ),
@@ -862,27 +1027,187 @@ class PharmacyListScreen extends GetView<PharmacyListController> {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// WAVE PAINTER — private, no conflict with other screens
+// STYLED FABs
 // ═══════════════════════════════════════════════════════════════
 
-class _WavePainter extends CustomPainter {
+class _StyledMiniFab extends StatelessWidget {
+  final String heroTag;
+  final VoidCallback onPressed;
+  final String icon;
+
+  const _StyledMiniFab({
+    required this.heroTag,
+    required this.onPressed,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: heroTag,
+      mini: true,
+      onPressed: onPressed,
+      backgroundColor: AppColors.primary,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      child: SvgPicture.asset(
+        icon,
+        width: AppSpacing.iconSizeSm,
+        height: AppSpacing.iconSizeSm,
+        colorFilter: const ColorFilter.mode(
+          AppColors.white,
+          BlendMode.srcIn,
+        ),
+      ),
+    );
+  }
+}
+
+class _StyledExtendedFab extends StatelessWidget {
+  final String heroTag;
+  final VoidCallback onPressed;
+  final String icon;
+  final String label;
+  final Color color;
+
+  const _StyledExtendedFab({
+    required this.heroTag,
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton.extended(
+      heroTag: heroTag,
+      onPressed: onPressed,
+      backgroundColor: color,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      icon: SvgPicture.asset(
+        icon,
+        width: AppSpacing.iconSizeSm,
+        height: AppSpacing.iconSizeSm,
+        colorFilter: const ColorFilter.mode(
+          AppColors.white,
+          BlendMode.srcIn,
+        ),
+      ),
+      label: Text(
+        label,
+        style: AppTextStyles.labelMedium.copyWith(
+          color: AppColors.white,
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRESS ANIMATION WRAPPER
+// ═══════════════════════════════════════════════════════════════
+
+class _PressableWidget extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const _PressableWidget({required this.child, this.onTap});
+
+  @override
+  State<_PressableWidget> createState() => _PressableWidgetState();
+}
+
+class _PressableWidgetState extends State<_PressableWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      reverseDuration: const Duration(milliseconds: 200),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.onTap == null) return widget.child;
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.forward(),
+      onTapUp: (_) {
+        _ctrl.reverse();
+        widget.onTap?.call();
+      },
+      onTapCancel: () => _ctrl.reverse(),
+      child: AnimatedBuilder(
+        animation: _scale,
+        builder: (_, child) => Transform.scale(
+          scale: _scale.value,
+          child: child,
+        ),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WAVE PAINTER
+// ═══════════════════════════════════════════════════════════════
+
+class _SmoothWavePainter extends CustomPainter {
+  final Color color;
+  const _SmoothWavePainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFF9FAFB)
+      ..color = color
       ..style = PaintingStyle.fill;
+
     final path = Path()
-      ..moveTo(0, size.height * 0.5)
-      ..quadraticBezierTo(size.width * 0.25, size.height * 0.2,
-          size.width * 0.5, size.height * 0.5)
-      ..quadraticBezierTo(
-          size.width * 0.75, size.height * 0.8, size.width, size.height * 0.5)
+      ..moveTo(0, size.height * 0.6)
+      ..cubicTo(
+        size.width * 0.2,
+        size.height * 0.0,
+        size.width * 0.4,
+        size.height * 0.0,
+        size.width * 0.5,
+        size.height * 0.5,
+      )
+      ..cubicTo(
+        size.width * 0.6,
+        size.height * 1.0,
+        size.width * 0.8,
+        size.height * 1.0,
+        size.width,
+        size.height * 0.4,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
+
     canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SmoothWavePainter old) => old.color != color;
 }
