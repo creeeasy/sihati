@@ -69,7 +69,7 @@
 | -------------------------------------- | ------ |
 | Base de données PostgreSQL             | ✅     |
 | Migrations exécutées                   | ✅     |
-| Serveur déployé (109.176.198.207:7500) | ✅     |
+| Serveur déployé (sihati.wassla-delivery.com) | ✅     |
 | PM2 processus                          | ✅     |
 | Variables d'environnement (.env)       | ✅     |
 | Rate limiting                          | ✅     |

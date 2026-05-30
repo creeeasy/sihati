@@ -1,6 +1,6 @@
 // doctor/js/config.js
 const API_CONFIG = {
-  BASE_URL: "http://109.176.198.207:7500/api",
+  BASE_URL: "https://sihati.wassla-delivery.com/api",
   ENDPOINTS: {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
