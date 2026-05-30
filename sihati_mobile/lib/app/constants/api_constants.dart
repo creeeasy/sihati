@@ -1,7 +1,7 @@
 // lib/app/constants/api_constants.dart
 class ApiConstants {
   // ─── Base URL ──────────────────────────────────────────────────────
-  static const String BASE_URL = 'http://192.168.1.102:7500/api';
+  static const String BASE_URL = 'http://109.176.198.207:7500/api';
 
   // ─── Authentication endpoints ──────────────────────────────────────
   static const String REGISTER = '/auth/register';

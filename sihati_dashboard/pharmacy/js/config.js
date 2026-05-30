@@ -1,6 +1,6 @@
 // pharmacy/js/config.js
 const API_CONFIG = {
-  BASE_URL: "http://localhost:7500/api", // Même backend que doctor
+  BASE_URL: "http://109.176.198.207:7500/api", // Même backend que doctor
   ENDPOINTS: {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
