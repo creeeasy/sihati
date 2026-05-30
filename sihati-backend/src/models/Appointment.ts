@@ -81,7 +81,7 @@ class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttrib
   }
 
   public static associate(): void {
-    const { User, Doctor, DoctorOffice } = sequelize.models;
+    const { User, DoctorOffice } = sequelize.models;
     Appointment.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
     Appointment.belongsTo(User, { foreignKey: 'doctorId', as: 'doctor' }); // ✅ Référence users
     Appointment.belongsTo(DoctorOffice, { foreignKey: 'officeId', as: 'office' });

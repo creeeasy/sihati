@@ -117,17 +117,34 @@ class PharmacyService {
     return stock;
   }
 
-  // 📌 Mettre à jour le stock
-  async updateStock(pharmacyId: string, medicationId: string, data: { inStock: boolean; quantity?: number; price?: number }) {
-    const [stock, created] = await PharmacyMedication.findOrCreate({
-      where: { pharmacyId, medicationId },
-      defaults: { ...data, lastUpdated: new Date() }
-    });
-    if (!created) {
-      await stock.update({ ...data, lastUpdated: new Date() });
-    }
-    return stock;
+async updateStock(
+  pharmacyId: string,
+  medicationId: string,
+  data: {
+    inStock: boolean;
+    quantity?: number;
+    price?: number;
   }
+) {
+  const [stock, created] = await PharmacyMedication.findOrCreate({
+    where: { pharmacyId, medicationId },
+    defaults: {
+      pharmacyId,
+      medicationId,
+      ...data,
+      lastUpdated: new Date(),
+    },
+  });
+
+  if (!created) {
+    await stock.update({
+      ...data,
+      lastUpdated: new Date(),
+    });
+  }
+
+  return stock;
+}
 }
 
 export default new PharmacyService();

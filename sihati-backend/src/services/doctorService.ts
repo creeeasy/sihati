@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { Doctor, Specialty, User, Review, DoctorOffice, DoctorSchedule } from '../models';
+import { Doctor, Specialty, User, Review, DoctorSchedule } from '../models';
 
 // Haversine formula
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
