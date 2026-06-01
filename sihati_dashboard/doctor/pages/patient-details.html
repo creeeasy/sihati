@@ -36,11 +36,19 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* FIX: Override overflow:hidden and height:100% from doctor-dashboard.css */
+        html, body {
+            height: auto !important;
+            overflow: auto !important;
+        }
+
         body {
             font-family: var(--font);
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            display: block !important;
         }
 
         ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -51,6 +59,16 @@
             width: 100%;
             min-height: 100vh;
             padding: 24px 32px;
+        }
+
+        /* Loading state */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            gap: 16px;
         }
 
         .back-btn {
@@ -279,7 +297,7 @@
 </head>
 <body>
     <div class="patient-details-page" id="patientDetailsContainer">
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:70vh;gap:16px;">
+        <div class="loading-state">
             <lottie-player src="../../assets/animations/sihati_dna.json" background="transparent" speed="1" style="width:140px;height:140px;" loop autoplay></lottie-player>
         </div>
     </div>
@@ -353,11 +371,11 @@
                 <div class="info-grid">
                     <div class="info-card">
                         <h3><i class="fas fa-id-card"></i> Carte Chifa</h3>
-                        <div class="value">${patient.chifaNumber || 'Non renseigne'}</div>
+                        <div class="value">${patient.chifaNumber || 'Non renseigné'}</div>
                     </div>
                     <div class="info-card">
-                        <h3><i class="fas fa-phone"></i> Telephone</h3>
-                        <div class="value">${patient.phoneNumber || 'Non renseigne'}</div>
+                        <h3><i class="fas fa-phone"></i> Téléphone</h3>
+                        <div class="value">${patient.phoneNumber || 'Non renseigné'}</div>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-calendar-alt"></i> Date d'inscription</h3>
@@ -375,13 +393,13 @@
                             <div style="display:flex;justify-content:space-between; align-items:center;">
                                 <div>
                                     <strong>${a.allergyName}</strong>
-                                    <span class="badge-pill badge-${a.severity}" style="margin-left: 10px;">${a.severity === 'mild' ? 'Legere' : a.severity === 'moderate' ? 'Moderee' : 'Severe'}</span>
+                                    <span class="badge-pill badge-${a.severity}" style="margin-left: 10px;">${a.severity === 'mild' ? 'Légère' : a.severity === 'moderate' ? 'Modérée' : 'Sévère'}</span>
                                 </div>
                                 <button class="btn-icon" onclick="deleteAllergyFromDetails('${a.id}')"><i class="fas fa-trash"></i></button>
                             </div>
-                            ${a.reaction ? `<div style="font-size:13px; color: var(--text-muted); margin-top:8px;">Reaction: ${a.reaction}</div>` : ''}
+                            ${a.reaction ? `<div style="font-size:13px; color: var(--text-muted); margin-top:8px;">Réaction: ${a.reaction}</div>` : ''}
                         </div>
-                    `).join('') : '<div style="padding: 20px 0; text-align: center; color: var(--text-muted);">Aucune allergie enregistree</div>'}
+                    `).join('') : '<div style="padding: 20px 0; text-align: center; color: var(--text-muted);">Aucune allergie enregistrée</div>'}
                 </div>
 
                 <div class="section-card">
@@ -417,7 +435,7 @@
                             <div><strong>Diagnostic:</strong> ${p.diagnosis || '-'}</div>
                             ${p.medications && p.medications.length > 0 ? `
                                 <div style="margin-top:8px;">
-                                    <strong>Medicaments:</strong>
+                                    <strong>Médicaments:</strong>
                                     <ul style="margin-top: 6px; margin-left: 20px; color: var(--text-muted);">
                                         ${p.medications.map(m => `<li>${m.medicationName} ${m.dosage ? `- ${m.dosage}` : ''} ${m.frequency ? `(${m.frequency})` : ''}</li>`).join('')}
                                     </ul>
@@ -433,10 +451,10 @@
         function addAllergyFromDetails(patientId) {
             openModal(`Ajouter une allergie`, `
                 <div id="allergyAlert"></div>
-                <div class="form-group"><label>Nom de l'allergie</label><input class="modal-input" type="text" id="a_name" placeholder="Ex: Penicilline"></div>
-                <div class="form-group"><label>Type</label><select class="modal-input" id="a_type"><option value="medication">Medicament</option><option value="food">Aliment</option><option value="environmental">Environnemental</option></select></div>
-                <div class="form-group"><label>Severite</label><select class="modal-input" id="a_severity"><option value="mild">Legere</option><option value="moderate">Moderee</option><option value="severe">Severe</option></select></div>
-                <div class="form-group"><label>Reaction</label><textarea class="modal-input" id="a_reaction" rows="2" placeholder="Description de la reaction..."></textarea></div>
+                <div class="form-group"><label>Nom de l'allergie</label><input class="modal-input" type="text" id="a_name" placeholder="Ex: Pénicilline"></div>
+                <div class="form-group"><label>Type</label><select class="modal-input" id="a_type"><option value="medication">Médicament</option><option value="food">Aliment</option><option value="environmental">Environnemental</option></select></div>
+                <div class="form-group"><label>Sévérité</label><select class="modal-input" id="a_severity"><option value="mild">Légère</option><option value="moderate">Modérée</option><option value="severe">Sévère</option></select></div>
+                <div class="form-group"><label>Réaction</label><textarea class="modal-input" id="a_reaction" rows="2" placeholder="Description de la réaction..."></textarea></div>
                 <div class="modal-actions"><button class="btn-cancel-modal" onclick="closeModal()">Annuler</button><button class="btn-save-modal" onclick="saveAllergyFromDetails('${patientId}')">Enregistrer</button></div>
             `);
             setupModal();
@@ -457,7 +475,7 @@
                     reaction: document.getElementById("a_reaction").value.trim() 
                 });
                 closeModal(); 
-                showToast("Allergie ajoutee", "success"); 
+                showToast("Allergie ajoutée", "success"); 
                 setTimeout(() => location.reload(), 1000);
             } catch(e) { 
                 alertEl.innerHTML = `<div class="alert-error">${e.message}</div>`; 
@@ -468,7 +486,7 @@
             if(!confirm("Supprimer cette allergie ?")) return;
             try { 
                 await api.deleteAllergy(allergyId); 
-                showToast("Allergie supprimee", "success"); 
+                showToast("Allergie supprimée", "success"); 
                 setTimeout(() => location.reload(), 1000);
             } catch(e) { 
                 showToast("Erreur lors de la suppression", "error"); 
