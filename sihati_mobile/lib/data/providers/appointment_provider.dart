@@ -139,14 +139,11 @@ class AppointmentProvider {
         '${ApiConstants.DOCTOR_AVAILABLE_SLOTS}/$doctorId/available-slots',
         queryParameters: queryParams,
       );
-
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
         final List<dynamic> slots =
             data is List ? data : (data['slots'] ?? data);
-        return slots
-            .map((slot) => (slot['time'] ?? slot.toString()).toString())
-            .toList();
+        return slots.map((slot) => slot.toString()).toList();
       }
       return [];
     } on DioException catch (e) {

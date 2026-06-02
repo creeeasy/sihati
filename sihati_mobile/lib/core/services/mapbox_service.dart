@@ -1,8 +1,8 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class MapboxService {
-  static String accessToken =
-      'REMOVED';
+  static String get accessToken => dotenv.env['MAPBOX_TOKEN'] ?? '';
 
   static final CameraOptions defaultCamera = CameraOptions(
     center: Point(coordinates: Position(3.0588, 36.7538)),
@@ -27,6 +27,8 @@ class MapboxService {
   }
 
   static Future<void> initialize() async {
+    await dotenv.load(fileName: ".env");
+    print(accessToken);
     MapboxOptions.setAccessToken(accessToken);
   }
 }

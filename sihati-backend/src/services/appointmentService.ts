@@ -45,10 +45,20 @@ class AppointmentService {
     appointmentTime: string;
     reason?: string;
   }) {
-    return Appointment.create({
-      ...data,
-      status: 'pending'
-    });
+     const doctor = await Doctor.findByPk(data.doctorId);
+  
+  if (!doctor) {
+    throw new Error('Doctor not found');
+  }
+ return Appointment.create({
+    patientId: data.patientId,
+    doctorId: doctor.userId,  // Convert doctors.id → users.id
+    officeId: data.officeId,
+    appointmentDate: data.appointmentDate,
+    appointmentTime: data.appointmentTime,
+    reason: data.reason,
+    status: 'pending'
+  });
   }
 
   // Confirmer un rendez-vous

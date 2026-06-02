@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sihati_mobile/core/services/mapbox_service.dart';
 import 'app/theme/app_theme.dart';
 import 'app/routes/app_routes.dart';
 import 'app/routes/app_pages.dart';
@@ -29,14 +30,13 @@ Future<void> initServices() async {
     await Get.putAsync(() => LocationService().init());
     print('✓ Location service');
 
-
-
-
-
     // NotificationService is a singleton, not a GetxService
     // initialize() sets up channels + requests permissions
     await NotificationService().initialize();
     print('✓ Notification service');
+
+    await MapboxService.initialize();
+    print('✓ Mapbox service');
 
     print('✅ All services ready!');
   } catch (e) {

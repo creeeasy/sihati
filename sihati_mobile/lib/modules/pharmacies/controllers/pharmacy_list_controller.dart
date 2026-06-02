@@ -92,7 +92,7 @@ class PharmacyListController extends GetxController {
 
   Future<void> _loadNearby() async {
     try {
-      final result = await pharmacyRepository.getNearbyPharmacies(radius: 10);
+      final result = await pharmacyRepository.getNearbyPharmacies(radius: 60);
       pharmacies.value = result;
       if (result.isNotEmpty) {
         Get.snackbar(

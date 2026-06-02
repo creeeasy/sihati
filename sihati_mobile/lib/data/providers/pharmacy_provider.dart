@@ -35,12 +35,10 @@ class PharmacyProvider {
       if (latitude != null) queryParams['lat'] = latitude;
       if (longitude != null) queryParams['lng'] = longitude;
       if (radius != 10) queryParams['radius'] = radius;
-
       final response = await _apiService.get(
         ApiConstants.PHARMACIES,
         queryParameters: queryParams,
       );
-
       if (response.statusCode == 200) {
         final List<PharmacyModel> list = (response.data['data']
                 as List<dynamic>)
@@ -50,6 +48,7 @@ class PharmacyProvider {
       }
       throw Exception('Failed to load pharmacies');
     } on DioException catch (e) {
+      print(e);
       throw Exception(e.response?.data['message'] ?? e.message);
     }
   }
