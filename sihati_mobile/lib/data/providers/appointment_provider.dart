@@ -32,6 +32,7 @@ class AppointmentProvider {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
+        print(data);
         // Backend returns: { success: true, data: [...] }
         final List<dynamic> appointmentsJson =
             data is List ? data : (data['appointments'] ?? data);
@@ -43,6 +44,7 @@ class AppointmentProvider {
       }
       throw Exception('Failed to load appointments');
     } on DioException catch (e) {
+      print(e);
       throw Exception(e.response?.data['message'] ?? e.message);
     }
   }

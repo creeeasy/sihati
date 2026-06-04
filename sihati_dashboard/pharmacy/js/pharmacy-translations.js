@@ -175,9 +175,22 @@ const PH_TRANSLATIONS = {
       "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation dans quelques minutes.",
     forgot_back_login: "Retour à la connexion",
     forgot_error: "Une erreur est survenue. Veuillez réessayer.",
+    duty_status: "Statut de garde",
+    duty_tonight: "Garde cette nuit",
+    duty_description:
+      "Activez la garde pour apparaître dans les recherches des patients",
+    activate_duty: "Activer la garde",
+    deactivate_duty: "Désactiver la garde",
+    no: "Non",
   },
   ar: {
     // Pages
+    no: "لا",
+    duty_status: "حالة الخدمة",
+    duty_tonight: "الخدمة هذه الليلة",
+    duty_description: "فعّل الخدمة لتظهر في نتائج بحث المرضى",
+    activate_duty: "تفعيل الخدمة",
+    deactivate_duty: "إلغاء تفعيل الخدمة",
     dashboard_title: "لوحة القيادة",
     dashboard_subtitle: "أدر صيدليتك",
     inventory_title: "إدارة المخزون",

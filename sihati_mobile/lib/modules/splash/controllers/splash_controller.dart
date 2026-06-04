@@ -10,12 +10,6 @@ class SplashController extends GetxController {
   SplashController({required this.authRepository});
 
   @override
-  void onInit() {
-    print("hello world");
-    super.onInit();
-  }
-
-  @override
   void onReady() {
     super.onReady();
     _checkAuthAndNavigate();

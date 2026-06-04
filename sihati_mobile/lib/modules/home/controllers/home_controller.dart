@@ -24,33 +24,23 @@ class HomeController extends GetxController {
     this.storageService,
   });
 
-  // State
   final currentUserId = ''.obs;
-
-  // State
   final userName = ''.obs;
   final userRole = ''.obs;
   final isLoading = false.obs;
   final isGuestMode = false.obs;
-
-  // Quick stats
   final upcomingAppointments = 0.obs;
   final favoritesCount = 0.obs;
-
-  // Recent activities
   final recentActivities = <Map<String, dynamic>>[].obs;
 
   @override
   void onInit() {
     super.onInit();
     checkGuestMode();
-    loadUserData();
-    loadQuickStats();
-    loadRecentActivities();
+    _initializeData();
   }
 
   void checkGuestMode() {
-    // ✅ Utilise l'observable du repository
     isGuestMode.value = authRepository.isGuestMode.value;
 
     if (isGuestMode.value) {
@@ -58,9 +48,11 @@ class HomeController extends GetxController {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // Greeting
-  // ═══════════════════════════════════════════════════════════════
+  Future<void> _initializeData() async {
+    await loadUserData();
+    await loadQuickStats();
+    loadRecentActivities();
+  }
 
   String get greeting {
     final hour = DateTime.now().hour;
@@ -84,10 +76,6 @@ class HomeController extends GetxController {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // Load User Data
-  // ═══════════════════════════════════════════════════════════════
-
   Future<void> loadUserData() async {
     try {
       isLoading.value = true;
@@ -99,7 +87,6 @@ class HomeController extends GetxController {
       }
 
       final user = await authRepository.getCurrentUser();
-
       if (user != null) {
         currentUserId.value = user.id;
         userName.value = user.fullName;
@@ -111,10 +98,6 @@ class HomeController extends GetxController {
       isLoading.value = false;
     }
   }
-
-  // ═══════════════════════════════════════════════════════════════
-  // Load Quick Stats
-  // ═══════════════════════════════════════════════════════════════
 
   Future<void> loadQuickStats() async {
     try {
@@ -128,26 +111,17 @@ class HomeController extends GetxController {
         return;
       }
 
-      // 1. Get upcoming appointments count from AppointmentRepository
       final counts = await appointmentRepository
           .getAppointmentsCounts(currentUserId.value);
       upcomingAppointments.value = counts['upcoming'] ?? 0;
 
-      // 2. Get favorite doctors + pharmacies from FavoriteRepository
       final pharmacies = await favoriteRepository.getFavoritePharmacies();
       final doctors = await favoriteRepository.getFavoriteDoctors();
       favoritesCount.value = pharmacies.length + doctors.length;
-
-      // Note: If favorites module also handles medications in the future,
-      // we add them here. Currently they are local.
     } catch (e) {
       print('Error loading quick stats: $e');
     }
   }
-
-  // ═══════════════════════════════════════════════════════════════
-  // Load Recent Activities
-  // ═══════════════════════════════════════════════════════════════
 
   Future<void> loadRecentActivities() async {
     try {
@@ -194,9 +168,6 @@ class HomeController extends GetxController {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // Navigation Methods
-  // ═══════════════════════════════════════════════════════════════
   void goToMedicalRecord() {
     if (isGuestMode.value) {
       authRepository.promptLoginForFeature('accéder à votre dossier médical');
